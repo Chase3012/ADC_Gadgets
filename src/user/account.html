@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account — ADC Gadgets</title>
+    <meta name="description" content="Manage your ADC Gadgets account, personal information, and security settings.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+        <link rel="stylesheet" href="css/user.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+
+<body>
+
+    <!-- ━━━ HEADER ━━━ -->
+    <header class="hdr">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button class="nav-ham-btn" id="nav-ham-btn" aria-label="Open navigation menu" aria-expanded="false">
+                <i data-lucide="menu" style="width:18px;height:18px;"></i>
+            </button>
+            <a href="user-home.html" class="logo">
+                <img src="../../images/logo.jpg" alt="ADC Gadgets" class="logo-img">
+                <span class="logo-name">ADC Gadgets</span>
+            </a>
+        </div>
+        <nav class="hdr-nav">
+            <a href="user-home.html">Shop</a>
+            <a href="devices.html">Devices</a>
+            <a href="support.html">Support</a>
+            <a href="account.html" style="color:var(--pink);font-weight:600;">Account</a>
+        </nav>
+    </header>
+
+    <!-- ━━━ SUB-NAV ━━━ -->
+    <nav class="sub-nav">
+        <a href="user-home.html">All Models</a>
+        <a href="devices.html">Devices</a>
+        <a href="support.html">Setup &amp; Support</a>
+        <a href="account.html" class="active">Account</a>
+    </nav>
+
+        <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
+    <div class="hero-wrap account-hero">
+        <h1 class="support-title account-title"><span class="glow-pink">My ADC Account</span></h1>
+        <h2 class="support-subtitle account-greeting">Hello, <span id="hero-first-name" style="color: var(--pink);">there</span>.</h2>
+        <p class="support-subtitle account-desc">Manage your profile, contact info, and security.</p>
+    </div>
+
+    <!-- ━━━ MAIN CONTENT ━━━ -->
+    <div class="account-main">
+
+        <!-- ── LEFT: Profile Card ── -->
+        <aside>
+            <div class="profile-card">
+                <!-- Dark top section -->
+                <div class="profile-card-top">
+                    <div class="avatar-ring">
+                        <div class="avatar-placeholder" id="avatar-placeholder">
+                            <i data-lucide="user" style="width:38px;height:38px;"></i>
+                        </div>
+                        <img class="avatar-img" id="avatar-img" src="" alt="Profile" style="display:none; position:absolute; inset:0; z-index:1;">
+                        <button class="avatar-upload-btn" id="avatar-upload-btn" title="Change photo">
+                            <i data-lucide="camera" style="width:12px;height:12px;"></i>
+                        </button>
+                        <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+                    </div>
+                    <div class="profile-name" id="profile-full-name">—</div>
+                    <div class="profile-email-text" id="profile-email-disp">—</div>
+                    <div class="status-badge active" id="account-status-badge">
+                        <span class="status-dot"></span>
+                        <span id="status-text">Active</span>
+                    </div>
+                </div>
+
+                <!-- Meta rows -->
+                <div class="profile-card-meta">
+                    <div class="meta-row">
+                        <i data-lucide="calendar" style="width:15px;height:15px;"></i>
+                        <span class="meta-label">Registered</span>
+                        <span class="meta-val" id="profile-date-registered">—</span>
+                    </div>
+                    <div class="meta-row">
+                        <i data-lucide="smartphone" style="width:15px;height:15px;"></i>
+                        <span class="meta-label">Mobile</span>
+                        <span class="meta-val" id="profile-mobile-short">—</span>
+                    </div>
+                </div>
+
+                <!-- Sidebar nav links -->
+                <div class="profile-sidebar-nav">
+                    <a href="#section-personal" class="side-nav-link active" id="snl-info">
+                        <i data-lucide="user-circle" style="width:16px;height:16px;"></i> My Information
+                    </a>
+                    <a href="#section-security" class="side-nav-link" id="snl-sec">
+                        <i data-lucide="shield" style="width:16px;height:16px;"></i> Security
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── RIGHT: Sections ── -->
+        <div class="sections-col">
+
+            <!-- ── Section 1: Personal & Contact (Read-Only) ── -->
+            <section class="acc-section" id="section-personal">
+                <div class="acc-section-header">
+                    <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon pink">
+                            <i data-lucide="user" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div>
+                            <div class="acc-section-title">Personal &amp; Contact Information</div>
+                            <div class="acc-section-desc">Managed by ADC Gadgets. Contact support to request changes.</div>
+                        </div>
+                    </div>
+                    <span class="readonly-badge">
+                        <i data-lucide="lock" style="width:10px;height:10px;"></i> Read-Only
+                    </span>
+                </div>
+                <div class="acc-section-body">
+                    <div class="info-grid">
+                        <div class="info-field">
+                            <label>Full Legal Name</label>
+                            <div class="info-value">
+                                <i data-lucide="user" style="width:15px;height:15px;"></i>
+                                <span class="val-text" id="info-full-name">—</span>
+                            </div>
+                        </div>
+                        <div class="info-field">
+                            <label>Account Status</label>
+                            <div class="info-value" style="gap:8px;">
+                                <i data-lucide="activity" style="width:15px;height:15px;"></i>
+                                <span class="val-text" id="info-status">—</span>
+                            </div>
+                        </div>
+                        <div class="info-field">
+                            <label>Email Address</label>
+                            <div class="info-value">
+                                <i data-lucide="mail" style="width:15px;height:15px;"></i>
+                                <span class="val-text" id="info-email">—</span>
+                                <span class="verified-chip">
+                                    <i data-lucide="check" style="width:9px;height:9px;"></i> Verified
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-field">
+                            <label>Mobile Number</label>
+                            <div class="info-value">
+                                <i data-lucide="phone" style="width:15px;height:15px;"></i>
+                                <span class="val-text" id="info-mobile">—</span>
+                            </div>
+                        </div>
+                        <div class="info-field full">
+                            <label>Complete Home Address</label>
+                            <div class="info-value">
+                                <i data-lucide="map-pin" style="width:15px;height:15px;"></i>
+                                <span class="val-text" id="info-address">—</span>
+                            </div>
+                        </div>
+                        <div class="info-field">
+                            <label>Date Registered</label>
+                            <div class="info-value">
+                                <i data-lucide="calendar-check" style="width:15px;height:15px;"></i>
+                                <span class="val-text" id="info-date">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID Requirements Card -->
+                    <div style="margin-top: 20px;">
+                        <label style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--g500); display:block; margin-bottom:10px;">Submitted ID / Requirements</label>
+                        <div class="id-card">
+                            <div class="id-icon-wrap">
+                                <i data-lucide="credit-card" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div class="id-info">
+                                <div class="id-type">Government-Issued ID</div>
+                                <div class="id-name" id="info-id-type">Driver's License</div>
+                            </div>
+                            <div class="id-badge">
+                                <i data-lucide="shield-check" style="width:10px;height:10px;"></i> On File
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Section 2: Account Security (Editable) ── -->
+            <section class="acc-section" id="section-security">
+                <div class="acc-section-header">
+                    <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon green">
+                            <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div>
+                            <div class="acc-section-title">Account Security</div>
+                            <div class="acc-section-desc">Update your password to keep your account secure.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="acc-section-body">
+                    <form id="password-form" class="form-grid" novalidate>
+
+                        <div class="form-group">
+                            <label for="cur-pwd">Current Password</label>
+                            <div class="input-wrap">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input type="password" id="cur-pwd" name="cur-pwd" placeholder="Enter your current password" autocomplete="current-password">
+                                <button type="button" class="eye-btn" data-target="cur-pwd" aria-label="Toggle visibility">
+                                    <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                                </button>
+                            </div>
+                            <div class="form-error" id="err-cur-pwd">
+                                <i data-lucide="alert-circle" style="width:12px;height:12px;"></i>
+                                <span id="err-cur-pwd-text">This field is required.</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-pwd">New Password</label>
+                            <div class="input-wrap">
+                                <i data-lucide="key" class="input-icon"></i>
+                                <input type="password" id="new-pwd" name="new-pwd" placeholder="Create a new strong password" autocomplete="new-password">
+                                <button type="button" class="eye-btn" data-target="new-pwd" aria-label="Toggle visibility">
+                                    <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength" id="strength-wrap" style="display:none;">
+                                <div class="strength-bars">
+                                    <div class="strength-bar" id="sb1"></div>
+                                    <div class="strength-bar" id="sb2"></div>
+                                    <div class="strength-bar" id="sb3"></div>
+                                    <div class="strength-bar" id="sb4"></div>
+                                </div>
+                                <span class="strength-label" id="strength-label">Weak</span>
+                            </div>
+                            <div class="form-error" id="err-new-pwd">
+                                <i data-lucide="alert-circle" style="width:12px;height:12px;"></i>
+                                <span id="err-new-pwd-text">Password must be at least 8 characters.</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm-pwd">Confirm New Password</label>
+                            <div class="input-wrap">
+                                <i data-lucide="key" class="input-icon"></i>
+                                <input type="password" id="confirm-pwd" name="confirm-pwd" placeholder="Re-enter your new password" autocomplete="new-password">
+                                <button type="button" class="eye-btn" data-target="confirm-pwd" aria-label="Toggle visibility">
+                                    <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                                </button>
+                            </div>
+                            <div class="form-error" id="err-confirm-pwd">
+                                <i data-lucide="alert-circle" style="width:12px;height:12px;"></i>
+                                <span>Passwords do not match.</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-save" id="save-pwd-btn">
+                            <i data-lucide="save" style="width:16px;height:16px;"></i>
+                            <span id="save-btn-text">Update Password</span>
+                        </button>
+
+                    </form>
+                </div>
+            </section>
+
+        </div><!-- end sections-col -->
+    </div><!-- end account-main -->
+
+    <!-- ━━━ FOOTER ━━━ -->
+    <footer class="footer">
+        <p>© 2026 ADC Gadgets. All rights reserved.</p>
+        <p>Affordable • Trusted • Quality</p>
+    </footer>
+
+    <!-- ━━━ SIDEBAR DRAWER ━━━ -->
+    <div id="sb-overlay"></div>
+    <aside id="sidebar">
+        <div class="sb-head">
+            <button class="sb-close" id="sb-close" aria-label="Close menu">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
+            <div class="sb-user">
+                <div class="sb-avatar-wrap">
+                    <img src="../../images/logo.jpg" alt="User" class="sb-avatar" id="sb-avatar-img">
+                    <span class="sb-avatar-dot"></span>
+                </div>
+                <div class="sb-user-info">
+                    <div class="sb-name" id="sb-user-name">ADC Member</div>
+                    <div class="sb-email" id="sb-user-email">—</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sb-nav">
+            <a href="user-home.html" class="sb-link">
+                <span class="sb-icon"><i data-lucide="shopping-bag" style="width:16px;height:16px;"></i></span>
+                Shop
+            </a>
+            <a href="account.html" class="sb-link active">
+                <span class="sb-icon"><img src="../../images/icons/profile.svg" style="width:16px;height:16px;" alt="Profile"></span>
+                Profile
+            </a>
+            <a href="loan.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/loan.svg" style="width:16px;height:16px;" alt="Loan"></span>
+                Loan
+            </a>
+            <a href="support.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/account_setting.svg" style="width:16px;height:16px;" alt="Support"></span>
+                Support
+            </a>
+
+</nav>
+
+        <div class="sb-foot">
+            <button class="sb-signout" id="sb-logout">
+                <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;"></i></span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ━━━ TOAST ━━━ -->
+    <div id="toast">
+        <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
+        <span id="toast-msg">Password updated successfully!</span>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        /* ── Sidebar toggle ── */
+        const navHamBtn = document.getElementById('nav-ham-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sbOverlay = document.getElementById('sb-overlay');
+        const sbClose = document.getElementById('sb-close');
+
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sbOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (navHamBtn) navHamBtn.setAttribute('aria-expanded', 'true');
+        }
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sbOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+            if (navHamBtn) navHamBtn.setAttribute('aria-expanded', 'false');
+        }
+        if (navHamBtn) navHamBtn.addEventListener('click', openSidebar);
+        sbClose.addEventListener('click', closeSidebar);
+        sbOverlay.addEventListener('click', closeSidebar);
+
+        /* ── Smooth scroll for sidebar links ── */
+        document.querySelectorAll('.side-nav-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                document.querySelectorAll('.side-nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        /* ── Auto-activate section from URL hash (e.g. #section-security) ── */
+        function activateHashSection() {
+            const hash = window.location.hash;
+            if (hash) {
+                const target = document.querySelector(hash);
+                const matchingLink = document.querySelector(`.side-nav-link[href="${hash}"]`);
+                if (target) {
+                    document.querySelectorAll('.side-nav-link').forEach(l => l.classList.remove('active'));
+                    if (matchingLink) matchingLink.classList.add('active');
+                    setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+                }
+            }
+        }
+        activateHashSection();
+        window.addEventListener('hashchange', activateHashSection);
+
+        /* ── Password visibility toggle ── */
+        document.querySelectorAll('.eye-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.setAttribute('data-lucide', 'eye-off');
+                } else {
+                    input.type = 'password';
+                    icon.setAttribute('data-lucide', 'eye');
+                }
+                lucide.createIcons();
+            });
+        });
+
+        /* ── Password strength meter ── */
+        const newPwdInput = document.getElementById('new-pwd');
+        const strengthWrap = document.getElementById('strength-wrap');
+        const strengthLabel = document.getElementById('strength-label');
+        const bars = [document.getElementById('sb1'), document.getElementById('sb2'), document.getElementById('sb3'), document.getElementById('sb4')];
+        const strengthColors = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e'];
+        const strengthTexts = ['Weak', 'Fair', 'Good', 'Strong'];
+
+        newPwdInput.addEventListener('input', function () {
+            const val = this.value;
+            if (!val) { strengthWrap.style.display = 'none'; return; }
+            strengthWrap.style.display = 'flex';
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+            const clr = strengthColors[Math.max(0, score - 1)];
+            bars.forEach((b, i) => {
+                b.style.background = i < score ? clr : 'var(--g200)';
+            });
+            strengthLabel.textContent = strengthTexts[Math.max(0, score - 1)];
+            strengthLabel.style.color = clr;
+        });
+
+        /* ── Avatar upload ── */
+        const avatarUploadBtn = document.getElementById('avatar-upload-btn');
+        const avatarFileInput = document.getElementById('avatar-file-input');
+        const avatarImg = document.getElementById('avatar-img');
+        const avatarPlaceholder = document.getElementById('avatar-placeholder');
+
+        avatarUploadBtn.addEventListener('click', () => avatarFileInput.click());
+        avatarFileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                avatarImg.src = e.target.result;
+                avatarImg.style.display = 'block';
+                avatarPlaceholder.style.display = 'none';
+                // Also update sidebar avatar
+                document.getElementById('sb-avatar-img').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        /* ── Toast ── */
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const icon = toast.querySelector('i');
+            toastMsg.textContent = msg;
+            toast.className = type;
+            icon.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'x-circle');
+            lucide.createIcons();
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3800);
+        }
+
+        /* ── Supabase ── */
+        var supabaseClient = window.supabase ? window.supabase.createClient(
+            'http://127.0.0.1:54321',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+        ) : null;
+
+        /* ── Populate profile data from Supabase session + profiles table ── */
+        async function loadProfile() {
+            if (!supabaseClient) {
+                console.warn('Supabase not available – showing demo data.');
+                populateDemo();
+                return;
+            }
+
+            const { data: sessionData } = await supabaseClient.auth.getSession();
+            const session = sessionData?.session;
+
+            if (!session) {
+                window.location.href = '../../index.html';
+                return;
+            }
+
+            const user = session.user;
+            const email = user.email || '—';
+
+            // Fill email from auth
+            document.getElementById('info-email').textContent = email;
+            document.getElementById('sb-user-email').textContent = email;
+            document.getElementById('profile-email-disp').textContent = email;
+
+            // Try fetching extended profile from "profiles" table
+            // Adjust table/column names to match your actual Supabase schema
+            try {
+                const { data: profile, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!error && profile) {
+                    applyProfileData(profile, email, user.created_at);
+                } else {
+                    // Fallback: use email-based display
+                    applyEmailFallback(email, user.created_at);
+                }
+            } catch (err) {
+                applyEmailFallback(email, user.created_at);
+            }
+        }
+
+        function applyProfileData(profile, email, createdAt) {
+            const fullName = profile.full_name || profile.name || (email.split('@')[0]);
+            const firstName = fullName.split(' ')[0];
+            const mobile = profile.mobile || profile.phone || '—';
+            const address = profile.address || profile.home_address || '—';
+            const status = profile.status || 'Active';
+            const idType = profile.id_type || profile.government_id || 'Driver\'s License';
+            const dateReg = profile.created_at || createdAt;
+
+            fillUI(fullName, firstName, email, mobile, address, status, idType, dateReg);
+        }
+
+        function applyEmailFallback(email, createdAt) {
+            const displayName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            fillUI(displayName, displayName.split(' ')[0], email, '—', '—', 'Active', 'Driver\'s License', createdAt);
+        }
+
+        function populateDemo() {
+            fillUI('Juan Dela Cruz', 'Juan', 'juan@example.com', '+63 912 345 6789', '123 Main St, Quezon City, Metro Manila', 'Active', 'Driver\'s License', new Date().toISOString());
+        }
+
+        function fillUI(fullName, firstName, email, mobile, address, status, idType, dateIso) {
+            // Hero
+            document.getElementById('hero-first-name').textContent = firstName;
+
+            // Profile card top
+            document.getElementById('profile-full-name').textContent = fullName;
+
+            // Set status badge
+            const badge = document.getElementById('account-status-badge');
+            const statusText = document.getElementById('status-text');
+            statusText.textContent = status;
+            badge.className = 'status-badge ' + (status === 'Active' ? 'active' : status === 'Completed' ? 'completed' : 'suspended');
+
+            // Format date
+            let dateStr = '—';
+            if (dateIso && dateIso !== '—') {
+                try {
+                    dateStr = new Date(dateIso).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+                } catch (_) { dateStr = dateIso; }
+            }
+
+            // Profile card meta
+            document.getElementById('profile-date-registered').textContent = dateStr;
+            document.getElementById('profile-mobile-short').textContent = mobile !== '—' ? mobile.substring(0, 12) + (mobile.length > 12 ? '…' : '') : '—';
+
+            // Sidebar
+            document.getElementById('sb-user-name').textContent = fullName;
+
+            // Info section
+            document.getElementById('info-full-name').textContent = fullName;
+            document.getElementById('info-status').innerHTML = `<span class="verified-chip" style="background:${status === 'Active' ? 'rgba(34,197,94,0.1)' : status === 'Completed' ? 'rgba(59,130,246,0.1)' : 'rgba(239,68,68,0.1)'}; color:${status === 'Active' ? '#22c55e' : status === 'Completed' ? '#3b82f6' : '#ef4444'};"><i data-lucide="check" style="width:9px;height:9px;"></i> ${status}</span>`;
+            document.getElementById('info-email').textContent = email;
+            document.getElementById('info-mobile').textContent = mobile;
+            document.getElementById('info-address').textContent = address;
+            document.getElementById('info-date').textContent = dateStr;
+            document.getElementById('info-id-type').textContent = idType;
+
+            lucide.createIcons();
+        }
+
+        loadProfile();
+
+        /* ── Password Change Form ── */
+        const pwdForm = document.getElementById('password-form');
+        const savePwdBtn = document.getElementById('save-pwd-btn');
+        const saveBtnText = document.getElementById('save-btn-text');
+
+        function showFieldError(id, show, msg) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (show) { el.classList.add('show'); if (msg) el.querySelector('span') && (el.querySelector('span').textContent = msg); }
+            else { el.classList.remove('show'); }
+        }
+
+        pwdForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const curPwd = document.getElementById('cur-pwd').value.trim();
+            const newPwd = document.getElementById('new-pwd').value;
+            const confirmPwd = document.getElementById('confirm-pwd').value;
+
+            // Reset errors
+            ['err-cur-pwd', 'err-new-pwd', 'err-confirm-pwd'].forEach(id => showFieldError(id, false));
+
+            let valid = true;
+
+            if (!curPwd) {
+                showFieldError('err-cur-pwd', true, 'Current password is required.');
+                valid = false;
+            }
+            if (!newPwd || newPwd.length < 8) {
+                showFieldError('err-new-pwd', true, 'New password must be at least 8 characters.');
+                valid = false;
+            }
+            if (newPwd !== confirmPwd) {
+                showFieldError('err-confirm-pwd', true);
+                valid = false;
+            }
+            if (!valid) return;
+
+            // Loading state
+            savePwdBtn.classList.add('loading');
+            saveBtnText.textContent = 'Updating…';
+
+            if (!supabaseClient) {
+                // Demo mode – simulate success
+                await new Promise(r => setTimeout(r, 1200));
+                savePwdBtn.classList.remove('loading');
+                savePwdBtn.classList.add('success-state');
+                saveBtnText.textContent = 'Password Updated ✓';
+                showToast('Password updated successfully!', 'success');
+                pwdForm.reset();
+                document.getElementById('strength-wrap').style.display = 'none';
+                setTimeout(() => {
+                    savePwdBtn.classList.remove('success-state');
+                    saveBtnText.textContent = 'Update Password';
+                    lucide.createIcons();
+                }, 2500);
+                return;
+            }
+
+            // Re-authenticate first (verify current password)
+            const { data: sessionData } = await supabaseClient.auth.getSession();
+            const session = sessionData?.session;
+            if (!session) { window.location.href = '../../index.html'; return; }
+
+            const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+                email: session.user.email,
+                password: curPwd
+            });
+
+            if (signInError) {
+                savePwdBtn.classList.remove('loading');
+                saveBtnText.textContent = 'Update Password';
+                showFieldError('err-cur-pwd', true, 'Current password is incorrect.');
+                showToast('Current password is incorrect.', 'error');
+                lucide.createIcons();
+                return;
+            }
+
+            // Update password
+            const { error: updateError } = await supabaseClient.auth.updateUser({ password: newPwd });
+
+            savePwdBtn.classList.remove('loading');
+
+            if (updateError) {
+                saveBtnText.textContent = 'Update Password';
+                showToast('Failed to update password: ' + updateError.message, 'error');
+                lucide.createIcons();
+            } else {
+                savePwdBtn.classList.add('success-state');
+                saveBtnText.textContent = 'Password Updated ✓';
+                showToast('Password updated successfully!', 'success');
+                pwdForm.reset();
+                document.getElementById('strength-wrap').style.display = 'none';
+                setTimeout(() => {
+                    savePwdBtn.classList.remove('success-state');
+                    saveBtnText.textContent = 'Update Password';
+                    lucide.createIcons();
+                }, 2500);
+            }
+        });
+
+        /* ── Logout ── */
+        document.getElementById('sb-logout').addEventListener('click', async function () {
+            if (supabaseClient) await supabaseClient.auth.signOut();
+            window.location.href = '../../index.html';
+        });
+    </script>
+
+</body>
+</html>

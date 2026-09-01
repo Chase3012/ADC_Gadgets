@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop — ADC Gadgets</title>
+    <meta name="description" content="Shop the latest Apple devices with flexible installment plans.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../../src/shared/css/global.css">
+    <link rel="stylesheet" href="css/user.css">
+</head>
+
+<body>
+
+    <!-- ━━━ HEADER ━━━ -->
+    <header class="hdr">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button class="nav-ham-btn" id="nav-ham-btn" aria-label="Open navigation menu" aria-expanded="false">
+                <i data-lucide="menu" style="width:18px;height:18px;"></i>
+            </button>
+            <a href="user-home.html" class="logo">
+                <img src="../../images/logo.jpg" alt="ADC Gadgets" class="logo-img">
+                <span class="logo-name">ADC Gadgets</span>
+            </a>
+        </div>
+        <nav class="hdr-nav">
+            <a href="user-home.html" style="color:var(--pink);font-weight:600;">Shop</a>
+            <a href="devices.html">Devices</a>
+            <a href="support.html">Support</a>
+        </nav>
+    </header>
+
+    <!-- ━━━ SUB-NAV ━━━ -->
+    <nav class="sub-nav">
+        <a href="user-home.html" class="active">Features Device</a>
+        <a href="devices.html">Devices</a>
+        <a href="support.html">Setup & Support</a>
+    </nav>
+
+    <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
+    <div class="hero-wrap">
+        <section class="hero">
+            <h1 class="hero-title">Shop <span>ADC Gadgets.</span></h1>
+            <p class="hero-subtitle"><span>All models.</span> Take your pick.</p>
+        </section>
+    </div>
+
+    <!-- ━━━ MAIN (Solid White) ━━━ -->
+    <main class="main">
+
+        <!-- Products -->
+        <div class="scroll-wrap">
+            <button class="scroll-btn left" id="scroll-left" aria-label="Scroll left"><i
+                    data-lucide="chevron-left"></i></button>
+            <section class="products-scroll" id="products-scroll">
+
+                <!-- Cards will be populated here dynamically via AppleDB -->
+
+            </section>
+            <button class="scroll-btn right" id="scroll-right" aria-label="Scroll right"><i
+                    data-lucide="chevron-right"></i></button>
+        </div>
+
+    </main>
+
+    <!-- ━━━ FEATURED & NEWS SECTION ━━━ -->
+    <section class="featured-news-section">
+        <div class="fn-grid">
+
+            <!-- NEWS CONTAINER -->
+            <div class="fn-news card">
+                <div class="fn-badge">Latest News</div>
+                <h2 class="fn-title">We've just restocked the latest iPhone 16 Pro models!</h2>
+                <p class="fn-desc">Get your hands on the newest technology. Available now for pre-approval with flexible
+                    loan plans and fast processing.</p>
+                <a href="#" class="btn-buy" style="margin-top:auto; align-self:flex-start; text-decoration:none;">Read
+                    More</a>
+                <i data-lucide="newspaper" class="fn-bg-icon"></i>
+            </div>
+
+            <!-- FEATURED MODEL -->
+            <a href="devices.html" class="fn-featured p-card scroll-reveal" data-soc="A16">
+                <span class="p-badge" style="background:var(--black); color:var(--white); border:none;">Best
+                    Seller</span>
+                <div class="p-img-wrap" style="height: 180px;">
+                    <img src="../../images/phones/Iphone_15.png" alt="iPhone 15" class="p-img">
+                </div>
+                <div class="p-info">
+                    <h3 class="p-title">iPhone 15</h3>
+                    <p class="p-specs">A16 Bionic Chip · 256 GB</p>
+                    <div class="p-foot">
+                        <div>
+                            <p class="p-price-label">From</p>
+                            <p class="p-price">₱ 2,000/mo</p>
+                        </div>
+                        <button class="btn-buy" type="button" aria-label="Apply Now" onclick="event.preventDefault(); event.stopPropagation();">Apply Now</button>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 24px;">
+
+            <!-- FACT 1 -->
+            <div class="scroll-reveal"
+                style="background: var(--pink-soft); border: 1px solid rgba(255,65,145,0.2); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+                <i data-lucide="shield-check"
+                    style="width: 40px; height: 40px; color: var(--pink); stroke-width: 1.5;"></i>
+                <h3 style="font-size: 24px; font-weight: 700; color: var(--black); margin: 0; letter-spacing: -0.02em;">
+                    100% Authentic</h3>
+                <p style="font-size: 15px; color: rgba(0,0,0,0.7); line-height: 1.6; margin: 0;">Every product we sell
+                    is guaranteed authentic Apple hardware. Enjoy trusted quality and complete peace of mind.</p>
+            </div>
+
+            <!-- FACT 2 -->
+            <div class="scroll-reveal"
+                style="background: var(--white); border: 1px solid var(--g200); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+                <i data-lucide="badge-percent"
+                    style="width: 40px; height: 40px; color: var(--pink); stroke-width: 1.5;"></i>
+                <h3 style="font-size: 24px; font-weight: 700; color: var(--black); margin: 0; letter-spacing: -0.02em;">
+                    Unbeatable Prices</h3>
+                <p style="font-size: 15px; color: rgba(0,0,0,0.7); line-height: 1.6; margin: 0;">We offer competitive
+                    rates and flexible payment plans, making your next device more affordable.</p>
+            </div>
+
+            <!-- FACT 3 (Logo & Support) -->
+            <div class="scroll-reveal"
+                style="background: var(--black); border: 1px solid var(--black); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.15);">
+                <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 4px;">
+                    <img src="../../images/logo.jpg" alt="ADC Gadgets"
+                        style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--pink);">
+                    <div>
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--white); margin: 0;">ADC Gadgets</h3>
+                        <p style="font-size: 13px; color: rgba(255,255,255,0.6); margin: 0; margin-top: 2px;">Est. 2024
+                        </p>
+                    </div>
+                </div>
+                <p style="font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.6; margin: 0;">Our dedicated
+                    support team is available around the clock to ensure you have the best experience possible.</p>
+                <a href="support.html" class="btn-buy"
+                    style="align-self: flex-start; text-decoration: none; margin-top: auto; background: var(--pink);">Contact
+                    Support</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Reasons to Shop Section -->
+    <section class="reasons-section">
+        <h2 class="reasons-title">The ADC Gadgets difference. <span>Even more reasons to shop with us.</span></h2>
+        <div class="reasons-grid">
+            <div class="reason-card">
+                <i data-lucide="refresh-cw" class="reason-icon" style="color: #0071e3;"></i>
+                <p><strong>Flexible Loan Plans.</strong> Get your dream device easily with affordable monthly payments.
+                </p>
+            </div>
+            <div class="reason-card">
+                <i data-lucide="settings-2" class="reason-icon" style="color: #22c55e;"></i>
+                <p><strong>Device Setup Support.</strong> Get help getting your new device ready from day one.</p>
+            </div>
+            <div class="reason-card">
+                <i data-lucide="shopping-bag" class="reason-icon" style="color: #0071e3;"></i>
+                <p>Get a <a href="#">personalized shopping</a> experience directly in the ADC portal.</p>
+            </div>
+            <div class="reason-card">
+                <i data-lucide="check-circle" class="reason-icon" style="color: #f97316;"></i>
+                <p><span
+                        style="background: linear-gradient(90deg, #FF4191, #ff8a00); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">Premium
+                        Quality</span> guaranteed. We provide 100% authentic and high-quality devices.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ━━━ FOOTER ━━━ -->
+    <footer class="footer">
+        <p>© 2026 ADC Gadgets. All rights reserved.</p>
+        <p>Affordable • Trusted • Quality</p>
+    </footer>
+
+    <!-- ━━━ SIDEBAR ━━━ -->
+    <div id="sb-overlay"></div>
+    <aside id="sidebar">
+        <!-- Profile Header -->
+        <div class="sb-head">
+            <button class="sb-close" id="sb-close" aria-label="Close menu">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
+            <div class="sb-user">
+                <div class="sb-avatar-wrap">
+                    <img src="../../images/logo.jpg" alt="User" class="sb-avatar" id="sb-avatar-img">
+                    <span class="sb-avatar-dot"></span>
+                </div>
+                <div class="sb-user-info">
+                    <div class="sb-name" id="sb-user-name">ADC Member</div>
+                    <div class="sb-email" id="sb-user-email">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="sb-nav">
+
+            <a href="user-home.html" class="sb-link">
+                <span class="sb-icon"><i data-lucide="shopping-bag" style="width:16px;height:16px;"></i></span>
+                Shop
+            </a>
+
+            <a href="account.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/profile.svg" style="width:16px;height:16px;"
+                        alt="Profile"></span>
+                Profile
+            </a>
+
+            <a href="loan.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/loan.svg" style="width:16px;height:16px;" alt="Loan"></span>
+                Loan
+            </a>
+
+            <a href="support.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/account_setting.svg" style="width:16px;height:16px;"
+                        alt="Support"></span>
+                Support
+            </a>
+        </nav>
+
+        <!-- Logout Footer -->
+        <div class="sb-foot">
+            <button class="sb-signout" id="sb-logout">
+                <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;"></i></span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ━━━ PRODUCT MODAL ━━━ -->
+    <div id="pm-overlay" class="pm-overlay">
+        <div class="pm-content">
+            <button class="pm-close" id="pm-close">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="pm-left">
+
+                <div class="pm-img-wrap">
+                    <img id="m-img" src="../../images/phones/Iphone_16.png" alt="Phone">
+                </div>
+                <div class="pm-finishes">
+                    <p class="pm-f-title"
+                        style="font-style: italic; color: var(--g500); text-align: center; max-width: 250px; line-height: 1.4;">
+                        For color availability, message us up — ADC Gadgets</p>
+                </div>
+            </div>
+
+            <div class="pm-right">
+                <div class="pm-header">
+                    <div>
+                        <h2 id="m-title" class="pm-title">iPhone 16</h2>
+                        <p id="m-price" class="pm-price">From ₱2,350/mo</p>
+                    </div>
+                </div>
+
+                <div class="pm-specs">
+                    <div class="pm-spec">
+                        <i data-lucide="scaling" class="pm-icon"></i>
+                        <p id="m-spec-display">6.1-inch display with ProMotion up to 120Hz. Ceramic Shield front with 3x
+                            better scratch resistance.</p>
+                    </div>
+                    <div class="pm-spec">
+                        <i data-lucide="camera" class="pm-icon"></i>
+                        <p id="m-spec-camera">The ultimate Pro camera system. 48MP main camera and advanced optical zoom
+                            range.</p>
+                    </div>
+                    <div class="pm-spec">
+                        <i data-lucide="cpu" class="pm-icon"></i>
+                        <p id="m-spec-chip">A-series Pro chip with 6-core GPU. Vapor cooled. Lightning fast.</p>
+                    </div>
+                    <div class="pm-spec">
+                        <i data-lucide="battery-full" class="pm-icon"></i>
+                        <p id="m-spec-battery">Breakthrough battery life with up to 31 hours of video playback.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // Product Modal Logic
+        const pmOverlay = document.getElementById('pm-overlay');
+        const pmClose = document.getElementById('pm-close');
+        const mTitle = document.getElementById('m-title');
+        const mPrice = document.getElementById('m-price');
+        const mImg = document.getElementById('m-img');
+
+        const mSpecDisplay = document.getElementById('m-spec-display');
+        const mSpecCamera = document.getElementById('m-spec-camera');
+        const mSpecChip = document.getElementById('m-spec-chip');
+        const mSpecBattery = document.getElementById('m-spec-battery');
+
+        const specsData = {
+            "iPhone XS": {
+                display: "5.8-inch Super Retina HD display. OLED multi-touch display.",
+                camera: "12MP dual cameras with dual OIS. Incredible detail and color.",
+                chip: "A12 Bionic chip. Next-generation Neural Engine.",
+                battery: "Up to 14 hours of video playback. Fast-charge capable."
+            },
+            "iPhone X": {
+                display: "5.8-inch Super Retina HD display. The first all-screen design.",
+                camera: "12MP dual cameras. Beautiful portrait mode and lighting.",
+                chip: "A11 Bionic chip. Powerful performance.",
+                battery: "Up to 13 hours of video playback. Wireless charging."
+            },
+            "iPhone 7": {
+                display: "4.7-inch Retina HD display. Wide color gamut.",
+                camera: "12MP camera. Optical image stabilization.",
+                chip: "A10 Fusion chip. Fast when you need it.",
+                battery: "Up to 13 hours of video playback."
+            },
+            "iPhone SE": {
+                display: "4.7-inch Retina HD display. Brilliant colors.",
+                camera: "12MP camera. Portrait mode and Depth Control.",
+                chip: "A13 Bionic chip. Fast and efficient.",
+                battery: "Up to 13 hours of video playback."
+            },
+            "iPhone XR": {
+                display: "6.1-inch Liquid Retina HD display. Industry-leading color accuracy.",
+                camera: "12MP camera. Smart HDR for great photos.",
+                chip: "A12 Bionic chip. Smart and powerful.",
+                battery: "Up to 16 hours of video playback."
+            },
+            "iPhone 8": {
+                display: "4.7-inch Retina HD display. True Tone technology.",
+                camera: "12MP camera. Optical image stabilization for great photos.",
+                chip: "A11 Bionic chip. Smart and powerful.",
+                battery: "Up to 13 hours of video playback. Glass design."
+            },
+            "iPhone 11": {
+                display: "6.1-inch Liquid Retina HD display. True Tone and wide color gamut.",
+                camera: "12MP dual camera system (Ultra Wide and Wide) for spectacular photos.",
+                chip: "A13 Bionic chip. Dependable performance for daily tasks.",
+                battery: "Up to 17 hours of video playback. Reliable all-day battery life."
+            },
+            "iPhone 12": {
+                display: "6.1-inch OLED display with 60Hz refresh rate. Crisp, colorful, and stunningly clear.",
+                camera: "12MP + 12MP dual camera setup. Capture beautiful photos anywhere.",
+                chip: "A14 Bionic chip. Incredible performance and fully 5G ready.",
+                battery: "Up to 17 hours of video playback. Features MagSafe wireless charging."
+            },
+            "iPhone 13": {
+                display: "6.1-inch OLED display. Brighter and more beautiful.",
+                camera: "12MP dual camera system with Sensor-shift OIS for incredibly steady shots.",
+                chip: "A15 Bionic chip. Lightning fast and highly power-efficient.",
+                battery: "Up to 19 hours of video playback. Reliable all-day battery life."
+            },
+            "iPhone 14": {
+                display: "6.1-inch OLED display. Stunning visuals in any light.",
+                camera: "12MP dual camera system. Massive leap in low-light performance.",
+                chip: "A15 Bionic chip. Proven power for everything you do.",
+                battery: "Up to 20 hours of video playback. Now features vital Crash Detection."
+            },
+            "iPhone 15": {
+                display: "6.1-inch OLED display. Super Retina XDR brightness.",
+                camera: "48MP dual camera system. Capture super-high-resolution photos effortlessly.",
+                chip: "A16 Bionic chip. Powering advanced computational photography.",
+                battery: "Up to 20 hours of video playback. Finally featuring universal USB-C."
+            },
+            "iPhone 16": {
+                display: "6.1-inch OLED display. A brilliant canvas for your content.",
+                camera: "48MP dual camera system. Take perfect shots easily with the new Camera Control.",
+                chip: "A18 chip. Custom-built for incredible speed and next-level intelligence.",
+                battery: "Up to 22 hours of video playback. A massive leap in battery life."
+            },
+            "iPhone 17": {
+                display: "All-new larger 6.3-inch OLED display. More room to do what you love.",
+                camera: "48MP dual camera system. The ultimate photographic tool.",
+                chip: "A19 chip. Next-generation architecture built for advanced processing.",
+                battery: "Up to 24 hours of video playback. Fully integrated with Apple Intelligence."
+            }
+        };
+
+        // Horizontal Scroll Nav
+        const productsScroll = document.getElementById('products-scroll');
+        const scrollLeft = document.getElementById('scroll-left');
+        const scrollRight = document.getElementById('scroll-right');
+
+        if (productsScroll && scrollLeft && scrollRight) {
+            scrollLeft.addEventListener('click', () => {
+                productsScroll.scrollBy({ left: -284, behavior: 'smooth' });
+            });
+            scrollRight.addEventListener('click', () => {
+                productsScroll.scrollBy({ left: 284, behavior: 'smooth' });
+            });
+        }
+    </script>
+
+    <script src="js/appledb.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if(window.loadAppleDBDevices) window.loadAppleDBDevices("#products-scroll");
+        });
+    </script>
+
+    <script src="../../src/shared/js/supabase.js"></script>
+    <!-- Shared UI & Auth -->
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/support-chat.js?v=3"></script>
+    <script src="js/logout.js?v=1"></script>
+</body>
+
+</html>

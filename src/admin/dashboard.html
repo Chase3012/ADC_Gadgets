@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard â€” ADC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Admin Supabase Client -->
+    <script src="../../src/admin/js/admin-supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../../src/shared/css/global.css?v=3">
+  <link rel="stylesheet" href="css/admin.css?v=3">
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="logo-area">
+        <img src="../../images/logo.jpg" alt="ADC">
+        <span>ADC Admin</span>
+      </a>
+
+      <div class="nav-list">
+        <!-- Dashboard dropdown â€” active on this page -->
+        <a href="#" class="nav-item expanded" id="dashboard-toggle">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <div class="nav-sub open" id="dashboard-sub">
+          <a href="#" class="nav-sub-item active" data-panel="analytics">Analytics</a>
+          <a href="#" class="nav-sub-item" data-panel="sales">Sales</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="folder-open"></i> Loan Applications
+        </a>
+        <a href="manage-users.html" class="nav-item" id="manage-users-toggle">
+          <i data-lucide="users"></i> Manage Users
+        </a>
+        <div class="nav-sub" id="manage-users-sub">
+          <a href="manage-users.html" class="nav-sub-item" id="nav-users">Users</a>
+          <a href="manage-admins.html" class="nav-sub-item" id="nav-admin">Admin</a>
+        </div>
+        <a href="#" class="nav-item">
+          <i data-lucide="check-square"></i> Tasks
+        </a>
+        <a href="dashboard.html#communications" class="nav-item" id="nav-communications" data-panel="communications">
+          <i data-lucide="message-square"></i> Communications
+          <span id="nav-chat-badge" style="display:none; margin-left:auto; background:var(--danger); color:#fff; font-size:11px; font-weight:700; padding:2px 6px; border-radius:10px;">0</span>
+        </a>
+
+        <!-- Reports points to reports.html -->
+        <a href="reports.html" class="nav-item" id="reports-toggle">
+          <i data-lucide="pie-chart"></i> Reports
+        </a>
+        <div class="nav-sub" id="reports-sub">
+          <a href="reports.html" class="nav-sub-item">Pipeline Report</a>
+          <a href="reports.html" class="nav-sub-item">Loan Insight Report</a>
+          <a href="reports.html" class="nav-sub-item">Sales Performance Report</a>
+          <a href="reports.html" class="nav-sub-item">Leaderboard</a>
+          <a href="reports.html" class="nav-sub-item">Loan Enrollment Report</a>
+          <a href="reports.html" class="nav-sub-item">Mail Analytics</a>
+          <a href="reports.html" class="nav-sub-item">Status Report</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="percent"></i> Commissions
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="settings"></i> Settings
+        </a>
+      </div>
+
+      <div class="user-profile">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Admin</div>
+        </div>
+        <i data-lucide="chevron-down" style="margin-left:auto; width:16px; color:rgba(255,255,255,0.38);"></i>
+      </div>
+      <button id="logout-btn" style="width: calc(100% - 32px); margin: 0 16px 16px; padding: 10px; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: background 0.2s;">
+        <i data-lucide="log-out" style="width: 16px;"></i> Logout
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <h1 class="page-title">Analytics</h1>
+        <div class="header-right">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search">
+          </div>
+          <button class="notif-btn">
+            <i data-lucide="bell" style="width:20px;"></i>
+            <span class="notif-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- ANALYTICS PANEL -->
+        <div id="panel-analytics" class="dash-panel">
+          
+          <!-- TOP WIDE CARD -->
+          <div class="card perf-card">
+            <div class="perf-header">
+              <div class="perf-title">Portfolio Performance</div>
+              <button class="btn-outline">View All</button>
+            </div>
+            <div class="perf-stats">
+              <div class="perf-stat">
+                <div class="p-icon yellow"><i data-lucide="database"></i></div>
+                <div class="p-data">
+                  <div class="p-label">Cash Deposits</div>
+                  <div class="p-val">1.7M</div>
+                  <div class="s-trend danger" style="margin-top:0"><i data-lucide="arrow-down"></i> 54.1% less earnings</div>
+                </div>
+              </div>
+              <div class="perf-stat">
+                <div class="p-icon red"><i data-lucide="graduation-cap"></i></div>
+                <div class="p-data">
+                  <div class="p-label">Invested Dividends</div>
+                  <div class="p-val">9M</div>
+                  <div class="s-trend danger" style="margin-top:0"><i data-lucide="arrow-down"></i> Grow Rate: -14.1%</div>
+                </div>
+              </div>
+              <div class="perf-stat">
+                <div class="p-icon green"><i data-lucide="building-2"></i></div>
+                <div class="p-data">
+                  <div class="p-label">Capital Gains</div>
+                  <div class="p-val" style="color:var(--success)">₱31.5k</div>
+                  <div class="s-trend" style="margin-top:0"><i data-lucide="arrow-up"></i> Increased by 7.35%</div>
+                </div>
+              </div>
+            </div>
+            <div class="perf-action">
+              <button class="btn-primary">View Complete Report</button>
+            </div>
+          </div>
+
+          <!-- MID GRID -->
+          <div class="mid-grid">
+            <div class="card chart-card">
+              <div class="card-header">
+                <div class="card-title"><i data-lucide="cloud"></i> Technical Support</div>
+                <i data-lucide="menu" style="width:16px; color:var(--text-muted)"></i>
+              </div>
+              <div class="sm-label">NEW ACCOUNTS SINCE 2018</div>
+              <div class="big-val">78<span style="font-size:24px">%</span> <span class="trend">+14</span></div>
+              
+              <svg viewBox="0 0 400 100" preserveAspectRatio="none" style="width:100%; height:120px; margin-top:10px;">
+                <defs><linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22c55e" stop-opacity="0.3"/><stop offset="100%" stop-color="#22c55e" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0,80 L20,75 L40,80 L60,40 L80,55 L100,60 L120,65 L140,65 L160,50 L180,70 L200,60 L220,65 L240,55 L260,65 L280,50 L300,55 L320,60 L340,30 L360,35 L380,60 L400,30 L400,100 L0,100 Z" fill="url(#gradGreen)"/>
+                <path d="M0,80 L20,75 L40,80 L60,40 L80,55 L100,60 L120,65 L140,65 L160,50 L180,70 L200,60 L220,65 L240,55 L260,65 L280,50 L300,55 L320,60 L340,30 L360,35 L380,60 L400,30" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+              </svg>
+
+              <div style="margin-top:20px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <div>
+                    <div style="font-weight:700; font-size:13px; color:var(--text-main);">Total Orders</div>
+                    <div style="font-size:11px; color:var(--text-muted)">Last year expenses</div>
+                  </div>
+                  <div style="font-size:18px; font-weight:700; color:var(--success);">$ 1896</div>
+                </div>
+                <div class="s-progress"><div class="s-progress-fill" style="width:30%; background:#3b82f6;"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:6px;">
+                  <span>YoY Growth</span><span>100%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card timeline-card">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div class="card-title" style="font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="bar-chart-2" style="color:var(--accent); width:18px;"></i> Timeline Example
+                </div>
+                <i data-lucide="menu" style="width:16px; color:var(--text-muted)"></i>
+              </div>
+              <div class="timeline">
+                <div class="tl-item">
+                  <div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">All Hands Meeting</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot yellow"></div><div class="tl-content"><div class="tl-title" style="font-weight:400">Yet another one, at <span style="color:var(--success)">15:00 PM</span></div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">Build the production release <span style="background:var(--danger); color:#fff; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:6px;">NEW</span></div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot blue"></div>
+                  <div class="tl-content">
+                    <div class="tl-title">Something not important</div>
+                    <div style="display:flex; margin-top:8px;">
+                       <img src="https://ui-avatars.com/api/?name=A&background=random" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--bg-alt)">
+                       <img src="https://ui-avatars.com/api/?name=B&background=random" style="width:24px; height:24px; border-radius:50%; margin-left:-8px; border:2px solid var(--bg-alt)">
+                       <img src="https://ui-avatars.com/api/?name=C&background=random" style="width:24px; height:24px; border-radius:50%; margin-left:-8px; border:2px solid var(--bg-alt)">
+                    </div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title" style="font-weight:400">This dot has an info state</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot" style="border-color:var(--surface)"></div><div class="tl-content"><div class="tl-title" style="font-weight:400">This dot has a dark state</div></div>
+                </div>
+              </div>
+              <div style="text-align:center; margin-top:20px;">
+                 <button class="btn-primary" style="background:var(--surface); padding:8px 16px;">View All Messages</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM ROW -->
+          <div class="summary-grid">
+            <div class="card sm-card">
+              <div class="sm-val" style="font-size:22px; color:var(--text-main); font-weight:600;"><span style="color:var(--text-muted); font-weight:400">$</span> 874</div>
+              <div class="sm-label" style="text-transform:none; font-weight:400;">sales last month</div>
+            </div>
+            <div class="card sm-card">
+              <div class="sm-val" style="font-size:22px; color:var(--text-main); font-weight:600;"><span style="color:var(--text-muted); font-weight:400">$</span> 1283</div>
+              <div class="sm-label" style="text-transform:none; font-weight:400;">sales Income</div>
+            </div>
+            <div class="card sm-card">
+              <div class="sm-val" style="font-size:22px; color:var(--text-main); font-weight:600;"><span style="color:var(--text-muted); font-weight:400">$</span> 1286</div>
+              <div class="sm-label" style="text-transform:none; font-weight:400;">last month sales</div>
+            </div>
+            <div class="card sm-card">
+              <div class="sm-val" style="font-size:22px; color:var(--text-main); font-weight:600;"><span style="color:var(--text-muted); font-weight:400">$</span> 564</div>
+              <div class="sm-label" style="text-transform:none; font-weight:400;">total revenue</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SALES PANEL -->
+        <div id="panel-sales" class="dash-panel" style="display:none;">
+          
+          <div class="summary-grid" style="margin-bottom:18px;">
+            <div class="card sm-card">
+              <div class="sm-label">Total Revenue</div>
+              <div class="sm-val">₱13.7M</div>
+              <div class="s-trend"><i data-lucide="arrow-up"></i> +18.2% vs last month</div>
+              <svg class="placeholder-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
+                <path d="M0,45 L30,38 L60,42 L90,25 L120,30 L150,12 L180,18 L200,8 L200,50 L0,50 Z" fill="rgba(255,65,145,0.1)"/>
+                <path d="M0,45 L30,38 L60,42 L90,25 L120,30 L150,12 L180,18 L200,8" fill="none" stroke="#FF4191" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="card sm-card">
+              <div class="sm-label">Units Sold</div>
+              <div class="sm-val">1,842</div>
+              <div class="s-trend"><i data-lucide="arrow-up"></i> +9.4% vs last month</div>
+              <svg class="placeholder-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
+                <path d="M0,40 L40,28 L80,35 L120,15 L160,22 L200,5 L200,50 L0,50 Z" fill="rgba(255,65,145,0.1)"/>
+                <path d="M0,40 L40,28 L80,35 L120,15 L160,22 L200,5" fill="none" stroke="#FF4191" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="card sm-card">
+              <div class="sm-label">Avg. Order Value</div>
+              <div class="sm-val">₱7,459.20</div>
+              <div class="s-trend"><i data-lucide="arrow-up"></i> +2.1% vs last month</div>
+              <svg class="placeholder-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
+                <path d="M0,30 L50,25 L100,20 L150,15 L200,8 L200,50 L0,50 Z" fill="rgba(255,65,145,0.1)"/>
+                <path d="M0,30 L50,25 L100,20 L150,15 L200,8" fill="none" stroke="#FF4191" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="card sm-card">
+              <div class="sm-label">Cancelled Orders</div>
+              <div class="sm-val">47</div>
+              <div class="s-trend danger"><i data-lucide="arrow-up"></i> +4.3% vs last month</div>
+              <svg class="placeholder-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
+                <path d="M0,15 L40,18 L80,22 L120,30 L160,38 L200,45 L200,50 L0,50 Z" fill="rgba(239,68,68,0.08)"/>
+                <path d="M0,15 L40,18 L80,22 L120,30 L160,38 L200,45" fill="none" stroke="#ef4444" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="mid-grid">
+            <div class="card">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div class="sm-label" style="margin-bottom:0;">Revenue Trend â€” Last 30 Days</div>
+                <div style="font-size:12px; color:var(--text-muted); display:flex; gap:12px;">
+                  <span style="display:flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; border-radius:50%; background:var(--accent);"></span> Current</span>
+                  <span style="display:flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; border-radius:50%; background:var(--border);"></span> Previous</span>
+                </div>
+              </div>
+              <svg viewBox="0 0 600 120" preserveAspectRatio="none" style="width:100%;height:220px;">
+                <defs><linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF4191" stop-opacity="0.2"/><stop offset="100%" stop-color="#FF4191" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0,110 L30,95 L60,100 L90,80 L120,88 L150,65 L180,72 L210,50 L240,58 L270,38 L300,48 L330,28 L360,35 L390,18 L420,28 L450,10 L480,20 L510,5 L540,15 L570,2 L600,8 L600,120 L0,120 Z" fill="url(#grad2)"/>
+                <path d="M0,110 L30,95 L60,100 L90,80 L120,88 L150,65 L180,72 L210,50 L240,58 L270,38 L300,48 L330,28 L360,35 L390,18 L420,28 L450,10 L480,20 L510,5 L540,15 L570,2 L600,8" fill="none" stroke="#FF4191" stroke-width="2.5"/>
+                <!-- previous month faint line -->
+                <path d="M0,100 L40,110 L80,95 L120,105 L160,90 L200,95 L240,75 L280,85 L320,60 L360,65 L400,40 L440,50 L480,25 L520,35 L560,15 L600,20" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="2" stroke-dasharray="4 4"/>
+              </svg>
+            </div>
+            
+            <div class="card">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div class="sm-label" style="margin-bottom:0;">Sales Targets</div>
+                <i data-lucide="target" style="width:16px; color:var(--text-muted)"></i>
+              </div>
+              
+              <div class="goal-item">
+                <div class="goal-header"><span>Enterprise Plans</span><span>85%</span></div>
+                <div class="s-progress"><div class="s-progress-fill" style="width:85%;"></div></div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">₱4.8M / ₱5.6M</div>
+              </div>
+              
+              <div class="goal-item">
+                <div class="goal-header"><span>Pro Subscriptions</span><span>62%</span></div>
+                <div class="s-progress"><div class="s-progress-fill" style="width:62%; background:#3b82f6;"></div></div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">₱1.7M / ₱2.8M</div>
+              </div>
+
+              <div class="goal-item">
+                <div class="goal-header"><span>Add-ons</span><span>92%</span></div>
+                <div class="s-progress"><div class="s-progress-fill" style="width:92%; background:#22c55e;"></div></div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">₱1.3M / ₱1.4M</div>
+              </div>
+              
+              <div class="goal-item">
+                <div class="goal-header"><span>Consulting</span><span>30%</span></div>
+                <div class="s-progress"><div class="s-progress-fill" style="width:30%; background:#eab308;"></div></div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">₱336k / ₱1.1M</div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:18px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="sm-label" style="margin-bottom:0;">Recent Transactions</div>
+              <button class="btn-outline" style="padding:4px 10px;">Export</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#INV-4892</td>
+                    <td><div style="font-weight:700;">Acme Corp</div><div style="font-size:11px; color:var(--text-muted); font-weight:500;">contact@acme.co</div></td>
+                    <td style="color:var(--text-muted)">Oct 24, 2023</td>
+                    <td>₱252,000.00</td>
+                    <td><span class="status-badge success">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>#INV-4891</td>
+                    <td><div style="font-weight:700;">Global Tech</div><div style="font-size:11px; color:var(--text-muted); font-weight:500;">billing@gtech.io</div></td>
+                    <td style="color:var(--text-muted)">Oct 23, 2023</td>
+                    <td>₱691,600.00</td>
+                    <td><span class="status-badge pending">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td>#INV-4890</td>
+                    <td><div style="font-weight:700;">Nexus Industries</div><div style="font-size:11px; color:var(--text-muted); font-weight:500;">accounts@nexus.com</div></td>
+                    <td style="color:var(--text-muted)">Oct 21, 2023</td>
+                    <td>₱49,840.00</td>
+                    <td><span class="status-badge success">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>#INV-4889</td>
+                    <td><div style="font-weight:700;">Startup Hub</div><div style="font-size:11px; color:var(--text-muted); font-weight:500;">finance@startuphub.co</div></td>
+                    <td style="color:var(--text-muted)">Oct 19, 2023</td>
+                    <td>₱117,600.00</td>
+                    <td><span class="status-badge failed">Failed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+        </div>
+
+        <!-- COMMUNICATIONS PANEL -->
+        <div id="panel-communications" class="dash-panel" style="display:none; height:calc(100vh - 88px); padding: 0;">
+          <div class="chat-layout" style="display:flex; height:100%; width: 100%; padding:0; overflow:hidden;">
+            <!-- Left sidebar: User list -->
+            <div class="chat-sidebar">
+              <div class="chat-sidebar-header">
+                <div class="chat-tabs">
+                  <span class="chat-tab active">All</span>
+                  <span class="chat-tab">Unread</span>
+                  <span class="chat-tab">Scheduled</span>
+                  <span class="chat-tab">Starred</span>
+                </div>
+                <div class="chat-search-bar">
+                  <div style="position:relative; flex:1;">
+                    <i data-lucide="search" style="position:absolute; left:12px; top:10px; width:16px; height:16px; color:var(--text-muted);"></i>
+                    <input type="text" placeholder="Search...">
+                  </div>
+                  <i data-lucide="edit-3" class="icon-action"></i>
+                  <i data-lucide="filter" class="icon-action"></i>
+                </div>
+              </div>
+              <div id="admin-chat-list" class="chat-list">
+                <!-- Chat list items will be injected here -->
+                <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">Loading conversations...</div>
+              </div>
+            </div>
+
+            <!-- Right area: Chat thread -->
+            <div class="chat-main">
+              <div id="admin-chat-empty" class="chat-empty-state">
+                <i data-lucide="message-circle" style="width:48px;height:48px;color:#ccc;margin-bottom:12px;"></i>
+                <div style="color:var(--text-muted); font-size:14px;">Select a conversation to start messaging</div>
+              </div>
+
+              <!-- Chat Header -->
+              <div class="chat-header">
+                <div style="display:flex; align-items:center; gap:12px;" id="admin-chat-user-info">
+                  <div id="chat-header-name" class="chat-contact-name" style="font-size:18px;">User Name</div>
+                </div>
+                <div class="chat-header-actions">
+                  <button id="chat-resolve-btn" title="Resolve" style="color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:6px 12px; border-radius:4px; font-size:12px; background:none; cursor:pointer; font-weight:600;">Resolve</button>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="mail"></i>
+                  <i data-lucide="search"></i>
+                  <i data-lucide="trash-2"></i>
+                  <i data-lucide="more-horizontal"></i>
+                </div>
+              </div>
+
+              <!-- Messages -->
+              <div id="admin-chat-messages" class="chat-messages-area">
+                <!-- Messages go here -->
+              </div>
+
+              <!-- Input Box -->
+              <div class="chat-input-area">
+
+                <div class="chat-textarea-wrap">
+                  <textarea id="admin-chat-input" placeholder="Type a message..." disabled></textarea>
+                </div>
+                <div class="chat-input-footer">
+                  <div class="chat-attach-icons">
+                    <i data-lucide="paperclip"></i>
+                    <i data-lucide="link"></i>
+                    <i data-lucide="image"></i>
+                    <i data-lucide="smile"></i>
+                  </div>
+                  <div class="chat-action-btns">
+                    <button id="admin-chat-clear" class="btn-clear" disabled>Clear</button>
+                    <button id="admin-chat-send" class="btn-send" disabled>Send <i data-lucide="chevron-down" style="width:14px;height:14px;margin-left:4px;"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <script>
+    // Supabase Auth Integration
+</script>
+
+    <script src="js/admin-ui.js?v=3"></script>
+    <script src="js/admin-auth.js?v=3"></script>
+    <script src="js/admin-chat.js?v=3"></script>
+</body>
+</html>
+
+
+

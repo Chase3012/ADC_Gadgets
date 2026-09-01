@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Loans — ADC Gadgets</title>
+    <meta name="description" content="View and manage your ADC Gadgets device loans.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../../src/shared/css/global.css">
+    <link rel="stylesheet" href="css/user.css">
+    <link rel="stylesheet" href="css/account.css">
+    <link rel="stylesheet" href="css/loan.css">
+</head>
+
+<body>
+
+    <!-- ━━━ HEADER ━━━ -->
+    <header class="hdr">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button class="nav-ham-btn" id="nav-ham-btn" aria-label="Open navigation menu" aria-expanded="false">
+                <i data-lucide="menu" style="width:18px;height:18px;"></i>
+            </button>
+            <a href="user-home.html" class="logo">
+                <img src="../../images/logo.jpg" alt="ADC Gadgets" class="logo-img">
+                <span class="logo-name">ADC Gadgets</span>
+            </a>
+        </div>
+        <nav class="hdr-nav">
+            <a href="user-home.html">Shop</a>
+            <a href="devices.html">Devices</a>
+            <a href="support.html">Support</a>
+        </nav>
+    </header>
+
+    <!-- ━━━ SUB-NAV ━━━ -->
+    <nav class="sub-nav">
+        <a href="user-home.html">Features Device</a>
+        <a href="devices.html">Devices</a>
+        <a href="support.html">Setup &amp; Support</a>
+    </nav>
+
+    <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
+    <div class="hero-wrap account-hero" style="padding: 30px 24px; text-align: center;">
+        <h1 class="support-title account-title" style="font-size: 32px; margin-bottom: 4px;"><span class="glow-pink">My Loans</span></h1>
+        <h2 class="support-subtitle account-greeting" style="font-size: 16px;">Hello, <span id="hero-first-name" style="color: var(--pink);">there</span>.</h2>
+    </div>
+
+    <!-- ━━━ MAIN (Solid White) ━━━ -->
+    <main class="main" style="background:#fff; padding: 40px 24px; min-height: 60vh;">
+        <div class="loan-page-layout">
+            <div class="loan-container" id="loan-container">
+                <div style="text-align:center; padding: 60px; color:var(--text-muted);">
+                    <i data-lucide="loader-2" class="spin" style="width:32px;height:32px;"></i>
+                    <p style="margin-top:12px;">Loading your loans...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Payment process removed for now -->
+
+    <!-- ━━━ FOOTER ━━━ -->
+    <footer class="footer" style="background:#000; padding: 40px 24px; text-align: center;">
+        <p>© 2026 ADC Gadgets. All rights reserved.</p>
+        <p>Affordable • Trusted • Quality</p>
+    </footer>
+
+    <!-- ━━━ SIDEBAR DRAWER ━━━ -->
+    <div id="sb-overlay"></div>
+    <aside id="sidebar">
+        <div class="sb-head">
+            <button class="sb-close" id="sb-close" aria-label="Close menu">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
+            <div class="sb-user">
+                <div class="sb-avatar-wrap">
+                    <img src="../../images/logo.jpg" alt="User" class="sb-avatar" id="sb-avatar-img">
+                    <span class="sb-avatar-dot"></span>
+                </div>
+                <div class="sb-user-info">
+                    <div class="sb-name" id="sb-user-name">ADC Member</div>
+                    <div class="sb-email" id="sb-user-email">—</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sb-nav">
+            <a href="user-home.html" class="sb-link">
+                <span class="sb-icon"><i data-lucide="shopping-bag" style="width:16px;height:16px;"></i></span>
+                Shop
+            </a>
+            <a href="account.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/profile.svg" style="width:16px;height:16px;" alt="Profile"></span>
+                Profile
+            </a>
+            <a href="loan.html" class="sb-link active">
+                <span class="sb-icon"><img src="../../images/icons/loan.svg" style="width:16px;height:16px;" alt="Loan"></span>
+                Loan
+            </a>
+            <a href="support.html" class="sb-link">
+                <span class="sb-icon"><img src="../../images/icons/account_setting.svg" style="width:16px;height:16px;" alt="Support"></span>
+                Support
+            </a>
+        </nav>
+
+        <div class="sb-foot">
+            <button class="sb-signout" id="sb-logout">
+                <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;"></i></span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ━━━ TOAST ━━━ -->
+    <div id="toast">
+        <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
+        <span id="toast-msg">Success!</span>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="../../src/shared/js/supabase.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/support-chat.js?v=3"></script>
+    <script src="js/logout.js?v=1"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="js/loan.js"></script>
+
+</body>
+</html>

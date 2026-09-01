@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports â€” ADC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Admin Supabase Client -->
+    <script src="../../src/admin/js/admin-supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="logo-area">
+        <img src="../../images/logo.jpg" alt="ADC">
+        <span>ADC Admin</span>
+      </a>
+
+      <div class="nav-list">
+        <a href="dashboard.html" class="nav-item">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="folder-open"></i> Loan Applications
+        </a>
+        <a href="manage-users.html" class="nav-item" id="manage-users-toggle">
+          <i data-lucide="users"></i> Manage Users
+        </a>
+        <div class="nav-sub" id="manage-users-sub">
+          <a href="manage-users.html" class="nav-sub-item" id="nav-users">Users</a>
+          <a href="manage-admins.html" class="nav-sub-item" id="nav-admin">Admin</a>
+        </div>
+        <a href="#" class="nav-item">
+          <i data-lucide="check-square"></i> Tasks
+        </a>
+        <a href="dashboard.html#communications" class="nav-item">
+          <i data-lucide="message-square"></i> Communications
+        </a>
+
+        <!-- Reports dropdown â€” active on this page -->
+        <a href="#" class="nav-item expanded" id="reports-toggle">
+          <i data-lucide="pie-chart"></i> Reports
+        </a>
+        <div class="nav-sub open" id="reports-sub">
+          <a href="#" class="nav-sub-item">Pipeline Report</a>
+          <a href="#" class="nav-sub-item">Loan Insight Report</a>
+          <a href="#" class="nav-sub-item">Sales Performance Report</a>
+          <a href="#" class="nav-sub-item active">Leaderboard</a>
+          <a href="#" class="nav-sub-item">Loan Enrollment Report</a>
+          <a href="#" class="nav-sub-item">Mail Analytics</a>
+          <a href="#" class="nav-sub-item">Status Report</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="percent"></i> Commissions
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="settings"></i> Settings
+        </a>
+      </div>
+
+      <div class="user-profile">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Admin</div>
+        </div>
+        <i data-lucide="chevron-down" style="margin-left:auto; width:16px; color:rgba(255,255,255,0.38);"></i>
+      </div>
+      <button id="logout-btn" style="width: calc(100% - 32px); margin: 0 16px 16px; padding: 10px; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: background 0.2s;">
+        <i data-lucide="log-out" style="width: 16px;"></i> Logout
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <h1 class="page-title">Leaderboard</h1>
+        <div class="header-right">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search">
+          </div>
+          <button class="notif-btn">
+            <i data-lucide="bell" style="width:20px;"></i>
+            <span class="notif-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content"></div>
+    </main>
+
+  </div>
+
+  <script>
+    try {
+    } catch (e) {
+      console.error("Lucide error:", e);
+    }
+
+    // Dashboard and Reports dropdown toggles
+    const dashToggle = document.getElementById('dashboard-toggle');
+    const dashSub = document.getElementById('dashboard-sub');
+    const reportsToggle = document.getElementById('reports-toggle');
+    const reportsSub = document.getElementById('reports-sub');
+
+    function closeOtherDropdowns(exceptToggle) {
+      if (dashToggle && dashToggle !== exceptToggle) {
+        dashToggle.classList.remove('expanded');
+        dashSub.classList.remove('open');
+      }
+      if (reportsToggle && reportsToggle !== exceptToggle) {
+        reportsToggle.classList.remove('expanded');
+        reportsSub.classList.remove('open');
+      }
+    }
+    
+    if (dashToggle) {
+      dashToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        const isOpening = !dashSub.classList.contains('open');
+        if (isOpening) closeOtherDropdowns(dashToggle);
+        dashToggle.classList.toggle('expanded');
+        dashSub.classList.toggle('open');
+      });
+    }
+
+    if (reportsToggle) {
+      reportsToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        const isOpening = !reportsSub.classList.contains('open');
+        if (isOpening) closeOtherDropdowns(reportsToggle);
+        reportsToggle.classList.toggle('expanded');
+        reportsSub.classList.toggle('open');
+      });
+    }
+
+    // Supabase Auth Integration
+    // Sub-item highlight
+    reportsSub.querySelectorAll('.nav-sub-item').forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        e.preventDefault();
+        reportsSub.querySelectorAll('.nav-sub-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  </script>
+
+    <script src="js/admin-ui.js"></script>
+    <script src="js/admin-auth.js"></script>
+</body>
+</html>
+

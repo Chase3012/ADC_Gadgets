@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard â€” ADC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Admin Supabase Client -->
+    <script src="../../src/admin/js/admin-supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="logo-area">
+        <img src="../../images/logo.jpg" alt="ADC">
+        <span>ADC Admin</span>
+      </a>
+
+      <div class="nav-list">
+        <!-- Dashboard dropdown -->
+        <a href="dashboard.html" class="nav-item" id="dashboard-toggle">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <div class="nav-sub" id="dashboard-sub">
+          <a href="dashboard.html" class="nav-sub-item">Analytics</a>
+          <a href="dashboard.html" class="nav-sub-item">Sales</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="folder-open"></i> Loan Applications
+        </a>
+        <a href="#" class="nav-item expanded active" id="manage-users-toggle">
+          <i data-lucide="users"></i> Manage Users
+        </a>
+        <div class="nav-sub open" id="manage-users-sub">
+          <a href="manage-users.html" class="nav-sub-item active" id="nav-users">Users</a>
+          <a href="manage-admins.html" class="nav-sub-item" id="nav-admin">Admin</a>
+        </div>
+        <a href="#" class="nav-item">
+          <i data-lucide="check-square"></i> Tasks
+        </a>
+        <a href="dashboard.html#communications" class="nav-item">
+          <i data-lucide="message-square"></i> Communications
+        </a>
+
+        <!-- Reports points to reports.html -->
+        <a href="reports.html" class="nav-item" id="reports-toggle">
+          <i data-lucide="pie-chart"></i> Reports
+        </a>
+        <div class="nav-sub" id="reports-sub">
+          <a href="reports.html" class="nav-sub-item">Pipeline Report</a>
+          <a href="reports.html" class="nav-sub-item">Loan Insight Report</a>
+          <a href="reports.html" class="nav-sub-item">Sales Performance Report</a>
+          <a href="reports.html" class="nav-sub-item">Leaderboard</a>
+          <a href="reports.html" class="nav-sub-item">Loan Enrollment Report</a>
+          <a href="reports.html" class="nav-sub-item">Mail Analytics</a>
+          <a href="reports.html" class="nav-sub-item">Status Report</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="percent"></i> Commissions
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="settings"></i> Settings
+        </a>
+      </div>
+
+      <div class="user-profile">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Admin</div>
+        </div>
+        <i data-lucide="chevron-down" style="margin-left:auto; width:16px; color:rgba(255,255,255,0.38);"></i>
+      </div>
+      <button id="logout-btn" style="width: calc(100% - 32px); margin: 0 16px 16px; padding: 10px; background: rgba(255,255,255,0.05); color: #fff; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: background 0.2s;">
+        <i data-lucide="log-out" style="width: 16px;"></i> Logout
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <h1 class="page-title">Users</h1>
+        <div class="header-right">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search">
+          </div>
+          <button class="notif-btn">
+            <i data-lucide="bell" style="width:20px;"></i>
+            <span class="notif-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- MANAGE USERS PANEL -->
+        <div id="panel-manage-users" class="dash-panel" style="display: block;">
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h2 class="panel-header" style="margin-bottom: 0;">Active Users</h2>
+              <button class="btn-primary" id="open-add-user-btn" style="display: flex; align-items: center; gap: 6px;"><i data-lucide="plus" style="width:16px;"></i> Add New User</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="users-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Mobile</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Date Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody">
+                  <!-- JS will populate this -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ADD USER MODAL -->
+  <div class="modal-overlay" id="add-user-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Add New User</h2>
+        <button class="modal-close" id="close-add-user-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-user-form" class="form-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="nu-name" required placeholder="Juan Dela Cruz">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="nu-email" required placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label>Temporary Password</label>
+            <input type="password" id="nu-password" required placeholder="Min 6 chars">
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="text" id="nu-mobile" required placeholder="09171234567">
+          </div>
+          <div class="form-group full">
+            <label>Home Address</label>
+            <input type="text" id="nu-address" required placeholder="Complete home address">
+          </div>
+          <div class="form-group">
+            <label>ID Type</label>
+            <select id="nu-idtype" required>
+              <option value="Driver's License">Driver's License</option>
+              <option value="Passport">Passport</option>
+              <option value="National ID">National ID</option>
+              <option value="Voter's ID">Voter's ID</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Loan Model</label>
+            <button type="button" id="open-phone-selector-btn" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font); font-size: 13px; color: var(--text-main); background: #ffffff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;">
+              <span id="selected-phone-text">Select model...</span>
+              <i data-lucide="chevron-down" style="width:14px;"></i>
+            </button>
+            <input type="hidden" id="nu-loan" required>
+          </div>
+          <div class="form-group full">
+            <label>Upload Valid ID Image</label>
+            <input type="file" id="nu-idimg" accept="image/*" required style="padding: 5px 12px;">
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" id="cancel-add-user-btn">Cancel</button>
+        <button class="btn-submit" id="submit-add-user-btn" form="add-user-form"><i data-lucide="check" style="width:16px;"></i> Create User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE SELECTOR MODAL -->
+  <div class="ps-overlay" id="phone-selector-modal">
+    <div class="ps-modal">
+      <div class="modal-head">
+        <h2>Select Loan Model</h2>
+        <button type="button" class="modal-close" id="close-phone-selector-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="ps-body">
+        <div class="phone-grid">
+          <div class="phone-card" data-phone="iPhone 16">
+            <img src="../../images/phones/Iphone_16.png" alt="iPhone 16">
+            <div class="phone-name">iPhone 16</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 15">
+            <img src="../../images/phones/Iphone_15.png" alt="iPhone 15">
+            <div class="phone-name">iPhone 15</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 14">
+            <img src="../../images/phones/14.png" alt="iPhone 14">
+            <div class="phone-name">iPhone 14</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 13">
+            <img src="../../images/phones/Iphone_13.png" alt="iPhone 13">
+            <div class="phone-name">iPhone 13</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 12">
+            <img src="../../images/phones/Iphone_12.png" alt="iPhone 12">
+            <div class="phone-name">iPhone 12</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 11">
+            <img src="../../images/phones/Iphone_11.png" alt="iPhone 11">
+            <div class="phone-name">iPhone 11</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone SE">
+            <img src="../../images/phones/Iphone_SE.png" alt="iPhone SE">
+            <div class="phone-name">iPhone SE</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone XR">
+            <img src="../../images/phones/Iphone_XR.png" alt="iPhone XR">
+            <div class="phone-name">iPhone XR</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone XS">
+            <img src="../../images/phones/Iphone_XS.png" alt="iPhone XS">
+            <div class="phone-name">iPhone XS</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone X">
+            <img src="../../images/phones/Iphone_X.png" alt="iPhone X">
+            <div class="phone-name">iPhone X</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 8">
+            <img src="../../images/phones/Iphone_8.png" alt="iPhone 8">
+            <div class="phone-name">iPhone 8</div>
+          </div>
+          <div class="phone-card" data-phone="iPhone 7">
+            <img src="../../images/phones/Iphone_7.png" alt="iPhone 7">
+            <div class="phone-name">iPhone 7</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS MODALS (LOADING, SUCCESS, ERROR) -->
+  <div class="modal-overlay" id="apple-loading-overlay">
+    <div class="modal" style="width:auto; min-width:300px; text-align:center; padding:32px;">
+      <i data-lucide="loader" class="spin" style="width:32px; height:32px; color:var(--text-main); margin: 0 auto 16px auto; display:block;"></i>
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin:0;">Creating Account...</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Please do not close this window.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="apple-success-modal">
+    <div class="modal" style="width:auto; min-width:320px; text-align:center; padding:32px;">
+      <div style="background:var(--success); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px auto;">
+        <i data-lucide="check-circle-2" style="width: 24px; height: 24px; color: #fff;"></i>
+      </div>
+      <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main);">Account Created</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin: 8px 0 24px 0; line-height: 1.5;">The user has been successfully added to the system.</p>
+      <button class="btn-primary" id="close-success-btn" style="width:100%">Done</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="apple-error-modal">
+    <div class="modal" style="width:auto; min-width:320px; text-align:center; padding:32px;">
+      <div style="background:var(--danger); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px auto;">
+        <i data-lucide="alert-circle" style="width: 24px; height: 24px; color: #fff;"></i>
+      </div>
+      <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main);">Creation Failed</h2>
+      <p id="apple-error-msg" style="font-size: 14px; color: var(--text-muted); margin: 8px 0 24px 0; line-height: 1.5; word-wrap: break-word;">An unexpected error occurred.</p>
+      <button class="btn-primary" id="close-error-btn" style="width:100%">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- ADMIN LOAN DETAILS MODAL -->
+  <div class="modal-overlay" id="admin-loan-modal">
+    <div class="modal" style="width: 100%; max-width: 800px; padding: 48px; border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);">
+      <div class="modal-head" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px;">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em;">User Loan Details</h2>
+        <button class="modal-close" id="close-admin-loan-btn" style="background: #f8fafc; border: none; cursor: pointer; color: var(--text-muted); width: 36px; height: 36px; border-radius: 50%; display:flex; align-items:center; justify-content:center; transition: 0.2s;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+      </div>
+      <div class="modal-body" id="admin-loan-content">
+        <!-- Dynamically populated by JS -->
+        <div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving loan records...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+    
+    const manageUsersSub = document.getElementById('manage-users-sub');
+    // Manage Users sub-item clicks
+    if (manageUsersSub) {
+      manageUsersSub.querySelectorAll('.nav-sub-item').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          // The other links like "Users" or "Admin" can just be normal anchor navigation
+        });
+      });
+    }
+
+    // Supabase Auth Integration
+
+    // --- Manage Users Logic ---
+    async function loadUsers() {
+      if (!supabaseClient) return;
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+      
+      const { data, error } = await supabaseClient.from('profiles').select('*').eq('role', 'user').order('created_at', { ascending: false });
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found.</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = '';
+      data.forEach(user => {
+        const name = user.full_name || user.name || 'No Name';
+        const email = user.email || 'No Email';
+        const date = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'â€”';
+        const mobile = user.mobile || user.phone || 'â€”';
+        const address = user.address || user.home_address || 'â€”';
+        const status = user.status || 'Active';
+        
+        let statusClass = 'success';
+        if (status.toLowerCase() === 'suspended') statusClass = 'failed';
+        else if (status.toLowerCase() === 'pending') statusClass = 'pending';
+        else if (status.toLowerCase() === 'completed') statusClass = 'success';
+        
+        const tr = document.createElement('tr');
+        const accountId = user.id ? parseInt(user.id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
+        tr.innerHTML = `
+          <td>
+            <div style="font-weight:700;">${name}</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:500;">ID: ${accountId} &bull; ${email}</div>
+          </td>
+          <td>${mobile}</td>
+          <td>${address}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+          <td style="color:var(--text-muted)">${date}</td>
+          <td><button class="view-loan-btn" data-userid="${user.id}" style="padding: 6px 14px; font-size: 12px; font-weight: 600; background: #fff; color: var(--pink); border: 1px solid var(--pink); border-radius: 6px; cursor: pointer; transition: all 0.2s;">View Loan</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      lucide.createIcons();
+      attachViewLoanListeners();
+    }
+    
+    // --- Admin Loan Viewer Logic ---
+    function attachViewLoanListeners() {
+      document.querySelectorAll('.view-loan-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const userId = e.currentTarget.getAttribute('data-userid');
+          const loanModal = document.getElementById('admin-loan-modal');
+          const loanContent = document.getElementById('admin-loan-content');
+          
+          loanModal.classList.add('active');
+          loanContent.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving loan records...</p></div>';
+          lucide.createIcons();
+          
+          const { data, error } = await supabaseAdmin.from('loans').select('*').eq('user_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(1);
+          
+          if (error) {
+            loanContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching loan: ${error.message}</p>`;
+            return;
+          }
+          
+          if (!data || data.length === 0) {
+            loanContent.innerHTML = `
+                <div style="text-align:center; padding: 60px; color:var(--text-muted);">
+                    <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
+                    <p style="font-size: 16px;">This user currently has no active loans.</p>
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+          }
+          
+          const loan = data[0];
+          const totalMonths = Math.ceil(loan.total_amount / loan.monthly_payment);
+          const monthsRemaining = Math.ceil(loan.remaining_balance / loan.monthly_payment);
+          const monthsPaid = Math.max(0, totalMonths - monthsRemaining);
+          const nextDate = new Date(loan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const progress = ((loan.total_amount - loan.remaining_balance) / loan.total_amount) * 100;
+          
+          loanContent.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 32px; margin-bottom: 32px;">
+              <div style="background: #f8fafc; padding: 24px; border-radius: 12px;">
+                <img src="${loan.device_image}" alt="${loan.device_name}" style="width: 120px; height: 120px; object-fit: contain;">
+              </div>
+              <div style="flex: 1; padding-top: 12px;">
+                <span style="font-size: 12px; font-weight: 700; background: #ecfdf5; color: #10b981; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 12px;">Active Loan</span>
+                <h3 style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; letter-spacing: -0.02em;">${loan.device_name}</h3>
+                <p style="font-size: 15px; color: var(--text-muted);">Loan ID: ${loan.id ? (parseInt(loan.id.replace(/-/g, '').substring(0, 11), 16) % 10000000000000).toString().padStart(13, '0') : '0000000000000'}</p>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 40px; padding: 0 12px;">
+              <div>
+                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Total Amount (SRP)</p>
+                <p style="font-size: 22px; font-weight: 700; color: var(--text-main);">₱${loan.total_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+              </div>
+              <div>
+                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Remaining Balance</p>
+                <p style="font-size: 22px; font-weight: 700; color: var(--text-main);">₱${loan.remaining_balance.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+              </div>
+              <div>
+                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Monthly Installment</p>
+                <p style="font-size: 22px; font-weight: 700; color: var(--pink);">₱${loan.monthly_payment.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+              </div>
+              <div>
+                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Next Payment Due</p>
+                <p style="font-size: 22px; font-weight: 700; color: #ef4444;">${nextDate}</p>
+              </div>
+            </div>
+            
+            <div style="background: transparent; border: 2px solid #f1f5f9; border-radius: 12px; padding: 24px;">
+              <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 20px;">Payment Schedule</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+                <div>
+                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">Agreed Term</p>
+                  <p style="font-size: 18px; font-weight: 700; color: var(--text-main);">${totalMonths} Months</p>
+                </div>
+                <div>
+                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">Months Paid</p>
+                  <p style="font-size: 18px; font-weight: 700; color: var(--text-main);">${monthsPaid} Months</p>
+                </div>
+                <div>
+                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">Remaining</p>
+                  <p style="font-size: 18px; font-weight: 700; color: var(--text-main);">${monthsRemaining} Months</p>
+                </div>
+              </div>
+              
+              <div style="margin-top: 24px;">
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight: 600; color:var(--text-muted); margin-bottom:12px;">
+                    <span>Progress</span>
+                    <span>${Math.round(progress)}% Paid</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; background: var(--pink); border-radius: 4px; width: ${progress}%;"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          lucide.createIcons();
+        });
+      });
+    }
+
+    document.getElementById('close-admin-loan-btn')?.addEventListener('click', () => {
+        document.getElementById('admin-loan-modal').classList.remove('active');
+    });
+    const modal = document.getElementById('add-user-modal');
+    const openModalBtn = document.getElementById('open-add-user-btn');
+    const closeBtn = document.getElementById('close-add-user-btn');
+    const cancelBtn = document.getElementById('cancel-add-user-btn');
+    const form = document.getElementById('add-user-form');
+    const submitBtn = document.getElementById('submit-add-user-btn');
+
+    if(openModalBtn) openModalBtn.addEventListener('click', () => { 
+      modal.classList.add('active'); 
+      form.reset(); 
+      selectedPhoneText.textContent = 'Select a model...';
+      nuLoanInput.value = '';
+    });
+    const closeModal = () => modal.classList.remove('active');
+    if(closeBtn) closeBtn.addEventListener('click', closeModal);
+    if(cancelBtn) cancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+
+    // Phone Selector Logic
+    const psModal = document.getElementById('phone-selector-modal');
+    const openPsBtn = document.getElementById('open-phone-selector-btn');
+    const closePsBtn = document.getElementById('close-phone-selector-btn');
+    const selectedPhoneText = document.getElementById('selected-phone-text');
+    const nuLoanInput = document.getElementById('nu-loan');
+
+    if(openPsBtn) openPsBtn.addEventListener('click', () => psModal.classList.add('active'));
+    if(closePsBtn) closePsBtn.addEventListener('click', () => psModal.classList.remove('active'));
+    
+    document.querySelectorAll('.phone-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const phone = card.getAttribute('data-phone');
+        nuLoanInput.value = phone;
+        selectedPhoneText.textContent = phone;
+        psModal.classList.remove('active');
+      });
+    });
+
+    if(form) form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const aLoading = document.getElementById('apple-loading-overlay');
+      const aSuccess = document.getElementById('apple-success-modal');
+      const aError = document.getElementById('apple-error-modal');
+      const aErrMsg = document.getElementById('apple-error-msg');
+      
+      if (!nuLoanInput.value) { 
+        aErrMsg.textContent = 'Please select a loan model.';
+        aError.classList.add('open');
+        return; 
+      }
+
+      if (!supabaseAdmin) { 
+        aErrMsg.textContent = 'Admin client not configured';
+        aError.classList.add('open');
+        return; 
+      }
+      
+      submitBtn.disabled = true;
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i data-lucide="loader" class="spin" style="width:16px; animation: spin 1s linear infinite;"></i> Creating...';
+      
+      aLoading.classList.add('active');
+      
+      try {
+        // 1. Upload ID Image
+        const file = document.getElementById('nu-idimg').files[0];
+        let idUrl = null;
+        if (file) {
+          // Ensure bucket exists
+          const bucketName = 'valid_ids';
+          const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+          if (!buckets || !buckets.find(b => b.name === bucketName)) {
+            await supabaseAdmin.storage.createBucket(bucketName, { public: true });
+          }
+          
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const { error: uploadError, data: uploadData } = await supabaseAdmin.storage.from(bucketName).upload(fileName, file);
+          
+          if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+          
+          const { data: { publicUrl } } = supabaseAdmin.storage.from(bucketName).getPublicUrl(fileName);
+          idUrl = publicUrl;
+        }
+
+        // 2. Create Auth User
+        const email = document.getElementById('nu-email').value;
+        const password = document.getElementById('nu-password').value;
+        const name = document.getElementById('nu-name').value;
+        
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: email,
+          password: password,
+          email_confirm: true,
+          user_metadata: { full_name: name }
+        });
+        
+        if (authError) throw new Error(`Auth creation failed: ${authError.message}`);
+        const userId = authData.user.id;
+
+        // 3. Create Profile Entry
+        const mobile = document.getElementById('nu-mobile').value;
+        const address = document.getElementById('nu-address').value;
+        const idType = document.getElementById('nu-idtype').value;
+        // Note: loan model could be saved in profiles, or a separate loans table. 
+        // We'll save it in profiles for now as 'active_loan_model'
+        const loanModel = document.getElementById('nu-loan').value;
+
+        const { error: profileError } = await supabaseAdmin.from('profiles').insert({
+          id: userId,
+          full_name: name,
+          email: email,
+          mobile: mobile,
+          address: address,
+          id_type: idType,
+          id_url: idUrl,
+          active_loan_model: loanModel,
+          status: 'Active',
+          role: 'user'
+        });
+        
+        // It's possible the profiles table has an RLS policy or trigger that already created the row. 
+        // If there is an insert conflict, we might need to upsert.
+        if (profileError && profileError.code === '23505') { // unique violation
+           await supabaseAdmin.from('profiles').update({
+             full_name: name, mobile: mobile, address: address, id_type: idType, id_url: idUrl, active_loan_model: loanModel, status: 'Active', role: 'user'
+           }).eq('id', userId);
+        } else if (profileError) {
+           throw new Error(`Profile creation failed: ${profileError.message}`);
+        }
+
+        aLoading.classList.remove('active');
+        closeModal();
+        aSuccess.classList.add('active');
+        loadUsers();
+
+      } catch (err) {
+        console.error(err);
+        aLoading.classList.remove('active');
+        aErrMsg.textContent = err.message;
+        aError.classList.add('active');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+    
+    // Close modal handlers
+    document.getElementById('close-success-btn').addEventListener('click', () => {
+      document.getElementById('apple-success-modal').classList.remove('active');
+    });
+    document.getElementById('close-error-btn').addEventListener('click', () => {
+      document.getElementById('apple-error-modal').classList.remove('active');
+    });
+    
+    // Load users on page load
+    loadUsers();
+
+    });
+  </script>
+
+    <script src="js/admin-ui.js"></script>
+    <script src="js/admin-auth.js"></script>
+</body>
+</html>
+
+

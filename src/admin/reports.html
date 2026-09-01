@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports â€” ADC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Admin Supabase Client -->
+    <script src="../../src/admin/js/admin-supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="logo-area">
+        <img src="../../images/logo.jpg" alt="ADC">
+        <span>ADC Admin</span>
+      </a>
+
+      <div class="nav-list">
+        <a href="dashboard.html" class="nav-item">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="folder-open"></i> Loan Applications
+        </a>
+        <a href="manage-users.html" class="nav-item" id="manage-users-toggle">
+          <i data-lucide="users"></i> Manage Users
+        </a>
+        <div class="nav-sub" id="manage-users-sub">
+          <a href="manage-users.html" class="nav-sub-item" id="nav-users">Users</a>
+          <a href="manage-admins.html" class="nav-sub-item" id="nav-admin">Admin</a>
+        </div>
+        <a href="#" class="nav-item">
+          <i data-lucide="check-square"></i> Tasks
+        </a>
+        <a href="dashboard.html#communications" class="nav-item">
+          <i data-lucide="message-square"></i> Communications
+        </a>
+
+        <!-- Reports dropdown â€” active on this page -->
+        <a href="#" class="nav-item expanded" id="reports-toggle">
+          <i data-lucide="pie-chart"></i> Reports
+        </a>
+        <div class="nav-sub open" id="reports-sub">
+          <a href="#" class="nav-sub-item">Pipeline Report</a>
+          <a href="#" class="nav-sub-item">Loan Insight Report</a>
+          <a href="#" class="nav-sub-item">Sales Performance Report</a>
+          <a href="#" class="nav-sub-item active">Leaderboard</a>
+          <a href="#" class="nav-sub-item">Loan Enrollment Report</a>
+          <a href="#" class="nav-sub-item">Mail Analytics</a>
+          <a href="#" class="nav-sub-item">Status Report</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="percent"></i> Commissions
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="settings"></i> Settings
+        </a>
+      </div>
+
+      <div class="user-profile">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Admin</div>
+        </div>
+        <i data-lucide="chevron-down" style="margin-left:auto; width:16px; color:rgba(255,255,255,0.38);"></i>
+      </div>
+      <button id="logout-btn" style="width: calc(100% - 32px); margin: 0 16px 16px; padding: 10px; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: background 0.2s;">
+        <i data-lucide="log-out" style="width: 16px;"></i> Logout
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <h1 class="page-title">Leaderboard</h1>
+        <div class="header-right">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search">
+          </div>
+          <button class="notif-btn">
+            <i data-lucide="bell" style="width:20px;"></i>
+            <span class="notif-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="dashboard-grid">
+
+          <!-- LEFT COL -->
+          <div class="left-col">
+            <div class="card summary-card">
+              <div class="s-title">Total Loan Closed</div>
+              <div class="s-stats">
+                <div class="s-stat-box">
+                  <div class="s-val">₱13.7M</div>
+                  <div class="s-sub">This Year</div>
+                  <div class="s-progress"><div class="s-progress-fill" style="width:75%;"></div></div>
+                </div>
+                <div class="s-stat-box">
+                  <div class="s-val">₱823.2k</div>
+                  <div class="s-sub">This Week</div>
+                  <div class="s-trend danger"><i data-lucide="arrow-down"></i> -2.5% Vs Last week</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="list-title">Leaderboard this year</div>
+              <div class="list-item"><div class="l-rank">1</div><div class="l-status flat"><i data-lucide="minus"></i></div><img src="https://ui-avatars.com/api/?name=John+Doe&background=random" class="l-avatar"><div class="l-name">John Doe</div><div class="l-val">₱5.8M</div></div>
+              <div class="list-item"><div class="l-rank">2</div><div class="l-status up"><i data-lucide="arrow-up"></i></div><img src="https://ui-avatars.com/api/?name=Jane+Roberts&background=random" class="l-avatar"><div class="l-name">Jane Roberts</div><div class="l-val">₱4M</div></div>
+              <div class="list-item"><div class="l-rank">3</div><div class="l-status down"><i data-lucide="arrow-down"></i></div><img src="https://ui-avatars.com/api/?name=Manny+Johnson&background=random" class="l-avatar"><div class="l-name">Manny Johnson</div><div class="l-val">₱2.5M</div></div>
+              <div class="list-item"><div class="l-rank">4</div><div class="l-status down"><i data-lucide="arrow-down"></i></div><img src="https://ui-avatars.com/api/?name=Olivia+Reyes&background=random" class="l-avatar"><div class="l-name">Olivia Reyes</div><div class="l-val">₱1.6M</div></div>
+              <div class="list-item"><div class="l-rank">5</div><div class="l-status up"><i data-lucide="arrow-up"></i></div><img src="https://ui-avatars.com/api/?name=Liam+Carter&background=random" class="l-avatar"><div class="l-name">Liam Carter</div><div class="l-val">₱1.5M</div></div>
+              <div class="list-item"><div class="l-rank">6</div><div class="l-status flat"><i data-lucide="minus"></i></div><img src="https://ui-avatars.com/api/?name=Sophia+Bennett&background=random" class="l-avatar"><div class="l-name">Sophia Bennett</div><div class="l-val">₱1.2M</div></div>
+              <div class="list-item"><div class="l-rank">7</div><div class="l-status down"><i data-lucide="arrow-down"></i></div><img src="https://ui-avatars.com/api/?name=Noah+Thompson&background=random" class="l-avatar"><div class="l-name">Noah Thompson</div><div class="l-val">₱1M</div></div>
+              <div class="list-item"><div class="l-rank">8</div><div class="l-status flat"><i data-lucide="minus"></i></div><img src="https://ui-avatars.com/api/?name=Emma+Johnson&background=random" class="l-avatar"><div class="l-name">Emma Johnson</div><div class="l-val">₱907.2k</div></div>
+              <div class="list-item"><div class="l-rank">9</div><div class="l-status up"><i data-lucide="arrow-up"></i></div><img src="https://ui-avatars.com/api/?name=Ava+Martinez&background=random" class="l-avatar"><div class="l-name">Ava Martinez</div><div class="l-val">₱593.6k</div></div>
+              <div class="list-item"><div class="l-rank">10</div><div class="l-status flat"><i data-lucide="minus"></i></div><img src="https://ui-avatars.com/api/?name=Mason+Lee&background=random" class="l-avatar"><div class="l-name">Mason Lee</div><div class="l-val">₱487.2k</div></div>
+            </div>
+          </div>
+
+          <!-- AGENT 1 -->
+          <div class="card agent-card">
+            <div class="a-head"><div><div class="a-name">John Doe</div><div class="a-loc">California</div></div><div class="a-rank">1</div></div>
+            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" class="a-img" alt="John">
+            <div class="a-stat-group"><div class="a-stat-label">Total Loan Closed</div><div class="a-val">₱5.8M</div><div class="a-sub">This Year</div><div class="s-progress"><div class="s-progress-fill" style="width:80%;"></div></div></div>
+            <div class="a-stat-group"><div class="a-val" style="font-size:24px;">₱823.2k</div><div class="a-sub">This Week</div><svg class="a-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,25 L10,20 L20,28 L30,15 L40,22 L50,10 L60,18 L70,5 L80,12 L90,2 L100,8 L100,30 L0,30 Z" fill="rgba(255,65,145,0.15)"/><path d="M0,25 L10,20 L20,28 L30,15 L40,22 L50,10 L60,18 L70,5 L80,12 L90,2 L100,8" fill="none" stroke="#FF4191" stroke-width="2"/></svg></div>
+            <div class="a-divider"></div>
+            <div class="a-stat-group" style="margin-bottom:0;"><div class="a-stat-label">Total Deals Closed</div><div class="a-val" style="font-size:24px;">₱128.8k</div><div class="a-sub">This year</div><div class="s-trend danger"><i data-lucide="arrow-down"></i> -2.5% Vs Last year</div></div>
+          </div>
+
+          <!-- AGENT 2 -->
+          <div class="card agent-card">
+            <div class="a-head"><div><div class="a-name">Jane Roberts</div><div class="a-loc">Texas</div></div><div class="a-rank">2</div></div>
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" class="a-img" alt="Jane">
+            <div class="a-stat-group"><div class="a-stat-label">Total Loan Closed</div><div class="a-val">₱4M</div><div class="a-sub">This Year</div><div class="s-progress"><div class="s-progress-fill" style="width:60%;"></div></div></div>
+            <div class="a-stat-group"><div class="a-val" style="font-size:24px;">₱403.2k</div><div class="a-sub">This Week</div><svg class="a-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,20 L15,25 L30,10 L45,15 L60,5 L75,18 L90,8 L100,12 L100,30 L0,30 Z" fill="rgba(255,65,145,0.15)"/><path d="M0,20 L15,25 L30,10 L45,15 L60,5 L75,18 L90,8 L100,12" fill="none" stroke="#FF4191" stroke-width="2"/></svg></div>
+            <div class="a-divider"></div>
+            <div class="a-stat-group" style="margin-bottom:0;"><div class="a-stat-label">Total Deals Closed</div><div class="a-val" style="font-size:24px;">₱50.4k</div><div class="a-sub">This year</div><div class="s-trend"><i data-lucide="arrow-up"></i> +0.75% Vs Last year</div></div>
+          </div>
+
+          <!-- AGENT 3 -->
+          <div class="card agent-card">
+            <div class="a-head"><div><div class="a-name">Manny Johnson</div><div class="a-loc">Manes</div></div><div class="a-rank">3</div></div>
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80" class="a-img" alt="Manny">
+            <div class="a-stat-group"><div class="a-stat-label">Total Loan Closed</div><div class="a-val">₱2.5M</div><div class="a-sub">This Year</div><div class="s-progress"><div class="s-progress-fill" style="width:45%;"></div></div></div>
+            <div class="a-stat-group"><div class="a-val" style="font-size:24px;">₱263.2k</div><div class="a-sub">This Week</div><svg class="a-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,15 L20,5 L40,25 L60,10 L80,20 L100,5 L100,30 L0,30 Z" fill="rgba(255,65,145,0.15)"/><path d="M0,15 L20,5 L40,25 L60,10 L80,20 L100,5" fill="none" stroke="#FF4191" stroke-width="2"/></svg></div>
+            <div class="a-divider"></div>
+            <div class="a-stat-group" style="margin-bottom:0;"><div class="a-stat-label">Total Commission Earned</div><div class="a-val" style="font-size:24px;">₱41.7k</div><div class="a-sub">This year</div><div class="s-trend"><i data-lucide="arrow-up"></i> +1.2% Vs Last year</div></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    try {
+    } catch (e) {
+      console.error("Lucide error:", e);
+    }
+
+    // Dashboard and Reports dropdown toggles
+    const dashToggle = document.getElementById('dashboard-toggle');
+    const dashSub = document.getElementById('dashboard-sub');
+    const reportsToggle = document.getElementById('reports-toggle');
+    const reportsSub = document.getElementById('reports-sub');
+
+    function closeOtherDropdowns(exceptToggle) {
+      if (dashToggle && dashToggle !== exceptToggle) {
+        dashToggle.classList.remove('expanded');
+        dashSub.classList.remove('open');
+      }
+      if (reportsToggle && reportsToggle !== exceptToggle) {
+        reportsToggle.classList.remove('expanded');
+        reportsSub.classList.remove('open');
+      }
+    }
+    
+    if (dashToggle) {
+      dashToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        const isOpening = !dashSub.classList.contains('open');
+        if (isOpening) closeOtherDropdowns(dashToggle);
+        dashToggle.classList.toggle('expanded');
+        dashSub.classList.toggle('open');
+      });
+    }
+
+    if (reportsToggle) {
+      reportsToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        const isOpening = !reportsSub.classList.contains('open');
+        if (isOpening) closeOtherDropdowns(reportsToggle);
+        reportsToggle.classList.toggle('expanded');
+        reportsSub.classList.toggle('open');
+      });
+    }
+
+    // Supabase Auth Integration
+    // Sub-item highlight
+    reportsSub.querySelectorAll('.nav-sub-item').forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        e.preventDefault();
+        reportsSub.querySelectorAll('.nav-sub-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  </script>
+
+    <script src="js/admin-ui.js"></script>
+    <script src="js/admin-auth.js"></script>
+</body>
+</html>
+

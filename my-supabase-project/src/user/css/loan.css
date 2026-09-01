@@ -1,0 +1,138 @@
+/* src/user/css/loan.css */
+
+.loan-page-layout {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.loan-item {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+}
+
+.loan-item:last-child {
+    border-bottom: none;
+}
+
+.loan-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.loan-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    background: transparent;
+}
+
+.loan-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.loan-status {
+    font-size: 13px;
+    font-weight: 500;
+    color: #22c55e;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Page Tabs */
+.loan-tabs {
+    display: flex;
+    border-bottom: 2px solid #f1f5f9;
+    margin-bottom: 32px;
+    gap: 32px;
+}
+
+.loan-tab {
+    background: transparent;
+    border: none;
+    padding: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+}
+
+.loan-tab:hover {
+    color: var(--text-main);
+}
+
+.loan-tab.active {
+    color: var(--pink);
+    border-bottom-color: var(--pink);
+}
+
+.loan-tab-content {
+    display: none;
+    animation: fadeIn 0.2s ease;
+}
+
+.loan-tab-content.active {
+    display: block;
+}
+
+.loan-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    max-width: 600px;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.info-value.highlight {
+    color: var(--pink);
+}
+
+/* Progress bar for non-card layout */
+.progress-wrap {
+    margin-top: 24px;
+    max-width: 600px;
+}
+.progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: var(--pink);
+    border-radius: 3px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
