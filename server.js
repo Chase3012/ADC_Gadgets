@@ -52,7 +52,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const otpStore = {};
+// Memory store removed for serverless compatibility
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -71,7 +71,8 @@ app.post('/login', async (req, res) => {
     const user = result.rows[0];
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore[user.id] = { otp, expires: Date.now() + 10 * 60 * 1000 };
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    await pool.query('UPDATE profiles SET otp_code = $1, otp_expires_at = $2 WHERE id = $3', [otp, expiresAt, user.id]);
 
     try {
       const info = await transporter.sendMail({
@@ -101,7 +102,8 @@ app.post('/resend-otp', async (req, res) => {
 
     const user = result.rows[0];
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore[userId] = { otp, expires: Date.now() + 10 * 60 * 1000 };
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    await pool.query('UPDATE profiles SET otp_code = $1, otp_expires_at = $2 WHERE id = $3', [otp, expiresAt, userId]);
 
     try {
       const info = await transporter.sendMail({
@@ -123,22 +125,24 @@ app.post('/resend-otp', async (req, res) => {
 
 app.post('/verify-otp', async (req, res) => {
   const { userId, otp } = req.body;
-  console.log(`[verify-otp] userId: ${userId}, received otp: "${otp}"`);
-  const stored = otpStore[userId];
-  if (!stored) {
-    console.log(`[verify-otp] No OTP found in store for userId: ${userId}. Current store keys:`, Object.keys(otpStore));
-    return res.status(400).json({ error: 'No OTP found for this user' });
-  }
-  console.log(`[verify-otp] stored otp: "${stored.otp}", expires: ${stored.expires}, now: ${Date.now()}`);
-  if (Date.now() > stored.expires) return res.status(400).json({ error: 'OTP expired' });
-  if (stored.otp !== otp) return res.status(400).json({ error: `Invalid OTP. Expected ${stored.otp}, got ${otp}` });
-  delete otpStore[userId];
-
   try {
     const result = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     
     const user = result.rows[0];
+    if (!user.otp_code) {
+      return res.status(400).json({ error: 'No OTP found for this user' });
+    }
+
+    const now = new Date();
+    const expires = new Date(user.otp_expires_at);
+
+    if (now > expires) return res.status(400).json({ error: 'OTP expired' });
+    if (user.otp_code !== otp) return res.status(400).json({ error: 'Invalid OTP.' });
+
+    // Clear OTP after successful verification
+    await pool.query('UPDATE profiles SET otp_code = NULL, otp_expires_at = NULL WHERE id = $1', [userId]);
+
     if (user.is_first_login) {
       res.json({ requiresPasswordReset: true });
     } else {
