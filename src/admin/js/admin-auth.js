@@ -1,27 +1,34 @@
 // src/admin/js/admin-auth.js
-async function checkAdminAuth() {
-    if (!window.supabaseClient) return;
-    var res = await window.supabaseClient.auth.getSession();
-    var session = res.data.session;
-    if (!session) {
-        window.location.replace('login.html');
-    } else {
-        var profileRes = await window.supabaseClient.from('profiles').select('role, full_name').eq('id', session.user.id).single();
-        if (profileRes.error || profileRes.data.role !== 'admin') {
-            await window.supabaseClient.auth.signOut();
-            alert('Access Denied: Administrator privileges required.');
-            window.location.replace('login.html');
-            return;
-        }
-        var userEmail = session.user.email;
-        var fullName = profileRes.data.full_name || userEmail.split('@')[0];
-        
-        var nameEl = document.querySelector('.user-profile .name');
-        if(nameEl) nameEl.textContent = fullName;
-        
-        var imgEl = document.querySelector('.user-profile img');
-        if(imgEl) imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0D8ABC&color=fff`;
+function checkAdminAuth() {
+    var storedUser = localStorage.getItem('admin_user');
+    if (!storedUser) {
+        window.location.replace('/src/admin/login.html');
+        return;
     }
+    
+    var user;
+    try {
+        user = JSON.parse(storedUser);
+    } catch (e) {
+        localStorage.removeItem('admin_user');
+        window.location.replace('/src/admin/login.html');
+        return;
+    }
+    
+    if (user.role !== 'admin') {
+        localStorage.removeItem('admin_user');
+        alert('Access Denied: Administrator privileges required.');
+        window.location.replace('/src/admin/login.html');
+        return;
+    }
+    
+    var fullName = user.email ? user.email.split('@')[0] : 'Admin';
+    
+    var nameEl = document.querySelector('.user-profile .name');
+    if(nameEl) nameEl.textContent = fullName;
+    
+    var imgEl = document.querySelector('.user-profile img');
+    if(imgEl) imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0D8ABC&color=fff`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,10 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     var logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async function(e) {
+        logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            if (window.supabaseClient) await window.supabaseClient.auth.signOut();
-            window.location.replace('login.html');
+            localStorage.removeItem('admin_user');
+            window.location.replace('/src/admin/login.html');
         });
     }
 });

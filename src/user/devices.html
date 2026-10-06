@@ -44,7 +44,7 @@
 
     <!-- ━━━ SUB-NAV ━━━ -->
     <nav class="sub-nav">
-        <a href="user-home.html">All Models</a>
+        <a href="user-home.html">Featured</a>
         <a href="devices.html" class="active">Devices</a>
         <a href="support.html">Setup & Support</a>
     </nav>
@@ -73,7 +73,7 @@
 
         <div id="panel-available">
             <!-- Products Grid -->
-            <section class="products-grid">
+            <section class="products-grid" id="grid-available">
 
                 <!-- Cards will be populated here dynamically via AppleDB -->
 
@@ -81,26 +81,7 @@
         </div>
 
         <div id="panel-upcoming" style="display: none;">
-            <section class="products-grid">
-                <!-- iPhone 17 -->
-                <a href="#" class="p-card">
-                    <span class="p-badge" style="background:var(--yellow);color:var(--black);border:none;">Coming
-                        Soon</span>
-                    <div class="p-img-wrap">
-                        <img src="../../images/phones/Iphone_17.png" alt="iPhone 17" class="p-img">
-                    </div>
-                    <div class="p-info">
-                        <h3 class="p-title">iPhone 17</h3>
-                        <p class="p-specs">A19 Pro Chip · 256 GB</p>
-                        <div class="p-foot">
-                            <div>
-                                <p class="p-price-label">Estimated From</p>
-                                <p class="p-price">₱ 2,800/mo</p>
-                            </div>
-                            <button class="btn-buy">View</button>
-                        </div>
-                    </div>
-                </a>
+            <section class="products-grid" id="grid-upcoming">
             </section>
         </div>
     </main>
@@ -160,7 +141,7 @@
 
         <!-- Logout Footer -->
         <div class="sb-foot">
-            <button class="sb-signout" id="sb-logout" onclick="window.location.href='../../index.html'">
+            <button class="sb-signout" id="sb-logout" onclick="window.location.href='/src/user/login.html'">
                 <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;"></i></span>
                 Logout
             </button>
@@ -357,7 +338,12 @@
     <script src="js/appledb.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            if(window.loadAppleDBDevices) window.loadAppleDBDevices("#panel-available .products-grid");
+            if (window.loadAppleDBDevices) {
+                // Load Available Devices
+                window.loadAppleDBDevices("#grid-available", false, 'available');
+                // Load Upcoming Devices
+                window.loadAppleDBDevices("#grid-upcoming", false, 'upcoming');
+            }
         });
     </script>
 
@@ -365,7 +351,7 @@
     <!-- Shared UI & Auth -->
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/support-chat.js"></script>
+    <script src="js/support-chat.js?v=1790425793642"></script>
 </body>
 
 </html>

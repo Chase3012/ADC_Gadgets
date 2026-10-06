@@ -1,11 +1,12 @@
 // src/user/js/support-chat.js
 
 (async function() {
-    // Only init if supabase is loaded
-    if (!window.supabaseClient) return;
-    
-    // Check session
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    // Check session from localStorage
+    const storedUser = localStorage.getItem('customer_user');
+    let user = null;
+    if (storedUser) {
+        try { user = JSON.parse(storedUser); } catch(e){}
+    }
     
     // Inject CSS
     const style = document.createElement('style');
@@ -333,6 +334,7 @@
     const loginNotice = document.getElementById('fab-chat-login-notice');
 
     let isOpen = false;
+    let pollInterval = null;
 
     // Toggle Chat
     btn.addEventListener('click', () => {
@@ -340,27 +342,35 @@
         if (isOpen) {
             btn.classList.add('open');
             win.classList.add('open');
-            if (session) setTimeout(() => inputEl.focus(), 300);
+            if (user) setTimeout(() => inputEl.focus(), 300);
+            
+            if (user) {
+                loadMessages();
+                if (pollInterval) clearInterval(pollInterval);
+                pollInterval = setInterval(loadMessages, 3000);
+            }
         } else {
             btn.classList.remove('open');
             win.classList.remove('open');
+            if (pollInterval) clearInterval(pollInterval);
         }
     });
 
-    if (!session) {
+    if (!user) {
         loginNotice.textContent = 'Please log in';
         inputEl.placeholder = 'Log in to chat';
         return;
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
     inputEl.disabled = false;
     sendBtn.disabled = false;
     inputEl.placeholder = 'Type a message...';
 
+    let renderedMessageCount = 0;
     function renderMessage(msg) {
         if (placeholderEl) placeholderEl.style.display = 'none';
-        const isUser = msg.sender_role === 'user';
+        const isUser = msg.sender === 'user';
         const wrap = document.createElement('div');
         wrap.className = `msg-bubble-wrap ${isUser ? 'user' : 'admin'}`;
 
@@ -376,39 +386,33 @@
         messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
     }
 
-    // Load existing messages
-    const { data: existing } = await window.supabaseClient
-        .from('support_chats')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
-
-    if (existing && existing.length > 0) {
-        existing.forEach(renderMessage);
-    }
-
-    // Mark admin messages as read
-    await window.supabaseClient.from('support_chats')
-        .update({ is_read: true })
-        .eq('user_id', userId)
-        .eq('sender_role', 'admin')
-        .eq('is_read', false);
-
-    // Subscribe to real-time updates
-    window.supabaseClient.channel('user-chat-' + userId)
-        .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'support_chats',
-            filter: `user_id=eq.${userId}`
-        }, (payload) => {
-            renderMessage(payload.new);
-            // Mark admin reply as read immediately
-            if (payload.new.sender_role === 'admin') {
-                window.supabaseClient.from('support_chats').update({ is_read: true }).eq('id', payload.new.id);
+    async function loadMessages() {
+        try {
+            const res = await fetch('/chats/' + userId);
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            if (data.length === 0) {
+                if (placeholderEl) {
+                    messagesEl.appendChild(placeholderEl);
+                    placeholderEl.style.display = 'flex';
+                }
+                return;
             }
-        })
-        .subscribe();
+            if (data.length > renderedMessageCount) {
+                const newMsgs = data.slice(renderedMessageCount);
+                newMsgs.forEach(msg => {
+                    renderMessage(msg);
+                    if (msg.sender === 'admin' && !msg.is_read) {
+                        fetch('/chats/' + msg.id + '/read', { method: 'PUT' });
+                    }
+                });
+                renderedMessageCount = data.length;
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
 
     // Send message
     async function sendMessage() {
@@ -417,13 +421,19 @@
         inputEl.value = '';
         sendBtn.disabled = true;
 
-        const { error } = await window.supabaseClient.from('support_chats').insert({
-            user_id: userId,
-            sender_role: 'user',
-            message: text
-        });
-
-        if (error) {
+        try {
+            const res = await fetch('/chats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: userId,
+                    sender: 'user',
+                    message: text
+                })
+            });
+            if (!res.ok) throw new Error('Failed to send');
+            await loadMessages();
+        } catch (error) {
             console.error('Send error:', error);
             inputEl.value = text;
         }

@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/login",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/verify-otp",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/resend-otp",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/profiles(.*)",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/loans(.*)",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/pay(.*)",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/chats(.*)",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/dashboard(.*)",
+      "destination": "/server.js"
+    }
+  ]
+}

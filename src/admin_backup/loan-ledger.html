@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Ledger - ADC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../src/admin/js/admin-supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .ledger-container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        padding: 40px;
+        margin-top: 24px;
+        color: #334155;
+    }
+    .ledger-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+    }
+    .ledger-title h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+    }
+    .ledger-title p {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .ledger-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .metric-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+    }
+    .metric-box h3 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+    .metric-box p {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .excel-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .excel-table th, .excel-table td {
+        border: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        text-align: left;
+    }
+    .excel-table th {
+        background: #f1f5f9;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+    }
+    .excel-table tr:nth-child(even) {
+        background: #f8fafc;
+    }
+    .excel-table tr:hover {
+        background: #f1f5f9;
+    }
+    .status-paid {
+        background: #ecfdf5;
+        color: #10b981;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .status-cash {
+        background: #fffbeb;
+        color: #f59e0b;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .doc-section { margin-top: 36px; padding-top: 32px; border-top: 2px solid #f1f5f9; }
+    .doc-section h2 { font-size:18px; font-weight:700; margin-bottom:16px; color:#0f172a; display:flex; align-items:center; gap:8px; }
+    .doc-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; align-items: flex-start; gap: 20px; background: #fafafa; }
+    .doc-card img { max-width: 280px; max-height: 180px; border-radius: 8px; object-fit: contain; border: 1px solid #e2e8f0; cursor: pointer; }
+    .doc-meta { display: flex; flex-direction: column; gap: 8px; }
+    .doc-meta .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+    .doc-meta .value { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .doc-no-id { text-align: center; padding: 32px; color: #94a3b8; }
+    .doc-no-id h3 { font-size: 15px; font-weight: 600; margin-top: 8px; }
+    .action-bar { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-start; }
+    .btn-action { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .btn-action.pink { background: #e91e8c; color: #fff; } .btn-action.pink:hover { background: #c4157a; }
+    .btn-action.blue { background: #eff6ff; color: #3b82f6; } .btn-action.blue:hover { background: #dbeafe; }
+    .btn-action.gray { background: #f1f5f9; color: #475569; } .btn-action.gray:hover { background: #e2e8f0; }
+    .cash-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+    .cash-overlay.active { display: flex; }
+    .cash-box { background: #fff; border-radius: 16px; padding: 28px; width: 420px; max-width: 95vw; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+    .cash-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+    .cash-fg { margin-bottom: 14px; }
+    .cash-fg label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 6px; }
+    .cash-fg input { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 14px; font-family: inherit; outline: none; box-sizing: border-box; }
+    .cash-fg input:focus { border-color: #e91e8c; }
+    .cash-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .cash-cancel { padding: 10px 20px; border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; }
+    .cash-save { padding: 10px 20px; border: none; background: #e91e8c; color: #fff; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .cash-save:hover { background: #c4157a; }
+    .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; cursor: pointer; }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-overlay img { max-width: 90vw; max-height: 90vh; border-radius: 12px; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="logo-area">
+        <img src="../../images/logo.jpg" alt="ADC">
+        <span>ADC Admin</span>
+      </a>
+
+      <div class="nav-list">
+        <a href="dashboard.html" class="nav-item">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <a href="inventory.html" class="nav-item"><i data-lucide="box"></i> Inventory</a>
+        <a href="manage-users.html" class="nav-item active">
+          <i data-lucide="users"></i> Customers &amp; Loans
+        </a>
+        <a href="tasks.html" class="nav-item">
+          <i data-lucide="check-square"></i> Tasks
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="message-square"></i> Communications
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="pie-chart"></i> Reports
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="percent"></i> Commissions
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="settings"></i> Settings
+        </a>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="admin-profile">
+          <div class="avatar">A</div>
+          <div class="info">
+            <span class="name">admin</span>
+            <span class="role">Admin</span>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="window.location.href='../../src/admin/login.html'">
+          <i data-lucide="log-out"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header class="top-header" style="justify-content: flex-start; gap: 16px;">
+        <a href="manage-users.html" style="color: var(--text-muted); display:flex; align-items:center; text-decoration:none; font-weight:600; font-size:14px; transition:0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            <i data-lucide="arrow-left" style="width:16px; height:16px; margin-right:4px;"></i> Back to Users
+        </a>
+        <h2 style="font-size: 20px; font-weight: 700; margin-left: 16px; padding-left: 16px; border-left: 2px solid #e2e8f0;">User Loan Ledger</h2>
+      </header>
+
+      <div class="content-body" id="ledger-wrapper">
+        <div style="text-align: center; color: var(--text-muted); padding: 100px 0;">
+            <i data-lucide="loader-2" class="spin" style="width:40px; height:40px; color:var(--pink);"></i>
+            <p style="margin-top: 16px; font-size:16px;">Retrieving detailed ledger records...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Cash Payment Modal -->
+  <div class="cash-overlay" id="cash-modal">
+    <div class="cash-box">
+      <div class="cash-title">Add Cash Payment</div>
+      <div class="cash-fg"><label>Customer Name</label><input type="text" id="cm-name" readonly style="background:#f8fafc;"></div>
+      <div class="cash-fg"><label>Remaining Balance</label><input type="text" id="cm-balance" readonly style="background:#f8fafc;"></div>
+      <div class="cash-fg"><label>Monthly Installment</label><input type="text" id="cm-monthly" readonly style="background:#f8fafc;"></div>
+      <div class="cash-fg"><label>Amount Received (PHP)</label><input type="number" id="cm-amount" placeholder="Enter amount..." min="1" step="0.01"></div>
+      <div class="cash-footer">
+        <button class="cash-cancel" id="cm-cancel">Cancel</button>
+        <button class="cash-save" id="cm-submit">Record Cash Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox-overlay" id="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="ID Preview">
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        const wrapper = document.getElementById('ledger-wrapper');
+
+        if (!userId) {
+            wrapper.innerHTML = '<p style="color:red;">Invalid User ID.</p>';
+            return;
+        }
+
+        try {
+            // Fetch User Profile
+            const profileRes = await fetch(`/profiles/${userId}`);
+            if (!profileRes.ok) throw new Error('Failed to fetch user profile');
+            const userData = await profileRes.json();
+
+            // Fetch Loan
+            const loanRes = await fetch(`/loans?user_id=${userId}&all=true`);
+            const loanData = await loanRes.json();
+
+            if (!loanData || loanData.length === 0) {
+                wrapper.innerHTML = `
+                    <div class="ledger-container" style="text-align:center; padding: 100px 0;">
+                        <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
+                        <p style="font-size: 18px; color: #64748b;">This user has no active loans to display.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            const loan = loanData[0];
+            const loanIdFormatted = loan.id ? (parseInt(loan.id.replace(/-/g, '').substring(0, 11), 16) % 10000000000000).toString().padStart(13, '0') : '0000000000000';
+            const userIdFormatted = userId ? (parseInt(userId.replace(/-/g, '').substring(0, 11), 16) % 10000000000000).toString().padStart(11, '0') : '00000000000';
+
+            // Fetch Payments
+            let payments = [];
+            const payRes = await fetch(`/loans/${loan.id}/payments`);
+            if (payRes.ok) payments = await payRes.json();
+
+            const imgPath = loan.device_image && loan.device_image.includes('/') ? loan.device_image : `/images/phones/${loan.device_image}`;
+
+            let paymentsRows = '';
+            if (payments.length === 0) {
+                paymentsRows = '<tr><td colspan="5" style="text-align:center; padding: 30px; color:#94a3b8;">No payments have been recorded yet.</td></tr>';
+            } else {
+                paymentsRows = payments.map((p, index) => `
+                    <tr>
+                        <td style="color:#64748b; font-weight:600;">#${(index + 1).toString().padStart(3, '0')}</td>
+                        <td>${new Date(p.payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <td style="font-weight:700;">₱${parseFloat(p.amount_paid).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td>${p.payment_method || 'Online'}</td>
+                        <td><span class="status-paid">Completed</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            wrapper.innerHTML = `
+                <div class="ledger-container">
+                    <div class="ledger-header">
+                        <div class="ledger-title">
+                            <h1>${userData.full_name || userData.name || 'Unknown User'}</h1>
+                            <p>User ID: <strong>#${userIdFormatted}</strong> &nbsp;|&nbsp; Loan ID: <strong>#${loanIdFormatted}</strong></p>
+                            <p style="margin-top: 4px;">Email: ${userData.email} &nbsp;|&nbsp; Phone: ${userData.mobile || 'N/A'} &nbsp;|&nbsp; Address: ${userData.address || 'N/A'}</p>
+                        </div>
+                        <div style="text-align: right; display:flex; gap:16px; align-items:center;">
+                            <img src="${imgPath}" alt="${loan.device_name}" style="height: 80px; object-fit:contain;">
+                            <div style="text-align:left;">
+                                <div style="font-size:12px; color:#64748b; text-transform:uppercase; font-weight:700;">Financed Device</div>
+                                <div style="font-size:20px; font-weight:800; color:#0f172a;">${loan.device_name}</div>
+                                <div style="font-size:13px; font-weight:700; color:#10b981; margin-top:4px; text-transform:uppercase;">${loan.status === 'active' ? 'Active Status' : loan.status}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ledger-metrics">
+                        <div class="metric-box">
+                            <h3>Total Loan Amount</h3>
+                            <p>₱${parseFloat(loan.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                        </div>
+                        <div class="metric-box">
+                            <h3>Remaining Balance</h3>
+                            <p style="color: #ef4444;">₱${parseFloat(loan.remaining_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                        </div>
+                        <div class="metric-box">
+                            <h3>Monthly Installment</h3>
+                            <p style="color: var(--pink);">₱${parseFloat(loan.monthly_payment).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                        </div>
+                        <div class="metric-box">
+                            <h3>Next Payment Due</h3>
+                            <p>${new Date(loan.next_payment_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn-action pink" id="btn-cash-payment">
+                            <i data-lucide="banknote" style="width:16px;height:16px;"></i> Add Cash Payment
+                        </button>
+                        <a href="tasks.html" class="btn-action blue" style="text-decoration:none;">
+                            <i data-lucide="check-square" style="width:16px;height:16px;"></i> View Tasks
+                        </a>
+                    </div>
+
+                    <div class="doc-section">
+                        <h2><i data-lucide="file-check" style="width:20px;height:20px;color:#3b82f6;"></i> Customer Documents</h2>
+                        ${userData.id_url ? `
+                        <div class="doc-card">
+                            <img src="${userData.id_url}" alt="Government ID" onclick="openLightbox('${userData.id_url}')" title="Click to zoom">
+                            <div class="doc-meta">
+                                <div><div class="label">Document Type</div><div class="value">${userData.id_type || 'Government ID'}</div></div>
+                                <div><div class="label">Status</div><div class="value" style="color:#22c55e;">&#10003; Uploaded &amp; On File</div></div>
+                                <div style="margin-top:8px; font-size:12px; color:#64748b;">Click the image to view in full size.</div>
+                            </div>
+                        </div>` : `
+                        <div class="doc-card">
+                            <div class="doc-no-id" style="flex:1;">
+                                <i data-lucide="alert-circle" style="width:36px;height:36px;color:#ef4444;"></i>
+                                <h3>No ID uploaded yet</h3>
+                                <p style="font-size:13px;margin-top:4px;">This customer has not uploaded their valid government ID. Remind them via the <a href="tasks.html" style="color:#e91e8c;font-weight:600;">Tasks page</a>.</p>
+                            </div>
+                        </div>`}
+                    </div>
+
+                    <h2 style="font-size:18px; font-weight:700; margin-bottom:16px; color:#0f172a; display:flex; align-items:center; margin-top:32px;"><i data-lucide="list" style="width:20px; height:20px; margin-right:8px; color:var(--pink);"></i> Detailed Payment Ledger</h2>
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Trans #</th>
+                                <th>Date Received</th>
+                                <th>Amount Paid</th>
+                                <th>Payment Method</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${paymentsRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            lucide.createIcons();
+
+            // Wire cash payment modal
+            const loanIdForModal = loan.id;
+            const customerName = userData.full_name || 'Customer';
+            const remainingBal = parseFloat(loan.remaining_balance);
+            const monthlyPay = parseFloat(loan.monthly_payment);
+
+            window._currentLoanId = loanIdForModal;
+            const btnCash = document.getElementById('btn-cash-payment');
+            if (btnCash) {
+                btnCash.addEventListener('click', function() {
+                    document.getElementById('cm-name').value = customerName;
+                    document.getElementById('cm-balance').value = 'PHP ' + remainingBal.toLocaleString('en-PH', {minimumFractionDigits:2});
+                    document.getElementById('cm-monthly').value = 'PHP ' + monthlyPay.toLocaleString('en-PH', {minimumFractionDigits:2});
+                    document.getElementById('cm-amount').value = '';
+                    document.getElementById('cash-modal').classList.add('active');
+                });
+            }
+
+        } catch (err) {
+            console.error(err);
+            wrapper.innerHTML = `<p style="color:red; padding: 40px; background:#fff; border-radius:12px; margin-top:24px;">Failed to load ledger: ${err.message}</p>`;
+        }
+    });
+
+    // Cash modal global event handlers
+    document.getElementById('cm-cancel').addEventListener('click', function() {
+        document.getElementById('cash-modal').classList.remove('active');
+    });
+    document.getElementById('cm-submit').addEventListener('click', async function() {
+        const loanId = window._currentLoanId;
+        const amount = parseFloat(document.getElementById('cm-amount').value);
+        if (!amount || amount <= 0) { alert('Enter a valid amount.'); return; }
+        const btn = document.getElementById('cm-submit');
+        btn.textContent = 'Recording...'; btn.disabled = true;
+        try {
+            const r = await fetch('/api/admin/add-cash-payment', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ loan_id: loanId, amount_paid: amount })
+            });
+            const d = await r.json();
+            if (r.ok) {
+                document.getElementById('cash-modal').classList.remove('active');
+                alert('Cash payment of PHP ' + amount.toLocaleString('en-PH', {minimumFractionDigits:2}) + ' recorded!\nNew balance: PHP ' + parseFloat(d.new_balance).toLocaleString('en-PH', {minimumFractionDigits:2}));
+                location.reload();
+            } else alert('Error: ' + d.error);
+        } catch(e) { alert('Failed.'); }
+        btn.textContent = 'Record Cash Payment'; btn.disabled = false;
+    });
+
+    function openLightbox(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').classList.add('active');
+    }
+  </script>
+  <script src="js/admin-auth.js"></script>
+</body>
+</html>

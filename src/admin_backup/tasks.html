@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operations Hub &mdash; ADC Admin</title>
+  <meta name="description" content="ADC Admin Operations Hub: Missing documents, overdue payments, device fulfillment, task board.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+  .tasks-tabs{display:flex;gap:12px;padding:0 0 20px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10; margin-bottom: 32px; padding-top: 20px;}
+  .tab-btn{display:flex;align-items:center;gap:8px;padding:12px 20px;border:none;background:rgba(255,255,255,0.5);cursor:pointer;font-size:14px;font-weight:600;color:var(--text-muted);border-radius:12px;transition:all .3s ease;font-family:inherit;box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+  .tab-btn:hover{color:var(--text-main);background:#fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transform: translateY(-1px);}
+  .tab-btn.active{color:#fff;background:#e91e8c; box-shadow: 0 10px 20px rgba(233,30,140,0.2);}
+  .tab-btn .tbadge{background:#94a3b8;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;min-width:20px;text-align:center;transition:all .3s;}
+  .tab-btn.active .tbadge{background:#fff; color:#e91e8c;}
+  .tab-panel{display:none;padding:0;}
+  .tab-panel.active{display:block; animation: fadeIn 0.4s ease-out;}
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .section-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;}
+  .section-hdr h2{font-size:24px;font-weight:800;color:var(--text-main);display:flex;align-items:center;gap:12px; letter-spacing: -0.02em;}
+  .section-hdr p{font-size:14px;color:var(--text-muted);margin-top:8px;}
+  .task-list{display:flex;flex-direction:column;gap:20px;}
+  .ops-card{background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.4);border-radius:16px;padding:28px;display:grid;grid-template-columns:1fr auto;align-items:start;gap:24px;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);box-shadow: 0 10px 30px rgba(0,0,0,0.03);}
+  .ops-card:hover{box-shadow:0 20px 40px rgba(0,0,0,0.08);transform:translateY(-3px);background:#fff;border:1px solid rgba(0,0,0,0.05);}
+  .ops-card-name{font-size:15px;font-weight:700;color:var(--text-main);}
+  .ops-card-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--text-muted);align-items:center;margin-top:4px;}
+  .ops-card-meta span{display:flex;align-items:center;gap:4px;}
+  .ops-card-device{font-size:12px;font-weight:600;color:var(--pink);background:rgba(233,30,140,.08);padding:3px 10px;border-radius:20px;display:inline-block;margin-top:4px;}
+  .ops-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:180px;}
+  .btn-op{display:flex;align-items:center;gap:6px;padding:8px 14px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;text-decoration:none;}
+  .btn-op.pink{background:var(--pink);color:#fff;} .btn-op.pink:hover{background:#c4157a;}
+  .btn-op.gray{background:#f1f5f9;color:#475569;} .btn-op.gray:hover{background:#e2e8f0;}
+  .bdg-overdue{background:#fef2f2;color:#ef4444;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .fs-pending{background:#fffbeb;color:#f59e0b;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .fs-shipped{background:#eff6ff;color:#3b82f6;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .fs-ready_for_meetup{background:#fdf4ff;color:#a855f7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .fs-delivered{background:#f0fdf4;color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .notes-wrap{margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;}
+  .notes-wrap label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;display:block;margin-bottom:6px;}
+  .notes-wrap textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px;outline:none;transition:border .2s;box-sizing:border-box;}
+  .notes-wrap textarea:focus{border-color:var(--pink);}
+  .tracking-row{display:flex;gap:8px;margin-top:8px;}
+  .tracking-row input{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;}
+  .tracking-row input:focus{border-color:var(--pink);}
+  .kanban-board{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .kanban-col{background:rgba(255,255,255,0.4);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);border-radius:16px;padding:24px;}
+  .kanban-col-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .kanban-col-title{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text-main);}
+  .kanban-count{background:var(--pink);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+  .kanban-dropzone{min-height:80px;display:flex;flex-direction:column;gap:12px;border-radius:8px;transition:background .2s;}
+  .task-card{background:#fff;border:1px solid rgba(0,0,0,0.05);border-radius:12px;padding:20px;cursor:grab;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);box-shadow: 0 4px 15px rgba(0,0,0,0.02);}
+  .task-card:hover{box-shadow:0 12px 25px rgba(0,0,0,0.06);transform:translateY(-2px);}
+  .task-title{font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:4px;}
+  .task-desc{font-size:12px;color:var(--text-muted);margin-bottom:8px;line-height:1.5;}
+  .task-footer{display:flex;justify-content:space-between;align-items:center;}
+  .task-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;}
+  .b-high{background:#fef2f2;color:#ef4444;} .b-medium{background:#fffbeb;color:#f59e0b;} .b-low{background:#f0fdf4;color:#22c55e;}
+  .task-actions{display:flex;gap:4px;}
+  .task-btn{background:transparent;border:none;cursor:pointer;color:#94a3b8;padding:4px;border-radius:6px;transition:all .2s;display:flex;align-items:center;}
+  .task-btn:hover{background:#f1f5f9;color:#64748b;}
+  .moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center;backdrop-filter:blur(4px);}
+  .moverlay.active{display:flex;}
+  .mbox{background:#fff;border-radius:16px;padding:28px;width:440px;max-width:95vw;box-shadow:0 25px 50px rgba(0,0,0,.2);}
+  .mtitle{font-size:18px;font-weight:700;margin-bottom:20px;}
+  .mfooter{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+  .fg{margin-bottom:16px;}
+  .fg label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:6px;}
+  .fg input,.fg select,.fg textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--pink);}
+  .btn-cancel{padding:10px 20px;border:1px solid var(--border);background:#fff;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text-muted);cursor:pointer;}
+  .btn-save-m{padding:10px 20px;border:none;background:var(--pink);color:#fff;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn-save-m:hover{background:#c4157a;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+  .empty-state h3{font-size:16px;font-weight:600;margin-bottom:6px;}
+  .inner-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="logo-area">
+      <img src="../../images/logo.jpg" alt="ADC"><span>ADC Admin</span>
+    </a>
+    <div class="nav-list">
+      <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+      <a href="manage-users.html" class="nav-item"><i data-lucide="users"></i> Customers &amp; Loans</a>
+      <div class="nav-sub">
+        <a href="manage-users.html" class="nav-sub-item">Users</a>
+        <a href="manage-admins.html" class="nav-sub-item">Admin</a>
+      </div>
+      <a href="inventory.html" class="nav-item"><i data-lucide="box"></i> Inventory</a>
+      <a href="tasks.html" class="nav-item active"><i data-lucide="check-square"></i> Tasks</a>
+      <a href="dashboard.html#communications" class="nav-item"><i data-lucide="message-square"></i> Communications</a>
+      <a href="reports.html" class="nav-item"><i data-lucide="pie-chart"></i> Reports</a>
+      <a href="#" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+    <div class="user-profile">
+      <img src="https://ui-avatars.com/api/?name=Admin&background=e91e8c&color=fff" alt="Admin">
+      <div class="user-info">
+        <div class="name" id="sidebar-admin-name">Admin</div>
+        <div class="role">Administrator</div>
+      </div>
+    </div>
+  </aside>
+  <main class="main" style="flex:1; overflow-y:auto; overflow-x:hidden; background: var(--bg);">
+    <header class="header" style="background: transparent; border-bottom: none; padding: 48px 48px 12px; position: static;">
+      <div>
+        <h1 class="page-title" style="font-size: 36px; font-weight: 900; letter-spacing: -0.04em;">Operations Hub</h1>
+        <div class="page-subtitle" style="font-size: 15px; margin-top: 8px;">Missing documents &middot; Overdue collections &middot; Fulfillment &middot; Task board</div>
+      </div>
+    </header>
+    <div class="scroll-area" style="padding: 0 48px 60px;">
+      <div class="tasks-tabs">
+        <button class="tab-btn active" data-tab="missing-docs">
+          <i data-lucide="file-x" style="width:15px;height:15px;"></i> Missing Documents
+          <span class="tbadge" id="badge-docs">0</span>
+        </button>
+        <button class="tab-btn" data-tab="overdue">
+          <i data-lucide="alert-circle" style="width:15px;height:15px;"></i> Overdue Payments
+          <span class="tbadge" id="badge-overdue">0</span>
+        </button>
+        <button class="tab-btn" data-tab="fulfillment">
+          <i data-lucide="package" style="width:15px;height:15px;"></i> Fulfillment Queue
+          <span class="tbadge" id="badge-fulfill">0</span>
+        </button>
+        <button class="tab-btn" data-tab="kanban">
+          <i data-lucide="layout-grid" style="width:15px;height:15px;"></i> Task Board
+        </button>
+      </div>
+
+      <!-- Tab 1: Missing Docs -->
+      <div class="tab-panel active" id="tab-missing-docs">
+        <div class="section-hdr">
+          <div>
+            <h2><i data-lucide="file-x" style="width:18px;height:18px;color:#ef4444;"></i> Missing Documents</h2>
+            <p>Customers with active loans who have not uploaded their valid government ID. Nudge them via in-app chat.</p>
+          </div>
+        </div>
+        <div class="task-list" id="missing-docs-list"><div class="empty-state"><h3>Loading...</h3></div></div>
+      </div>
+
+      <!-- Tab 2: Overdue -->
+      <div class="tab-panel" id="tab-overdue">
+        <div class="section-hdr">
+          <div>
+            <h2><i data-lucide="alert-circle" style="width:18px;height:18px;color:#ef4444;"></i> Overdue Payments</h2>
+            <p>Customers who missed their payment deadline. Send a chat reminder or record a cash payment directly.</p>
+          </div>
+        </div>
+        <div class="task-list" id="overdue-list"><div class="empty-state"><h3>Loading...</h3></div></div>
+      </div>
+
+      <!-- Tab 3: Fulfillment -->
+      <div class="tab-panel" id="tab-fulfillment">
+        <div class="section-hdr">
+          <div>
+            <h2><i data-lucide="package" style="width:18px;height:18px;color:#3b82f6;"></i> Fulfillment Queue</h2>
+            <p>Active loans where the physical device has not been shipped or handed over to the customer yet.</p>
+          </div>
+        </div>
+        <div class="task-list" id="fulfillment-list"><div class="empty-state"><h3>Loading...</h3></div></div>
+      </div>
+
+      <!-- Tab 4: Kanban -->
+      <div class="tab-panel" id="tab-kanban">
+        <div class="section-hdr">
+          <div>
+            <h2><i data-lucide="layout-grid" style="width:18px;height:18px;color:var(--pink);"></i> Task Board</h2>
+            <p>Manage internal to-dos, work in progress, and completed tasks.</p>
+          </div>
+          <button class="btn-op pink" id="btn-new-task"><i data-lucide="plus" style="width:14px;height:14px;"></i> New Task</button>
+        </div>
+        <div class="kanban-board">
+          <div class="kanban-col" data-status="todo">
+            <div class="kanban-col-hdr"><span class="kanban-col-title">To Do</span><span class="kanban-count" id="count-todo">0</span></div>
+            <div class="kanban-dropzone" id="zone-todo"></div>
+          </div>
+          <div class="kanban-col" data-status="progress">
+            <div class="kanban-col-hdr"><span class="kanban-col-title">In Progress</span><span class="kanban-count" id="count-progress">0</span></div>
+            <div class="kanban-dropzone" id="zone-progress"></div>
+          </div>
+          <div class="kanban-col" data-status="done">
+            <div class="kanban-col-hdr"><span class="kanban-col-title">Done</span><span class="kanban-count" id="count-done">0</span></div>
+            <div class="kanban-dropzone" id="zone-done"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New Task Modal -->
+<div class="moverlay" id="task-modal">
+  <div class="mbox">
+    <div class="mtitle">Create New Task</div>
+    <form id="task-form">
+      <div class="fg"><label>Title</label><input type="text" id="task-title" placeholder="Enter task title..." required></div>
+      <div class="fg"><label>Description (optional)</label><textarea id="task-desc" placeholder="Add more context..." style="min-height:80px;"></textarea></div>
+      <div class="fg"><label>Priority</label>
+        <select id="task-priority">
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="mfooter">
+        <button type="button" class="btn-cancel" id="btn-close-modal">Cancel</button>
+        <button type="submit" class="btn-save-m">Create Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cash Payment Modal -->
+<div class="moverlay" id="cash-modal">
+  <div class="mbox">
+    <div class="mtitle">Add Cash Payment</div>
+    <input type="hidden" id="cash-loan-id">
+    <div class="fg"><label>Customer</label><input type="text" id="cash-name" readonly style="background:#f8fafc;color:#64748b;"></div>
+    <div class="fg"><label>Monthly Due</label><input type="text" id="cash-due" readonly style="background:#f8fafc;color:#64748b;"></div>
+    <div class="fg"><label>Amount Paid (PHP)</label><input type="number" id="cash-amount" placeholder="Enter amount..." min="1" step="0.01"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" id="cash-cancel">Cancel</button>
+      <button class="btn-save-m" id="cash-submit">Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+const API = '';
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(function(b) {
+  b.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(function(x){x.classList.remove('active');});
+    document.querySelectorAll('.tab-panel').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    document.getElementById('tab-' + b.dataset.tab).classList.add('active');
+  });
+});
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', function(){ localStorage.removeItem('admin_user'); window.location.href='login.html'; });
+}
+
+function fmt(iso){ if(!iso) return '--'; return new Date(iso).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}); }
+function money(n){ return 'PHP ' + parseFloat(n).toLocaleString('en-PH',{minimumFractionDigits:2}); }
+
+async function nudge(uid, type, btn){
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    var r = await fetch(API+'/api/admin/nudge', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, type:type})});
+    if(r.ok){ btn.textContent='Sent!'; btn.style.background='#22c55e'; setTimeout(function(){ btn.disabled=false; btn.textContent=(type==='document'?'Nudge via Chat':'Send Reminder'); btn.style.background=''; }, 2500); }
+    else { var d=await r.json(); alert('Error: '+d.error); btn.disabled=false; btn.textContent='Retry'; }
+  } catch(e){ alert('Network error'); btn.disabled=false; btn.textContent='Retry'; }
+}
+
+async function loadMissingDocs(){
+  var list = document.getElementById('missing-docs-list');
+  try {
+    var r = await fetch(API+'/api/admin/missing-documents');
+    var data = await r.json();
+    document.getElementById('badge-docs').textContent = data.length;
+    if(!data.length){ list.innerHTML='<div class="empty-state"><h3>All clear! Every customer has uploaded their ID.</h3></div>'; return; }
+    list.innerHTML = data.map(function(c){
+      return '<div class="ops-card">'
+        +'<div class="ops-card-left">'
+          +'<div class="ops-card-name">'+c.full_name+'</div>'
+          +'<div class="ops-card-meta"><span>'+c.email+'</span><span>'+(c.mobile||'N/A')+'</span><span>Loan since '+fmt(c.loan_created_at)+'</span></div>'
+          +'<span class="ops-card-device">'+c.device_name+'</span>'
+        +'</div>'
+        +'<div class="ops-actions">'
+          +'<span class="bdg-overdue">No ID on file</span>'
+          +'<button class="btn-op pink" onclick="nudge(\''+c.id+'\',\'document\',this)">Nudge via Chat</button>'
+          +'<a href="loan-ledger.html?user_id='+c.id+'" class="btn-op gray">View Ledger</a>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    lucide.createIcons();
+  } catch(e){ list.innerHTML='<div class="empty-state"><h3>Failed to load</h3></div>'; }
+}
+
+async function loadOverdue(){
+  var list = document.getElementById('overdue-list');
+  try {
+    var r = await fetch(API+'/api/admin/overdue-loans');
+    var data = await r.json();
+    document.getElementById('badge-overdue').textContent = data.length;
+    if(!data.length){ list.innerHTML='<div class="empty-state"><h3>No overdue payments. All customers are up to date!</h3></div>'; return; }
+    list.innerHTML = data.map(function(l){
+      var days = Math.floor((Date.now()-new Date(l.next_payment_date))/86400000);
+      var contacted = l.last_contacted_date ? 'Last contacted: '+fmt(l.last_contacted_date) : 'Never contacted';
+      var safeName = (l.full_name||'').replace(/'/g, "\\'");
+      return '<div class="ops-card" style="grid-template-columns:1fr;">'
+        +'<div class="inner-grid">'
+          +'<div>'
+            +'<div style="display:flex;align-items:center;gap:10px;"><div class="ops-card-name">'+l.full_name+'</div><span class="bdg-overdue">'+days+'d overdue</span></div>'
+            +'<div class="ops-card-meta"><span>'+l.email+'</span><span>'+(l.mobile||'N/A')+'</span><span>Due: '+fmt(l.next_payment_date)+'</span><span>'+contacted+'</span></div>'
+            +'<div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;"><span class="ops-card-device">'+l.device_name+'</span><span style="font-size:12px;color:#ef4444;font-weight:600;">Due: '+money(l.monthly_payment)+'</span><span style="font-size:12px;color:#64748b;">Balance: '+money(l.remaining_balance)+'</span></div>'
+          +'</div>'
+          +'<div class="ops-actions">'
+            +'<button class="btn-op pink" onclick="nudge(\''+l.user_id+'\',\'payment\',this)">Send Reminder</button>'
+            +'<button class="btn-op gray" onclick="openCash(\''+l.id+'\',\''+safeName+'\','+l.monthly_payment+')">Add Cash Payment</button>'
+            +'<a href="loan-ledger.html?user_id='+l.user_id+'" class="btn-op gray">View Ledger</a>'
+          +'</div>'
+        +'</div>'
+        +'<div class="notes-wrap">'
+          +'<label>Internal Follow-up Notes</label>'
+          +'<textarea id="notes-'+l.id+'" placeholder="e.g. Customer will pay on Friday...">'+(l.follow_up_notes||'')+'</textarea>'
+          +'<button class="btn-op gray" style="margin-top:6px;" onclick="saveNotes(\''+l.id+'\',this)">Save Notes</button>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    lucide.createIcons();
+  } catch(e){ list.innerHTML='<div class="empty-state"><h3>Failed to load</h3></div>'; }
+}
+
+async function saveNotes(id, btn){
+  var notes = document.getElementById('notes-'+id).value;
+  btn.textContent = 'Saving...';
+  try {
+    await fetch(API+'/api/admin/update-followup', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({loan_id:id, follow_up_notes:notes})});
+    btn.textContent='Saved!'; setTimeout(function(){ btn.textContent='Save Notes'; }, 2000);
+  } catch(e){ btn.textContent='Error'; }
+}
+
+var FSTATS = [{v:'pending',l:'Pending Prep'},{v:'ready_for_meetup',l:'Ready for Meetup'},{v:'shipped',l:'Shipped'},{v:'delivered',l:'Delivered'}];
+
+async function loadFulfillment(){
+  var list = document.getElementById('fulfillment-list');
+  try {
+    var r = await fetch(API+'/api/admin/pending-fulfillment');
+    var data = await r.json();
+    document.getElementById('badge-fulfill').textContent = data.length;
+    if(!data.length){ list.innerHTML='<div class="empty-state"><h3>All devices delivered! No pending fulfillments.</h3></div>'; return; }
+    list.innerHTML = data.map(function(l){
+      var cur = l.fulfillment_status || 'pending';
+      var opts = FSTATS.map(function(s){ return '<option value="'+s.v+'"'+(cur===s.v?' selected':'')+'>'+s.l+'</option>'; }).join('');
+      var curLabel = (FSTATS.find(function(s){return s.v===cur;})||{l:'Pending'}).l;
+      return '<div class="ops-card">'
+        +'<div>'
+          +'<div style="display:flex;align-items:center;gap:10px;"><div class="ops-card-name">'+l.full_name+'</div><span class="fs-'+cur+'">'+curLabel+'</span></div>'
+          +'<div class="ops-card-meta"><span>'+l.email+'</span><span>'+(l.mobile||'N/A')+'</span><span>'+(l.address||'No address')+'</span></div>'
+          +'<span class="ops-card-device">'+l.device_name+'</span>'
+          +(l.tracking_number ? '<div style="margin-top:6px;font-size:12px;color:#3b82f6;font-weight:600;">Tracking: '+l.tracking_number+'</div>' : '')
+        +'</div>'
+        +'<div class="ops-actions" style="min-width:200px;">'
+          +'<div style="width:100%;"><label style="font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;display:block;">Update Status</label>'
+          +'<select id="fs-'+l.id+'" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;">'+opts+'</select></div>'
+          +'<div class="tracking-row"><input type="text" id="tr-'+l.id+'" placeholder="Tracking number..." value="'+(l.tracking_number||'')+'"></div>'
+          +'<button class="btn-op pink" style="width:100%;justify-content:center;" onclick="saveFulfill(\''+l.id+'\',this)">Save Changes</button>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    lucide.createIcons();
+  } catch(e){ list.innerHTML='<div class="empty-state"><h3>Failed to load</h3></div>'; }
+}
+
+async function saveFulfill(id, btn){
+  var status = document.getElementById('fs-'+id).value;
+  var tracking = document.getElementById('tr-'+id).value;
+  btn.disabled=true; btn.textContent='Saving...';
+  try {
+    var r = await fetch(API+'/api/admin/update-fulfillment', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({loan_id:id, fulfillment_status:status, tracking_number:tracking||null})});
+    if(r.ok){ btn.textContent='Saved!'; btn.style.background='#22c55e'; setTimeout(function(){ btn.disabled=false; btn.textContent='Save Changes'; btn.style.background=''; if(status==='delivered') loadFulfillment(); }, 2000); }
+  } catch(e){ btn.textContent='Error'; btn.disabled=false; }
+}
+
+function openCash(loanId, name, monthly){
+  document.getElementById('cash-loan-id').value = loanId;
+  document.getElementById('cash-name').value = name;
+  document.getElementById('cash-due').value = money(monthly);
+  document.getElementById('cash-amount').value = '';
+  document.getElementById('cash-modal').classList.add('active');
+}
+document.getElementById('cash-cancel').addEventListener('click', function(){ document.getElementById('cash-modal').classList.remove('active'); });
+document.getElementById('cash-submit').addEventListener('click', async function(){
+  var loanId = document.getElementById('cash-loan-id').value;
+  var amount = parseFloat(document.getElementById('cash-amount').value);
+  if(!amount || amount <= 0){ alert('Enter a valid amount.'); return; }
+  var btn = document.getElementById('cash-submit');
+  btn.textContent='Recording...'; btn.disabled=true;
+  try {
+    var r = await fetch(API+'/api/admin/add-cash-payment', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({loan_id:loanId, amount_paid:amount})});
+    var d = await r.json();
+    if(r.ok){ document.getElementById('cash-modal').classList.remove('active'); alert('Cash payment of '+money(amount)+' recorded!\nNew balance: '+money(d.new_balance)); loadOverdue(); }
+    else alert('Error: '+d.error);
+  } catch(e){ alert('Failed.'); }
+  btn.textContent='Record Payment'; btn.disabled=false;
+});
+
+// Kanban
+var TAPI = API+'/api/tasks';
+var tasks = [];
+var zones = {todo:document.getElementById('zone-todo'),progress:document.getElementById('zone-progress'),done:document.getElementById('zone-done')};
+var counts = {todo:document.getElementById('count-todo'),progress:document.getElementById('count-progress'),done:document.getElementById('count-done')};
+var tModal = document.getElementById('task-modal');
+document.getElementById('btn-new-task').addEventListener('click', function(){ tModal.classList.add('active'); });
+document.getElementById('btn-close-modal').addEventListener('click', function(){ tModal.classList.remove('active'); });
+tModal.addEventListener('click', function(e){ if(e.target===tModal) tModal.classList.remove('active'); });
+
+async function loadTasks(){
+  try { var r=await fetch(TAPI); tasks=await r.json(); renderTasks(); } catch(e){ console.error(e); }
+}
+function renderTasks(){
+  Object.values(zones).forEach(function(z){z.innerHTML='';});
+  var c={todo:0,progress:0,done:0};
+  tasks.forEach(function(t){
+    var s=t.status||'todo';
+    if(zones[s]){ c[s]++;
+      var el=document.createElement('div'); el.className='task-card'; el.draggable=true; el.dataset.id=t.id;
+      var bc=t.priority==='high'?'b-high':t.priority==='low'?'b-low':'b-medium';
+      el.innerHTML='<div class="task-title">'+t.title+'</div>'+(t.description?'<div class="task-desc">'+t.description+'</div>':'')+'<div class="task-footer"><span class="task-badge '+bc+'">'+t.priority+'</span><div class="task-actions"><button class="task-btn delete-btn" data-id="'+t.id+'"><i data-lucide="trash-2" style="width:14px;"></i></button></div></div>';
+      zones[s].appendChild(el);
+    }
+  });
+  Object.keys(c).forEach(function(k){counts[k].textContent=c[k];});
+  lucide.createIcons(); setupDnD(); setupDel();
+}
+document.getElementById('task-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var title=document.getElementById('task-title').value, desc=document.getElementById('task-desc').value, prio=document.getElementById('task-priority').value;
+  try { var r=await fetch(TAPI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,description:desc,priority:prio,status:'todo'})}); if(r.ok){tModal.classList.remove('active');document.getElementById('task-form').reset();loadTasks();} } catch(e){console.error(e);}
+});
+function setupDel(){
+  document.querySelectorAll('.delete-btn').forEach(function(btn){
+    btn.addEventListener('click', async function(e){
+      var id=e.currentTarget.dataset.id;
+      if(confirm('Delete this task?')){ try{await fetch(TAPI+'/'+id,{method:'DELETE'});loadTasks();}catch(e){} }
+    });
+  });
+}
+var dragCard=null;
+function setupDnD(){
+  document.querySelectorAll('.task-card').forEach(function(c){
+    c.addEventListener('dragstart',function(){dragCard=c;setTimeout(function(){c.style.opacity='0.5';},0);});
+    c.addEventListener('dragend',function(){setTimeout(function(){c.style.opacity='1';},0);dragCard=null;});
+  });
+  document.querySelectorAll('.kanban-dropzone').forEach(function(z){
+    z.addEventListener('dragover',function(e){e.preventDefault();z.style.background='rgba(0,0,0,0.02)';});
+    z.addEventListener('dragleave',function(){z.style.background='transparent';});
+    z.addEventListener('drop',async function(e){
+      e.preventDefault();z.style.background='transparent';
+      if(dragCard){var status=z.parentElement.dataset.status,id=dragCard.dataset.id;z.appendChild(dragCard);
+      try{await fetch(TAPI+'/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:status})});loadTasks();}catch(err){loadTasks();}}
+    });
+  });
+}
+
+loadMissingDocs(); loadOverdue(); loadFulfillment(); loadTasks();
+</script>
+<script src="js/admin-auth.js"></script>
+</body>
+</html>

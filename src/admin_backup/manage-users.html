@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard â€” ADC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Admin Supabase Client -->
+    <script src="../../src/admin/js/admin-supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="logo-area">
+        <img src="../../images/logo.jpg" alt="ADC">
+        <span>ADC Admin</span>
+      </a>
+
+      <div class="nav-list">
+        <!-- Dashboard dropdown -->
+        <a href="dashboard.html" class="nav-item" id="dashboard-toggle">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <div class="nav-sub" id="dashboard-sub">
+          <a href="dashboard.html" class="nav-sub-item">Analytics</a>
+          <a href="dashboard.html" class="nav-sub-item">Sales</a>
+        </div>
+
+
+        <a href="#" class="nav-item expanded active" id="manage-users-toggle">
+          <i data-lucide="users"></i> Customers & Loans
+        </a>
+        <div class="nav-sub open" id="manage-users-sub">
+          <a href="manage-users.html" class="nav-sub-item active" id="nav-users">Users</a>
+          <a href="manage-admins.html" class="nav-sub-item" id="nav-admin">Admin</a>
+        </div>
+        <a href="#" class="nav-item" id="nav-inventory">
+          <i data-lucide="box"></i> Inventory
+        </a>
+        <a href="tasks.html" class="nav-item">
+          <i data-lucide="check-square"></i> Tasks
+        </a>
+        <a href="dashboard.html#communications" class="nav-item">
+          <i data-lucide="message-square"></i> Communications
+        </a>
+
+        <!-- Reports points to reports.html -->
+        <a href="reports.html" class="nav-item" id="reports-toggle">
+          <i data-lucide="pie-chart"></i> Reports
+        </a>
+        <div class="nav-sub" id="reports-sub">
+          <a href="reports.html" class="nav-sub-item">Pipeline Report</a>
+          <a href="reports.html" class="nav-sub-item">Loan Insight Report</a>
+          <a href="reports.html" class="nav-sub-item">Sales Performance Report</a>
+          <a href="reports.html" class="nav-sub-item">Leaderboard</a>
+          <a href="reports.html" class="nav-sub-item">Loan Enrollment Report</a>
+          <a href="reports.html" class="nav-sub-item">Mail Analytics</a>
+          <a href="reports.html" class="nav-sub-item">Status Report</a>
+        </div>
+
+        <a href="#" class="nav-item">
+          <i data-lucide="percent"></i> Commissions
+        </a>
+        <a href="#" class="nav-item">
+          <i data-lucide="settings"></i> Settings
+        </a>
+      </div>
+
+      <div class="user-profile">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Admin</div>
+        </div>
+        <i data-lucide="chevron-down" style="margin-left:auto; width:16px; color:rgba(255,255,255,0.38);"></i>
+      </div>
+      <button id="logout-btn" style="width: calc(100% - 32px); margin: 0 16px 16px; padding: 10px; background: rgba(255,255,255,0.05); color: #fff; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: background 0.2s;">
+        <i data-lucide="log-out" style="width: 16px;"></i> Logout
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <h1 class="page-title">Customers</h1>
+        <div class="header-right">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search">
+          </div>
+          <button class="notif-btn">
+            <i data-lucide="bell" style="width:20px;"></i>
+            <span class="notif-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- MANAGE USERS PANEL -->
+        <div id="panel-manage-users" class="dash-panel" style="display: block;">
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h2 class="panel-header" style="margin-bottom: 0;">Active Users</h2>
+              <button class="btn-primary" id="open-add-user-btn" style="display: flex; align-items: center; gap: 6px;"><i data-lucide="plus" style="width:16px;"></i> Add New User</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="users-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Mobile</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Date Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody">
+                  <!-- JS will populate this -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- DETAILED LEDGER PANEL -->
+        <div id="panel-loan-details" class="dash-panel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <button class="btn-secondary" id="back-to-users-btn" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;"><i data-lucide="arrow-left" style="width: 16px;"></i> Back to Users</button>
+                <button id="issue-new-loan-ledger-btn" style="padding: 10px 20px; font-size: 14px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.3);"><i data-lucide="plus" style="width:16px; margin-right:6px;"></i> Issue New Loan</button>
+            </div>
+            
+            <div class="card" id="ledger-content" style="min-height: 400px; padding: 32px;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- ADD USER MODAL -->
+  <div class="modal-overlay" id="add-user-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Add New User</h2>
+        <button class="modal-close" id="close-add-user-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-user-form" class="form-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="nu-name" required placeholder="Juan Dela Cruz">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="nu-email" required placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label>Temporary Password</label>
+            <input type="password" id="nu-password" required placeholder="Min 6 chars">
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="text" id="nu-mobile" required placeholder="09171234567">
+          </div>
+          <div class="form-group full">
+            <label>Home Address</label>
+            <input type="text" id="nu-address" required placeholder="Complete home address">
+          </div>
+          <div class="form-group">
+            <label>ID Type</label>
+            <select id="nu-idtype" required>
+              <option value="Driver's License">Driver's License</option>
+              <option value="Passport">Passport</option>
+              <option value="National ID">National ID</option>
+              <option value="Voter's ID">Voter's ID</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Loan Model</label>
+            <button type="button" id="open-phone-selector-btn" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font); font-size: 13px; color: var(--text-main); background: #ffffff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;">
+              <span id="selected-phone-text">Select model...</span>
+              <i data-lucide="chevron-down" style="width:14px;"></i>
+            </button>
+            <input type="hidden" id="nu-loan" required>
+          </div>
+          <div class="form-group">
+            <label>Payment Term (Duration)</label>
+            <select id="nu-term" required>
+              <option value="24" selected>24 Months</option>
+              <option value="12">12 Months</option>
+              <option value="6">6 Months</option>
+              <option value="3">3 Months</option>
+            </select>
+          </div>
+          <div class="form-group full" id="nu-loan-preview" style="display:none; background:#fdf2f8; border:1px solid #fbcfe8; border-radius:8px; padding:12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <span style="font-weight:700; color:#db2777;" id="preview-device-name">iPhone 15</span>
+                <span style="color:var(--text-muted); margin-left:6px;" id="preview-device-srp">SRP: ₱49,990.00</span>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:12px; color:var(--text-muted);">Calculated Monthly:</span>
+                <span style="font-weight:800; color:#db2777; font-size:15px; margin-left:4px;" id="preview-monthly">₱2,000.00 / mo</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLOR SELECTOR (shows after model is chosen) -->
+          <div class="form-group full" id="nu-color-group" style="display:none;">
+            <label style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:8px; display:block;">
+              Unit Color <span style="color:var(--danger);">*</span>
+            </label>
+            <div id="nu-color-swatches" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              <!-- Swatches injected by JS when device is selected -->
+            </div>
+            <input type="hidden" id="nu-device-color" required>
+            <p id="nu-color-hint" style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">Select the color unit for this loan.</p>
+          </div>
+
+          <div class="form-group full">
+            <label>Upload Valid ID Image</label>
+            <input type="file" id="nu-idimg" accept="image/*" required style="padding: 5px 12px;">
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" id="cancel-add-user-btn">Cancel</button>
+        <button class="btn-submit" id="submit-add-user-btn" form="add-user-form"><i data-lucide="check" style="width:16px;"></i> Create User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE SELECTOR MODAL -->
+  <div class="ps-overlay" id="phone-selector-modal">
+    <div class="ps-modal">
+      <div class="modal-head">
+        <h2>Select Loan Model</h2>
+        <button type="button" class="modal-close" id="close-phone-selector-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="ps-body">
+        <div class="phone-grid" id="phone-grid-container">
+          <!-- Populated dynamically from /api/devices -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS MODALS (LOADING, SUCCESS, ERROR) -->
+  <div class="modal-overlay" id="apple-loading-overlay">
+    <div class="modal" style="width:auto; min-width:300px; text-align:center; padding:32px;">
+      <i data-lucide="loader" class="spin" style="width:32px; height:32px; color:var(--text-main); margin: 0 auto 16px auto; display:block;"></i>
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin:0;">Creating Account...</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Please do not close this window.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="apple-success-modal">
+    <div class="modal" style="width:auto; min-width:320px; text-align:center; padding:32px;">
+      <div style="background:var(--success); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px auto;">
+        <i data-lucide="check-circle-2" style="width: 24px; height: 24px; color: #fff;"></i>
+      </div>
+      <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main);">Account Created</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin: 8px 0 24px 0; line-height: 1.5;">The user has been successfully added to the system.</p>
+      <button class="btn-primary" id="close-success-btn" style="width:100%">Done</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="apple-error-modal">
+    <div class="modal" style="width:auto; min-width:320px; text-align:center; padding:32px;">
+      <div style="background:var(--danger); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px auto;">
+        <i data-lucide="alert-circle" style="width: 24px; height: 24px; color: #fff;"></i>
+      </div>
+      <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main);">Creation Failed</h2>
+      <p id="apple-error-msg" style="font-size: 14px; color: var(--text-muted); margin: 8px 0 24px 0; line-height: 1.5; word-wrap: break-word;">An unexpected error occurred.</p>
+      <button class="btn-primary" id="close-error-btn" style="width:100%">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- ADMIN LOAN DETAILS MODAL (Removed in favor of full panel) -->
+
+  <script>
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+    
+    let lastViewedUserId = null;
+
+    const manageUsersSub = document.getElementById('manage-users-sub');
+    // Manage Users sub-item clicks
+    if (manageUsersSub) {
+      manageUsersSub.querySelectorAll('.nav-sub-item').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          // The other links like "Users" or "Admin" can just be normal anchor navigation
+        });
+      });
+    }
+
+    // Supabase Auth Integration
+
+    // --- Manage Users Logic ---
+    async function loadUsers() {
+      if (!supabaseClient) return;
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+      
+      let data;
+      try {
+        const response = await fetch('/profiles?role=user');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        data = await response.json();
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found.</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = '';
+      data.forEach(user => {
+        const name = user.full_name || user.name || 'No Name';
+        const email = user.email || 'No Email';
+        const date = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'â€”';
+        const mobile = user.mobile || user.phone || 'â€”';
+        const address = user.address || user.home_address || 'â€”';
+        const status = user.status || 'Active';
+        
+        let statusClass = 'success';
+        if (status.toLowerCase() === 'suspended') statusClass = 'failed';
+        else if (status.toLowerCase() === 'pending') statusClass = 'pending';
+        else if (status.toLowerCase() === 'completed') statusClass = 'success';
+        
+        const tr = document.createElement('tr');
+        const accountId = user.id ? parseInt(user.id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
+        tr.innerHTML = `
+          <td>
+            <div style="font-weight:700;">${name}</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:500;">ID: ${accountId} &bull; ${email}</div>
+          </td>
+          <td>${mobile}</td>
+          <td>${address}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+          <td style="color:var(--text-muted)">${date}</td>
+          <td><button class="view-loan-btn" data-userid="${user.id}" style="padding: 6px 14px; font-size: 12px; font-weight: 600; background: #fff; color: var(--pink); border: 1px solid var(--pink); border-radius: 6px; cursor: pointer; transition: all 0.2s;">View Loan</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      lucide.createIcons();
+      attachViewLoanListeners();
+    }
+    
+    // --- Admin Loan Viewer Logic ---
+    async function loadUserLoanDetails(userId) {
+      document.getElementById('panel-manage-users').style.display = 'none';
+      const ledgerPanel = document.getElementById('panel-loan-details');
+      ledgerPanel.style.display = 'block';
+      
+      const ledgerContent = document.getElementById('ledger-content');
+      lastViewedUserId = userId;
+      
+      ledgerContent.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving detailed ledger...</p></div>';
+      lucide.createIcons();
+      
+      let data, fetchError;
+      try {
+        const loanRes = await fetch(`/loans?user_id=${userId}&all=true&_t=${Date.now()}`, { cache: 'no-store' });
+        if (!loanRes.ok) throw new Error(`Server returned ${loanRes.status}`);
+        data = await loanRes.json();
+      } catch (err) {
+        fetchError = err;
+      }
+      
+      const issueBtn = document.getElementById('issue-new-loan-ledger-btn');
+      
+      if (fetchError) {
+        ledgerContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching loan: ${fetchError.message}</p>`;
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        issueBtn.style.display = 'inline-block';
+        ledgerContent.innerHTML = `
+            <div style="text-align:center; padding: 60px; color:var(--text-muted);">
+                <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
+                <p style="font-size: 16px;">This user currently has no active loans.</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+      
+      const loan = data.find(l => l.status === 'active') || data[0];
+      
+      // Fetch Ledger (loan + payments)
+      let ledgerRes, ledgerData;
+      try {
+        ledgerRes = await fetch(`/loans/${loan.id}/ledger`);
+        ledgerData = await ledgerRes.json();
+      } catch (err) {
+        ledgerContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching ledger details</p>`;
+        return;
+      }
+      
+      const l = ledgerData.loan;
+      const payments = ledgerData.payments || [];
+      
+      if (l.status === 'active') {
+          issueBtn.style.display = 'none';
+      } else {
+          issueBtn.style.display = 'inline-block';
+      }
+      
+      const accountId = l.user_id ? parseInt(l.user_id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
+      const progress = ((l.total_amount - l.remaining_balance) / l.total_amount) * 100;
+      
+      const imgPath = l.device_image && l.device_image.includes('/') ? l.device_image : `../../images/phones/${l.device_image}`;
+      let tableHtml = `
+        <div style="display: flex; gap: 40px; margin-bottom: 32px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Customer Information</h3>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Name:</strong> ${l.full_name || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Account ID:</strong> ${accountId}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> ${l.email || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Mobile:</strong> ${l.mobile || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Address:</strong> ${l.address || 'N/A'}</p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Loan Overview</h3>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <img src="${imgPath}" alt="${l.device_name}" style="height: 48px; width: 48px; object-fit: contain; background: #f8fafc; border-radius: 8px; padding: 4px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">${l.device_name}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">${l.status}</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Total SRP</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0;">₱${Number(l.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Balance</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0;">₱${Number(l.remaining_balance).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Monthly</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0; color:var(--pink);">₱${Number(l.monthly_payment).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Term</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0;">${l.term_months || Math.ceil(l.total_amount / l.monthly_payment)} Mos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 16px;">Ledger Details</h3>
+        <div class="table-wrapper" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+            <table class="data-table" style="margin: 0; width: 100%; border-collapse: collapse;">
+                <thead style="background: #f8fafc;">
+                    <tr>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 12px; color: var(--text-muted);">Date</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 12px; color: var(--text-muted);">Description</th>
+                        <th style="padding: 12px 16px; text-align: right; font-size: 12px; color: var(--text-muted);">Amount Paid</th>
+                        <th style="padding: 12px 16px; text-align: right; font-size: 12px; color: var(--text-muted);">Running Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+      `;
+      
+      let currentBalance = Number(l.total_amount);
+      
+      // Add initial row for loan creation
+      tableHtml += `
+          <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 12px 16px; font-size: 14px;">${new Date(l.created_at).toLocaleDateString()}</td>
+              <td style="padding: 12px 16px; font-size: 14px; font-weight: 600;">Loan Issued</td>
+              <td style="padding: 12px 16px; font-size: 14px; text-align: right; color: var(--text-muted);">-</td>
+              <td style="padding: 12px 16px; font-size: 14px; text-align: right; font-weight: 700;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          </tr>
+      `;
+      
+      if (payments.length === 0) {
+          tableHtml += `
+            <tr>
+                <td colspan="4" style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px;">No payments recorded yet.</td>
+            </tr>
+          `;
+      } else {
+          payments.forEach(p => {
+              const amount = Number(p.amount_paid) || (p.amount ? p.amount / 100 : 0);
+              currentBalance -= amount;
+              if (currentBalance < 0) currentBalance = 0;
+              
+              const pDate = p.payment_date || p.created_at;
+              tableHtml += `
+                  <tr style="border-bottom: 1px solid var(--border);">
+                      <td style="padding: 12px 16px; font-size: 14px;">${new Date(pDate).toLocaleDateString()}</td>
+                      <td style="padding: 12px 16px; font-size: 14px;">Payment Received <span style="font-size: 11px; color: var(--text-muted); display: block;">Ref: ${p.checkout_session_id || 'N/A'}</span></td>
+                      <td style="padding: 12px 16px; font-size: 14px; text-align: right; color: #10b981; font-weight: 600;">- ₱${amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                      <td style="padding: 12px 16px; font-size: 14px; text-align: right; font-weight: 700;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                  </tr>
+              `;
+          });
+      }
+      
+      tableHtml += `
+                </tbody>
+            </table>
+        </div>
+      `;
+      
+      ledgerContent.innerHTML = tableHtml;
+      lucide.createIcons();
+    }
+
+    function attachViewLoanListeners() {
+      document.querySelectorAll('.view-loan-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const userId = e.currentTarget.getAttribute('data-userid');
+          if (userId) {
+            await loadUserLoanDetails(userId);
+          }
+        });
+      });
+    }
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'loan-payment-update' && lastViewedUserId) {
+        loadUserLoanDetails(lastViewedUserId);
+      }
+    });
+
+    document.getElementById('back-to-users-btn')?.addEventListener('click', () => {
+        document.getElementById('panel-loan-details').style.display = 'none';
+        document.getElementById('panel-manage-users').style.display = 'block';
+    });
+    
+    const modal = document.getElementById('add-user-modal');
+    const openModalBtn = document.getElementById('open-add-user-btn');
+    const closeBtn = document.getElementById('close-add-user-btn');
+    const cancelBtn = document.getElementById('cancel-add-user-btn');
+    const form = document.getElementById('add-user-form');
+    const submitBtn = document.getElementById('submit-add-user-btn');
+
+    let allDevices = [];
+    async function loadDevices() {
+      try {
+        const res = await fetch('/api/devices');
+        if (res.ok) {
+          allDevices = await res.json();
+          populatePhoneGrid();
+        }
+      } catch(e) {}
+    }
+
+    function populatePhoneGrid() {
+      const grid = document.getElementById('phone-grid-container');
+      if (!grid) return;
+      grid.innerHTML = '';
+      // Only show 'available' devices
+      const available = allDevices.filter(d => d.status === 'available');
+      available.forEach(d => {
+        const imgPath = d.image && d.image.includes('/') ? d.image : `../../images/phones/${d.image}`;
+        const card = document.createElement('div');
+        card.className = 'phone-card';
+        card.dataset.phone = d.name;
+        card.dataset.deviceImg = imgPath;
+        card.innerHTML = `
+          <img src="${imgPath}" alt="${d.name}" onerror="this.src='../../images/phones/Iphone_15.png'">
+          <div class="phone-name">${d.name}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    loadDevices();
+
+    function updateLoanPreview() {
+      const model = nuLoanInput.value;
+      const termSelect = document.getElementById('nu-term');
+      const term = termSelect ? parseInt(termSelect.value) || 24 : 24;
+      const previewBox = document.getElementById('nu-loan-preview');
+      if (!model) {
+        if (previewBox) previewBox.style.display = 'none';
+        return;
+      }
+      const dev = allDevices.find(d => d.name.toLowerCase() === model.toLowerCase());
+      const srp = dev ? parseFloat(dev.srp) : 49990;
+      const monthly = (term === 24 && dev && dev.monthly)
+        ? parseFloat(dev.monthly)
+        : Math.round((srp / term) * 100) / 100;
+
+      const pName = document.getElementById('preview-device-name');
+      const pSrp = document.getElementById('preview-device-srp');
+      const pMonthly = document.getElementById('preview-monthly');
+      if (pName) pName.textContent = model;
+      if (pSrp) pSrp.textContent = `SRP: ₱${srp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      if (pMonthly) pMonthly.textContent = `₱${monthly.toLocaleString(undefined, {minimumFractionDigits: 2})} / mo (${term} mos)`;
+      if (previewBox) previewBox.style.display = 'block';
+    }
+    document.getElementById('nu-term')?.addEventListener('change', updateLoanPreview);
+
+    if(openModalBtn) openModalBtn.addEventListener('click', () => { 
+      modal.classList.add('active'); 
+      form.reset(); 
+      selectedPhoneText.textContent = 'Select a model...';
+      nuLoanInput.value = '';
+      if (document.getElementById('nu-term')) document.getElementById('nu-term').value = '24';
+      if (document.getElementById('nu-loan-preview')) document.getElementById('nu-loan-preview').style.display = 'none';
+      // Reset color group
+      const colorGroup = document.getElementById('nu-color-group');
+      if (colorGroup) colorGroup.style.display = 'none';
+      const deviceColorInput = document.getElementById('nu-device-color');
+      if (deviceColorInput) deviceColorInput.value = '';
+    });
+    const closeModal = () => modal.classList.remove('active');
+    if(closeBtn) closeBtn.addEventListener('click', closeModal);
+    if(cancelBtn) cancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+
+    // Phone Selector Logic
+    const psModal = document.getElementById('phone-selector-modal');
+    const openPsBtn = document.getElementById('open-phone-selector-btn');
+    const closePsBtn = document.getElementById('close-phone-selector-btn');
+    const selectedPhoneText = document.getElementById('selected-phone-text');
+    const nuLoanInput = document.getElementById('nu-loan');
+    
+    let phoneSelectionMode = 'user'; // 'user' or 'loan'
+
+    if(openPsBtn) openPsBtn.addEventListener('click', () => {
+      phoneSelectionMode = 'user';
+      psModal.classList.add('active');
+    });
+    if(closePsBtn) closePsBtn.addEventListener('click', () => psModal.classList.remove('active'));
+    
+    document.getElementById('issue-new-loan-ledger-btn')?.addEventListener('click', () => {
+      if (!lastViewedUserId) return;
+      phoneSelectionMode = 'loan';
+      psModal.classList.add('active');
+    });
+
+    // Phone card click — delegated to grid container (handles dynamic cards)
+    const phoneGridContainer = document.getElementById('phone-grid-container');
+    if (phoneGridContainer) {
+      phoneGridContainer.addEventListener('click', async (e) => {
+        const card = e.target.closest('.phone-card');
+        if (!card) return;
+        const phone = card.getAttribute('data-phone');
+        const imgSrc = card.dataset.deviceImg || card.querySelector('img')?.src || '';
+        psModal.classList.remove('active');
+        
+        if (phoneSelectionMode === 'user') {
+          nuLoanInput.value = phone;
+          selectedPhoneText.textContent = phone;
+          updateLoanPreview();
+          renderUserColorSwatches(phone);
+        } else if (phoneSelectionMode === 'loan') {
+          // Issue new loan API call
+          if (!confirm(`Are you sure you want to issue a new ${phone} loan to this user?`)) return;
+          
+          const aLoading = document.getElementById('apple-loading-overlay');
+          const aSuccess = document.getElementById('apple-success-modal');
+          const aError = document.getElementById('apple-error-modal');
+          const aErrMsg = document.getElementById('apple-error-msg');
+          
+          aLoading.querySelector('h3').textContent = 'Issuing Loan...';
+          aLoading.classList.add('active');
+          
+          try {
+            const res = await fetch('/loans', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: lastViewedUserId,
+                device_name: phone,
+                device_image: imgSrc
+              })
+            });
+            if (!res.ok) throw new Error('Failed to issue loan');
+            
+            aLoading.classList.remove('active');
+            aSuccess.querySelector('h2').textContent = 'Loan Issued';
+            aSuccess.querySelector('p').textContent = 'The new loan has been successfully added to the user.';
+            aSuccess.classList.add('active');
+            
+            loadUserLoanDetails(lastViewedUserId);
+            loadUsers();
+          } catch (err) {
+            console.error(err);
+            aLoading.classList.remove('active');
+            aErrMsg.textContent = err.message;
+            aError.querySelector('h2').textContent = 'Issue Failed';
+            aError.classList.add('active');
+          }
+        }
+      });
+    }
+
+    // Color Selector for user creation
+    const PRESET_COLORS_MAP = {
+      // iPhone 16 series
+      'Black': '#1a1a1a', 'White': '#f3ede3', 'Pink': '#f2a8b0', 'Teal': '#4e8d87', 'Ultramarine': '#3b4f88',
+      // iPhone 16 Pro
+      'Black Titanium': '#2f2e2c', 'White Titanium': '#e8e3d8', 'Natural Titanium': '#c2b9a9', 'Desert Titanium': '#a6845c',
+      // iPhone 15 series
+      'Blue': '#9aafc4', 'Yellow': '#e4d159', 'Green': '#a4c0a6', 'Red': '#d13040',
+      // iPhone 15 Pro
+      'Blue Titanium': '#7a8ea0', 'Black Titanium (15)': '#2f2f2f', 'White Titanium (15)': '#dcd7cc',
+      // iPhone 14 series
+      'Midnight': '#252628', 'Starlight': '#f5f0e6', 'Purple': '#cac1d8', 'Space Black': '#2b2b2b', 'Gold': '#f8d7a5', 'Silver': '#e9e3d6', 'Space Gray': '#6b6b6b',
+      // iPhone 13 / 12
+      'Alpine Green': '#7d9b8e', 'Coral': '#e1614f', 'Light Blue': '#aacdd6',
+      // iPhone 11
+      'Purple (11)': '#c7b8d7', 'Yellow (11)': '#f5e07d', 'Green (11)': '#a5cf9f', 'Red (11)': '#c0222a', 'White (11)': '#f7f2f2', 'Black (11)': '#1a1919',
+      // Older / SE
+      'Product Red': '#b92234', 'Midnight Green': '#3d5248', 'Pacific Blue': '#2e6e99', 'Graphite': '#5c5957', 'Bronze': '#7a5c45'
+    };
+
+    function renderUserColorSwatches(phoneName) {
+      const colorGroup = document.getElementById('nu-color-group');
+      const swatchContainer = document.getElementById('nu-color-swatches');
+      const colorHidden = document.getElementById('nu-device-color');
+      if (!colorGroup || !swatchContainer || !colorHidden) return;
+
+      // Reset selection
+      colorHidden.value = '';
+      swatchContainer.innerHTML = '';
+
+      // Find device in allDevices
+      const dev = allDevices.find(d => d.name.toLowerCase() === phoneName.toLowerCase());
+      const colors = (dev && dev.colors && dev.colors.length > 0) ? dev.colors : [];
+
+      if (colors.length === 0) {
+        colorGroup.style.display = 'none';
+        return;
+      }
+
+      colorGroup.style.display = 'block';
+      colors.forEach(c => {
+        const hex = PRESET_COLORS_MAP[c] || '#94a3b8';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = c;
+        btn.dataset.colorName = c;
+        btn.style.cssText = `
+          display:flex; align-items:center; gap:7px; padding:6px 12px; border-radius:20px;
+          border:2px solid var(--border); background:#fff; cursor:pointer; font-size:12px;
+          font-weight:600; color:var(--text-main); transition:all .15s;
+        `;
+        btn.innerHTML = `<span style="width:16px;height:16px;border-radius:50%;background:${hex};border:1px solid rgba(0,0,0,.2);flex-shrink:0;"></span>${c}`;
+        btn.addEventListener('click', () => {
+          // Deselect all
+          swatchContainer.querySelectorAll('button').forEach(b => {
+            b.style.border = '2px solid var(--border)';
+            b.style.background = '#fff';
+            b.style.color = 'var(--text-main)';
+          });
+          // Select this
+          btn.style.border = '2px solid #ec4899';
+          btn.style.background = '#fdf2f8';
+          btn.style.color = '#db2777';
+          colorHidden.value = c;
+        });
+        swatchContainer.appendChild(btn);
+      });
+    }
+
+    if(form) form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const aLoading = document.getElementById('apple-loading-overlay');
+      const aSuccess = document.getElementById('apple-success-modal');
+      const aError = document.getElementById('apple-error-modal');
+      const aErrMsg = document.getElementById('apple-error-msg');
+      
+      if (!nuLoanInput.value) { 
+        aErrMsg.textContent = 'Please select a loan model.';
+        aError.classList.add('open');
+        return; 
+      }
+
+      const colorGroup = document.getElementById('nu-color-group');
+      const deviceColorInput = document.getElementById('nu-device-color');
+      if (colorGroup && colorGroup.style.display !== 'none') {
+        if (!deviceColorInput || !deviceColorInput.value) {
+          aErrMsg.textContent = 'Please select a color for the loan unit.';
+          aError.classList.add('active');
+          return;
+        }
+      }
+
+      submitBtn.disabled = true;
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i data-lucide="loader" class="spin" style="width:16px; animation: spin 1s linear infinite;"></i> Creating...';
+      
+      aLoading.classList.add('active');
+      
+      try {
+        const formData = new FormData();
+        formData.append('name', document.getElementById('nu-name').value);
+        formData.append('email', document.getElementById('nu-email').value);
+        formData.append('password', document.getElementById('nu-password').value);
+        formData.append('mobile', document.getElementById('nu-mobile').value);
+        formData.append('address', document.getElementById('nu-address').value);
+        formData.append('idType', document.getElementById('nu-idtype').value);
+        formData.append('loanModel', document.getElementById('nu-loan').value);
+        formData.append('loanTerm', document.getElementById('nu-term').value);
+        const deviceColorVal = document.getElementById('nu-device-color')?.value;
+        if (deviceColorVal) formData.append('deviceColor', deviceColorVal);
+        
+        const file = document.getElementById('nu-idimg').files[0];
+        if (file) {
+          formData.append('idImage', file);
+        }
+
+        const res = await fetch('/api/users/create', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Registration failed');
+        }
+
+        aLoading.classList.remove('active');
+        closeModal();
+        aSuccess.classList.add('active');
+        loadUsers();
+
+      } catch (err) {
+        console.error(err);
+        aLoading.classList.remove('active');
+        aErrMsg.textContent = err.message;
+        aError.classList.add('active');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+    
+    // Close modal handlers
+    document.getElementById('close-success-btn').addEventListener('click', () => {
+      document.getElementById('apple-success-modal').classList.remove('active');
+    });
+    document.getElementById('close-error-btn').addEventListener('click', () => {
+      document.getElementById('apple-error-modal').classList.remove('active');
+    });
+    
+    // Load users on page load
+    loadUsers();
+
+    });
+  </script>
+
+    </script>
+
+    

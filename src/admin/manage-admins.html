@@ -21,7 +21,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <a href="dashboard.html" class="logo-area">
-        <img src="../../images/logo.jpg" alt="ADC">
+        <img src="/images/logo.jpg" alt="ADC">
         <span>ADC Admin</span>
       </a>
 
@@ -35,17 +35,15 @@
           <a href="dashboard.html" class="nav-sub-item">Sales</a>
         </div>
 
-        <a href="#" class="nav-item">
-          <i data-lucide="folder-open"></i> Loan Applications
-        </a>
         <a href="#" class="nav-item expanded active" id="manage-users-toggle">
-          <i data-lucide="users"></i> Manage Users
+          <i data-lucide="users"></i> Customers &amp; Loans
         </a>
         <div class="nav-sub open" id="manage-users-sub">
           <a href="manage-users.html" class="nav-sub-item" id="nav-users">Users</a>
           <a href="manage-admins.html" class="nav-sub-item active" id="nav-admin">Admin</a>
         </div>
-        <a href="#" class="nav-item">
+        <a href="inventory.html" class="nav-item"><i data-lucide="box"></i> Inventory</a>
+        <a href="tasks.html" class="nav-item">
           <i data-lucide="check-square"></i> Tasks
         </a>
         <a href="dashboard.html#communications" class="nav-item">
@@ -228,8 +226,12 @@
       const tbody = document.getElementById('users-tbody');
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
       
-      const { data, error } = await supabaseClient.from('profiles').select('*').eq('role', 'admin').order('created_at', { ascending: false });
-      if (error) {
+      let data;
+      try {
+        const response = await fetch('/profiles?role=admin');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        data = await response.json();
+      } catch (error) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
         return;
       }

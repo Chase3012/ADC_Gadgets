@@ -20,88 +20,54 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <a href="dashboard.html" class="logo-area">
-        <img src="../../images/logo.jpg" alt="ADC">
-        <span>ADC Admin</span>
+    <div class="logo-area">
+      <img src="/images/logo.jpg" alt="ADC Logo" style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <span>ADC Gadgets<br><small style="font-size:10px;color:var(--text-muted);font-weight:500;">Loan Console</small></span>
+    </div>
+    <nav class="nav-list">
+      <a href="dashboard.html" class="nav-item ">
+        <div class="nav-item-left">Overview</div>
       </a>
-
-      <div class="nav-list">
-        <!-- Dashboard dropdown -->
-        <a href="dashboard.html" class="nav-item" id="dashboard-toggle">
-          <i data-lucide="layout-dashboard"></i> Dashboard
-        </a>
-        <div class="nav-sub" id="dashboard-sub">
-          <a href="dashboard.html" class="nav-sub-item">Analytics</a>
-          <a href="dashboard.html" class="nav-sub-item">Sales</a>
-        </div>
-
-        <a href="#" class="nav-item">
-          <i data-lucide="folder-open"></i> Loan Applications
-        </a>
-        <a href="#" class="nav-item expanded active" id="manage-users-toggle">
-          <i data-lucide="users"></i> Manage Users
-        </a>
-        <div class="nav-sub open" id="manage-users-sub">
-          <a href="manage-users.html" class="nav-sub-item active" id="nav-users">Users</a>
-          <a href="manage-admins.html" class="nav-sub-item" id="nav-admin">Admin</a>
-        </div>
-        <a href="#" class="nav-item">
-          <i data-lucide="check-square"></i> Tasks
-        </a>
-        <a href="dashboard.html#communications" class="nav-item">
-          <i data-lucide="message-square"></i> Communications
-        </a>
-
-        <!-- Reports points to reports.html -->
-        <a href="reports.html" class="nav-item" id="reports-toggle">
-          <i data-lucide="pie-chart"></i> Reports
-        </a>
-        <div class="nav-sub" id="reports-sub">
-          <a href="reports.html" class="nav-sub-item">Pipeline Report</a>
-          <a href="reports.html" class="nav-sub-item">Loan Insight Report</a>
-          <a href="reports.html" class="nav-sub-item">Sales Performance Report</a>
-          <a href="reports.html" class="nav-sub-item">Leaderboard</a>
-          <a href="reports.html" class="nav-sub-item">Loan Enrollment Report</a>
-          <a href="reports.html" class="nav-sub-item">Mail Analytics</a>
-          <a href="reports.html" class="nav-sub-item">Status Report</a>
-        </div>
-
-        <a href="#" class="nav-item">
-          <i data-lucide="percent"></i> Commissions
-        </a>
-        <a href="#" class="nav-item">
-          <i data-lucide="settings"></i> Settings
-        </a>
-      </div>
-
-      <div class="user-profile">
-        <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
-        <div class="user-info">
-          <div class="name">Admin</div>
-          <div class="role">Admin</div>
-        </div>
-        <i data-lucide="chevron-down" style="margin-left:auto; width:16px; color:rgba(255,255,255,0.38);"></i>
-      </div>
-      <button id="logout-btn" style="width: calc(100% - 32px); margin: 0 16px 16px; padding: 10px; background: rgba(255,255,255,0.05); color: #fff; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: background 0.2s;">
-        <i data-lucide="log-out" style="width: 16px;"></i> Logout
+      <a href="loan-ledger.html" class="nav-item ">
+        <div class="nav-item-left">Active Loans</div>
+        <div class="nav-badge">1</div>
+      </a>
+      <a href="communication.html" class="nav-item ">
+        <div class="nav-item-left">Communication</div>
+      </a>
+      <a href="inventory.html" class="nav-item ">
+        <div class="nav-item-left">Inventory</div>
+      </a>
+      <a href="manage-users.html" class="nav-item active">
+        <div class="nav-item-left">Customers</div>
+      </a>
+      <a href="reports.html" class="nav-item ">
+        <div class="nav-item-left">Reports</div>
+      </a>
+    </nav>
+    <div style="margin-top:auto; padding:20px 24px;">
+      <button id="logout-btn" style="width:100%; background:var(--surface); border:1px solid var(--border); padding:12px; border-radius:12px; color:var(--danger); font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition: background 0.2s;">
+        <i data-lucide="log-out" style="width:16px; height:16px;"></i> Logout
       </button>
-    </aside>
+    </div>
+  </aside>
 
     <!-- MAIN -->
     <main class="main">
       <header class="header">
-        <h1 class="page-title">Users</h1>
-        <div class="header-right">
-          <div class="search-box">
-            <i data-lucide="search"></i>
-            <input type="text" placeholder="Search">
-          </div>
-          <button class="notif-btn">
-            <i data-lucide="bell" style="width:20px;"></i>
-            <span class="notif-dot"></span>
-          </button>
+      <div class="header-left">
+        <p class="page-subtitle">9 BORROWERS</p>
+        <h1 class="page-title">Customers</h1>
+      </div>
+      <div class="header-right" style="display:flex; align-items:center; gap:16px;">
+        <div style="position:relative;">
+          <input type="text" id="user-search-input" placeholder="Search loans, customers..." style="padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:220px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
         </div>
-      </header>
+        
+        
+        <div style="width:36px; height:36px; background:#0F172A; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">AD</div>
+      </div>
+    </header>
 
       <div class="content">
 
@@ -131,13 +97,20 @@
             </div>
           </div>
         </div>
+        
+        <!-- DETAILED LEDGER PANEL -->
+        <div id="panel-loan-details" class="dash-panel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <button class="btn-secondary" id="back-to-users-btn" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;"><i data-lucide="arrow-left" style="width: 16px;"></i> Back to Users</button>
+                <button id="issue-new-loan-ledger-btn" style="padding: 10px 20px; font-size: 14px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.3);"><i data-lucide="plus" style="width:16px; margin-right:6px;"></i> Issue New Loan</button>
+            </div>
+            
+            <div class="card" id="ledger-content" style="min-height: 400px; padding: 32px;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
 
-      </div>
-    </main>
-
-  </div>
-
-  <!-- ADD USER MODAL -->
+        <!-- ADD USER MODAL -->
   <div class="modal-overlay" id="add-user-modal">
     <div class="modal">
       <div class="modal-head">
@@ -177,12 +150,46 @@
           </div>
           <div class="form-group">
             <label>Loan Model</label>
-            <button type="button" id="open-phone-selector-btn" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font); font-size: 13px; color: var(--text-main); background: #ffffff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;">
+            <button type="button" id="open-phone-selector-btn" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font); font-size: 13px; color: var(--text-main); background:var(--surface); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;">
               <span id="selected-phone-text">Select model...</span>
               <i data-lucide="chevron-down" style="width:14px;"></i>
             </button>
             <input type="hidden" id="nu-loan" required>
           </div>
+          <div class="form-group">
+            <label>Payment Term (Duration)</label>
+            <select id="nu-term" required>
+              <option value="24" selected>24 Months</option>
+              <option value="12">12 Months</option>
+              <option value="6">6 Months</option>
+              <option value="3">3 Months</option>
+            </select>
+          </div>
+          <div class="form-group full" id="nu-loan-preview" style="display:none; background:#fdf2f8; border:1px solid #fbcfe8; border-radius:8px; padding:12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <span style="font-weight:700; color:#db2777;" id="preview-device-name">iPhone 15</span>
+                <span style="color:var(--text-muted); margin-left:6px;" id="preview-device-srp">SRP: ₱49,990.00</span>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:12px; color:var(--text-muted);">Calculated Monthly:</span>
+                <span style="font-weight:800; color:#db2777; font-size:15px; margin-left:4px;" id="preview-monthly">₱2,000.00 / mo</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLOR SELECTOR (shows after model is chosen) -->
+          <div class="form-group full" id="nu-color-group" style="display:none;">
+            <label style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:8px; display:block;">
+              Unit Color <span style="color:var(--danger);">*</span>
+            </label>
+            <div id="nu-color-swatches" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              <!-- Swatches injected by JS when device is selected -->
+            </div>
+            <input type="hidden" id="nu-device-color" required>
+            <p id="nu-color-hint" style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">Select the color unit for this loan.</p>
+          </div>
+
           <div class="form-group full">
             <label>Upload Valid ID Image</label>
             <input type="file" id="nu-idimg" accept="image/*" required style="padding: 5px 12px;">
@@ -204,55 +211,8 @@
         <button type="button" class="modal-close" id="close-phone-selector-btn"><i data-lucide="x"></i></button>
       </div>
       <div class="ps-body">
-        <div class="phone-grid">
-          <div class="phone-card" data-phone="iPhone 16">
-            <img src="../../images/phones/Iphone_16.png" alt="iPhone 16">
-            <div class="phone-name">iPhone 16</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 15">
-            <img src="../../images/phones/Iphone_15.png" alt="iPhone 15">
-            <div class="phone-name">iPhone 15</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 14">
-            <img src="../../images/phones/14.png" alt="iPhone 14">
-            <div class="phone-name">iPhone 14</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 13">
-            <img src="../../images/phones/Iphone_13.png" alt="iPhone 13">
-            <div class="phone-name">iPhone 13</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 12">
-            <img src="../../images/phones/Iphone_12.png" alt="iPhone 12">
-            <div class="phone-name">iPhone 12</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 11">
-            <img src="../../images/phones/Iphone_11.png" alt="iPhone 11">
-            <div class="phone-name">iPhone 11</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone SE">
-            <img src="../../images/phones/Iphone_SE.png" alt="iPhone SE">
-            <div class="phone-name">iPhone SE</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone XR">
-            <img src="../../images/phones/Iphone_XR.png" alt="iPhone XR">
-            <div class="phone-name">iPhone XR</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone XS">
-            <img src="../../images/phones/Iphone_XS.png" alt="iPhone XS">
-            <div class="phone-name">iPhone XS</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone X">
-            <img src="../../images/phones/Iphone_X.png" alt="iPhone X">
-            <div class="phone-name">iPhone X</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 8">
-            <img src="../../images/phones/Iphone_8.png" alt="iPhone 8">
-            <div class="phone-name">iPhone 8</div>
-          </div>
-          <div class="phone-card" data-phone="iPhone 7">
-            <img src="../../images/phones/Iphone_7.png" alt="iPhone 7">
-            <div class="phone-name">iPhone 7</div>
-          </div>
+        <div class="phone-grid" id="phone-grid-container">
+          <!-- Populated dynamically from /api/devices -->
         </div>
       </div>
     </div>
@@ -289,25 +249,15 @@
     </div>
   </div>
 
-  <!-- ADMIN LOAN DETAILS MODAL -->
-  <div class="modal-overlay" id="admin-loan-modal">
-    <div class="modal" style="width: 100%; max-width: 800px; padding: 48px; border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);">
-      <div class="modal-head" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px;">
-        <h2 style="font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em;">User Loan Details</h2>
-        <button class="modal-close" id="close-admin-loan-btn" style="background: #f8fafc; border: none; cursor: pointer; color: var(--text-muted); width: 36px; height: 36px; border-radius: 50%; display:flex; align-items:center; justify-content:center; transition: 0.2s;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
-      </div>
-      <div class="modal-body" id="admin-loan-content">
-        <!-- Dynamically populated by JS -->
-        <div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving loan records...</p></div>
-      </div>
-    </div>
-  </div>
+  <!-- ADMIN LOAN DETAILS MODAL (Removed in favor of full panel) -->
 
   <script>
 
 
     document.addEventListener('DOMContentLoaded', () => {
     
+    let lastViewedUserId = null;
+
     const manageUsersSub = document.getElementById('manage-users-sub');
     // Manage Users sub-item clicks
     if (manageUsersSub) {
@@ -326,8 +276,12 @@
       const tbody = document.getElementById('users-tbody');
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
       
-      const { data, error } = await supabaseClient.from('profiles').select('*').eq('role', 'user').order('created_at', { ascending: false });
-      if (error) {
+      let data;
+      try {
+        const response = await fetch('/profiles?role=user');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        data = await response.json();
+      } catch (error) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
         return;
       }
@@ -362,7 +316,7 @@
           <td>${address}</td>
           <td><span class="status-badge ${statusClass}">${status}</span></td>
           <td style="color:var(--text-muted)">${date}</td>
-          <td><button class="view-loan-btn" data-userid="${user.id}" style="padding: 6px 14px; font-size: 12px; font-weight: 600; background: #fff; color: var(--pink); border: 1px solid var(--pink); border-radius: 6px; cursor: pointer; transition: all 0.2s;">View Loan</button></td>
+          <td><button class="view-loan-btn" data-userid="${user.id}" style="padding: 6px 14px; font-size: 12px; font-weight: 600; background:var(--surface); color: var(--pink); border: 1px solid var(--pink); border-radius: 6px; cursor: pointer; transition: all 0.2s;">View</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -372,109 +326,139 @@
     }
     
     // --- Admin Loan Viewer Logic ---
+    async function loadUserLoanDetails(userId) {
+      document.getElementById('panel-manage-users').style.display = 'none';
+      const ledgerPanel = document.getElementById('panel-loan-details');
+      ledgerPanel.style.display = 'block';
+      
+      const ledgerContent = document.getElementById('ledger-content');
+      lastViewedUserId = userId;
+      
+      ledgerContent.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving detailed ledger...</p></div>';
+      lucide.createIcons();
+      
+      let data, fetchError;
+      try {
+        const loanRes = await fetch(`/loans?user_id=${userId}&all=true&_t=${Date.now()}`, { cache: 'no-store' });
+        if (!loanRes.ok) throw new Error(`Server returned ${loanRes.status}`);
+        data = await loanRes.json();
+      } catch (err) {
+        fetchError = err;
+      }
+      
+      const issueBtn = document.getElementById('issue-new-loan-ledger-btn');
+      
+      if (fetchError) {
+        ledgerContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching loan: ${fetchError.message}</p>`;
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        issueBtn.style.display = 'inline-block';
+        ledgerContent.innerHTML = `
+            <div style="text-align:center; padding: 60px; color:var(--text-muted);">
+                <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
+                <p style="font-size: 16px;">This user currently has no active loans.</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+      
+      const loan = data.find(l => l.status === 'active') || data[0];
+      
+      // Fetch Ledger (loan + payments)
+      let ledgerRes, ledgerData;
+      try {
+        ledgerRes = await fetch(`/loans/${loan.id}/ledger`);
+        ledgerData = await ledgerRes.json();
+      } catch (err) {
+        ledgerContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching ledger details</p>`;
+        return;
+      }
+      
+      const l = ledgerData.loan;
+      const payments = ledgerData.payments || [];
+      
+      if (l.status === 'active') {
+          issueBtn.style.display = 'none';
+      } else {
+          issueBtn.style.display = 'inline-block';
+      }
+      
+      const accountId = l.user_id ? parseInt(l.user_id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
+      const progress = ((l.total_amount - l.remaining_balance) / l.total_amount) * 100;
+      
+      const imgPath = l.device_image && l.device_image.includes('/') ? l.device_image : `../../images/phones/${l.device_image}`;
+      let tableHtml = `
+        <div style="display: flex; gap: 40px; margin-bottom: 32px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Customer Information</h3>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Name:</strong> ${l.full_name || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Account ID:</strong> ${accountId}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> ${l.email || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Mobile:</strong> ${l.mobile || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Address:</strong> ${l.address || 'N/A'}</p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Loan Overview</h3>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <img src="${imgPath}" alt="${l.device_name}" style="height: 48px; width: 48px; object-fit: contain; background:var(--surface); border-radius: 8px; padding: 4px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">${l.device_name}${l.device_color ? ` - ${l.device_color}` : ''}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">${l.status}</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Total SRP</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0;">₱${Number(l.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Balance</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0;">₱${Number(l.remaining_balance).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Monthly</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0; color:var(--pink);">₱${Number(l.monthly_payment).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Term</p>
+                        <p style="font-size: 15px; font-weight: 700; margin: 0;">${l.term_months || Math.ceil(l.total_amount / l.monthly_payment)} Mos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+      `;
+      
+      ledgerContent.innerHTML = tableHtml;
+      lucide.createIcons();
+    }
+
     function attachViewLoanListeners() {
       document.querySelectorAll('.view-loan-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const userId = e.currentTarget.getAttribute('data-userid');
-          const loanModal = document.getElementById('admin-loan-modal');
-          const loanContent = document.getElementById('admin-loan-content');
-          
-          loanModal.classList.add('active');
-          loanContent.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving loan records...</p></div>';
-          lucide.createIcons();
-          
-          const { data, error } = await supabaseAdmin.from('loans').select('*').eq('user_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(1);
-          
-          if (error) {
-            loanContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching loan: ${error.message}</p>`;
-            return;
+          if (userId) {
+            await loadUserLoanDetails(userId);
           }
-          
-          if (!data || data.length === 0) {
-            loanContent.innerHTML = `
-                <div style="text-align:center; padding: 60px; color:var(--text-muted);">
-                    <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
-                    <p style="font-size: 16px;">This user currently has no active loans.</p>
-                </div>
-            `;
-            lucide.createIcons();
-            return;
-          }
-          
-          const loan = data[0];
-          const totalMonths = Math.ceil(loan.total_amount / loan.monthly_payment);
-          const monthsRemaining = Math.ceil(loan.remaining_balance / loan.monthly_payment);
-          const monthsPaid = Math.max(0, totalMonths - monthsRemaining);
-          const nextDate = new Date(loan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          const progress = ((loan.total_amount - loan.remaining_balance) / loan.total_amount) * 100;
-          
-          loanContent.innerHTML = `
-            <div style="display: flex; align-items: flex-start; gap: 32px; margin-bottom: 32px;">
-              <div style="background: #f8fafc; padding: 24px; border-radius: 12px;">
-                <img src="${loan.device_image}" alt="${loan.device_name}" style="width: 120px; height: 120px; object-fit: contain;">
-              </div>
-              <div style="flex: 1; padding-top: 12px;">
-                <span style="font-size: 12px; font-weight: 700; background: #ecfdf5; color: #10b981; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 12px;">Active Loan</span>
-                <h3 style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; letter-spacing: -0.02em;">${loan.device_name}</h3>
-                <p style="font-size: 15px; color: var(--text-muted);">Loan ID: ${loan.id ? (parseInt(loan.id.replace(/-/g, '').substring(0, 11), 16) % 10000000000000).toString().padStart(13, '0') : '0000000000000'}</p>
-              </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 40px; padding: 0 12px;">
-              <div>
-                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Total Amount (SRP)</p>
-                <p style="font-size: 22px; font-weight: 700; color: var(--text-main);">₱${loan.total_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
-              </div>
-              <div>
-                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Remaining Balance</p>
-                <p style="font-size: 22px; font-weight: 700; color: var(--text-main);">₱${loan.remaining_balance.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
-              </div>
-              <div>
-                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Monthly Installment</p>
-                <p style="font-size: 22px; font-weight: 700; color: var(--pink);">₱${loan.monthly_payment.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
-              </div>
-              <div>
-                <p style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Next Payment Due</p>
-                <p style="font-size: 22px; font-weight: 700; color: #ef4444;">${nextDate}</p>
-              </div>
-            </div>
-            
-            <div style="background: transparent; border: 2px solid #f1f5f9; border-radius: 12px; padding: 24px;">
-              <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 20px;">Payment Schedule</h4>
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
-                <div>
-                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">Agreed Term</p>
-                  <p style="font-size: 18px; font-weight: 700; color: var(--text-main);">${totalMonths} Months</p>
-                </div>
-                <div>
-                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">Months Paid</p>
-                  <p style="font-size: 18px; font-weight: 700; color: var(--text-main);">${monthsPaid} Months</p>
-                </div>
-                <div>
-                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">Remaining</p>
-                  <p style="font-size: 18px; font-weight: 700; color: var(--text-main);">${monthsRemaining} Months</p>
-                </div>
-              </div>
-              
-              <div style="margin-top: 24px;">
-                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight: 600; color:var(--text-muted); margin-bottom:12px;">
-                    <span>Progress</span>
-                    <span>${Math.round(progress)}% Paid</span>
-                </div>
-                <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; background: var(--pink); border-radius: 4px; width: ${progress}%;"></div>
-                </div>
-              </div>
-            </div>
-          `;
-          lucide.createIcons();
         });
       });
     }
 
-    document.getElementById('close-admin-loan-btn')?.addEventListener('click', () => {
-        document.getElementById('admin-loan-modal').classList.remove('active');
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'loan-payment-update' && lastViewedUserId) {
+        loadUserLoanDetails(lastViewedUserId);
+      }
     });
+
+    document.getElementById('back-to-users-btn')?.addEventListener('click', () => {
+        document.getElementById('panel-loan-details').style.display = 'none';
+        document.getElementById('panel-manage-users').style.display = 'block';
+    });
+    
     const modal = document.getElementById('add-user-modal');
     const openModalBtn = document.getElementById('open-add-user-btn');
     const closeBtn = document.getElementById('close-add-user-btn');
@@ -482,11 +466,76 @@
     const form = document.getElementById('add-user-form');
     const submitBtn = document.getElementById('submit-add-user-btn');
 
+    let allDevices = [];
+    async function loadDevices() {
+      try {
+        const res = await fetch('/api/devices');
+        if (res.ok) {
+          allDevices = await res.json();
+          populatePhoneGrid();
+        }
+      } catch(e) {}
+    }
+
+    function populatePhoneGrid() {
+      const grid = document.getElementById('phone-grid-container');
+      if (!grid) return;
+      grid.innerHTML = '';
+      // Only show 'available' devices
+      const available = allDevices.filter(d => d.status === 'available');
+      available.forEach(d => {
+        const imgPath = d.image && d.image.includes('/') ? d.image : `../../images/phones/${d.image}`;
+        const card = document.createElement('div');
+        card.className = 'phone-card';
+        card.dataset.phone = d.name;
+        card.dataset.deviceImg = imgPath;
+        card.innerHTML = `
+          <img src="${imgPath}" alt="${d.name}" onerror="this.src='../../images/phones/Iphone_15.png'">
+          <div class="phone-name">${d.name}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    loadDevices();
+
+    function updateLoanPreview() {
+      const model = nuLoanInput.value;
+      const termSelect = document.getElementById('nu-term');
+      const term = termSelect ? parseInt(termSelect.value) || 24 : 24;
+      const previewBox = document.getElementById('nu-loan-preview');
+      if (!model) {
+        if (previewBox) previewBox.style.display = 'none';
+        return;
+      }
+      const dev = allDevices.find(d => d.name.toLowerCase() === model.toLowerCase());
+      const srp = dev ? parseFloat(dev.srp) : 49990;
+      const monthly = (term === 24 && dev && dev.monthly)
+        ? parseFloat(dev.monthly)
+        : Math.round((srp / term) * 100) / 100;
+
+      const pName = document.getElementById('preview-device-name');
+      const pSrp = document.getElementById('preview-device-srp');
+      const pMonthly = document.getElementById('preview-monthly');
+      if (pName) pName.textContent = model;
+      if (pSrp) pSrp.textContent = `SRP: ₱${srp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      if (pMonthly) pMonthly.textContent = `₱${monthly.toLocaleString(undefined, {minimumFractionDigits: 2})} / mo (${term} mos)`;
+      if (previewBox) previewBox.style.display = 'block';
+    }
+    document.getElementById('nu-term')?.addEventListener('change', updateLoanPreview);
+
     if(openModalBtn) openModalBtn.addEventListener('click', () => { 
       modal.classList.add('active'); 
       form.reset(); 
       selectedPhoneText.textContent = 'Select a model...';
       nuLoanInput.value = '';
+      if (document.getElementById('nu-term')) document.getElementById('nu-term').value = '24';
+      if (document.getElementById('nu-loan-preview')) document.getElementById('nu-loan-preview').style.display = 'none';
+      // Reset color group
+      const colorGroup = document.getElementById('nu-color-group');
+      if (colorGroup) colorGroup.style.display = 'none';
+      const deviceColorInput = document.getElementById('nu-device-color');
+      if (deviceColorInput) deviceColorInput.value = '';
     });
     const closeModal = () => modal.classList.remove('active');
     if(closeBtn) closeBtn.addEventListener('click', closeModal);
@@ -498,18 +547,177 @@
     const closePsBtn = document.getElementById('close-phone-selector-btn');
     const selectedPhoneText = document.getElementById('selected-phone-text');
     const nuLoanInput = document.getElementById('nu-loan');
+    
+    let phoneSelectionMode = 'user'; // 'user' or 'loan'
 
-    if(openPsBtn) openPsBtn.addEventListener('click', () => psModal.classList.add('active'));
+    if(openPsBtn) openPsBtn.addEventListener('click', () => {
+      phoneSelectionMode = 'user';
+      psModal.classList.add('active');
+    });
     if(closePsBtn) closePsBtn.addEventListener('click', () => psModal.classList.remove('active'));
     
-    document.querySelectorAll('.phone-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const phone = card.getAttribute('data-phone');
-        nuLoanInput.value = phone;
-        selectedPhoneText.textContent = phone;
-        psModal.classList.remove('active');
-      });
+    document.getElementById('issue-new-loan-ledger-btn')?.addEventListener('click', () => {
+      if (!lastViewedUserId) return;
+      phoneSelectionMode = 'loan';
+      psModal.classList.add('active');
     });
+
+    // Phone card click — delegated to grid container (handles dynamic cards)
+    const phoneGridContainer = document.getElementById('phone-grid-container');
+    if (phoneGridContainer) {
+      phoneGridContainer.addEventListener('click', async (e) => {
+        const card = e.target.closest('.phone-card');
+        if (!card) return;
+        const phone = card.getAttribute('data-phone');
+        const imgSrc = card.dataset.deviceImg || card.querySelector('img')?.src || '';
+        psModal.classList.remove('active');
+        
+        if (phoneSelectionMode === 'user') {
+          nuLoanInput.value = phone;
+          selectedPhoneText.textContent = phone;
+          updateLoanPreview();
+          renderUserColorSwatches(phone);
+        } else if (phoneSelectionMode === 'loan') {
+          // Issue new loan API call
+          if (!confirm(`Are you sure you want to issue a new ${phone} loan to this user?`)) return;
+          
+          const aLoading = document.getElementById('apple-loading-overlay');
+          const aSuccess = document.getElementById('apple-success-modal');
+          const aError = document.getElementById('apple-error-modal');
+          const aErrMsg = document.getElementById('apple-error-msg');
+          
+          aLoading.querySelector('h3').textContent = 'Issuing Loan...';
+          aLoading.classList.add('active');
+          
+          try {
+            const res = await fetch('/loans', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: lastViewedUserId,
+                device_name: phone,
+                device_image: imgSrc
+              })
+            });
+            if (!res.ok) throw new Error('Failed to issue loan');
+            
+            aLoading.classList.remove('active');
+            aSuccess.querySelector('h2').textContent = 'Loan Issued';
+            aSuccess.querySelector('p').textContent = 'The new loan has been successfully added to the user.';
+            aSuccess.classList.add('active');
+            
+            loadUserLoanDetails(lastViewedUserId);
+            loadUsers();
+          } catch (err) {
+            console.error(err);
+            aLoading.classList.remove('active');
+            aErrMsg.textContent = err.message;
+            aError.querySelector('h2').textContent = 'Issue Failed';
+            aError.classList.add('active');
+          }
+        }
+      });
+    }
+
+    // Apple-accurate color mapping per iPhone model (based on official Apple colors)
+    const APPLE_MODEL_COLORS = {
+      'iPhone 18': {
+        'Black': '#1a1a1a', 'Silver': '#e3e4e0', 'Glacier': '#d6e4ed', 'Burgundy': '#6b2138'
+      },
+      'iPhone 17': {
+        'Black': '#1a1a1a', 'White': '#f3ede3', 'Mist Blue': '#b0c4d8', 'Sage': '#9aab8e', 'Lavender': '#bab0cf'
+      },
+      'iPhone 16': {
+        'Black': '#1a1a1a', 'White': '#f3ede3', 'Pink': '#f2a8b0', 'Teal': '#4e8d87', 'Ultramarine': '#3b4f88'
+      },
+      'iPhone 15': {
+        'Black': '#1a1a1a', 'Blue': '#9aafc4', 'Green': '#a4c0a6', 'Yellow': '#e4d159', 'Pink': '#f2a8b0'
+      },
+      'iPhone 14': {
+        'Midnight': '#252628', 'Starlight': '#f5f0e6', '(PRODUCT)RED': '#b92234', 'Blue': '#9aafc4', 'Purple': '#cac1d8', 'Yellow': '#e4d159'
+      },
+      'iPhone 13': {
+        'Midnight': '#252628', 'Starlight': '#f5f0e6', '(PRODUCT)RED': '#b92234', 'Blue': '#9aafc4', 'Pink': '#f2a8b0', 'Green': '#a4c0a6'
+      },
+      'iPhone 12': {
+        'Black': '#1a1a1a', 'White': '#f3ede3', '(PRODUCT)RED': '#b92234', 'Green': '#a4c0a6', 'Blue': '#9aafc4', 'Purple': '#cac1d8'
+      },
+      'iPhone SE': {
+        'Midnight': '#252628', 'Starlight': '#f5f0e6', '(PRODUCT)RED': '#b92234',
+        'Space Gray': '#6b6b6b', 'Silver': '#e3e4e0', 'Gold': '#f8d7a5', 'Rose Gold': '#e3c1b1',
+        'Black': '#1a1a1a', 'White': '#f3ede3'
+      },
+      'iPhone XS': {
+        'Silver': '#e3e4e0', 'Space Gray': '#6b6b6b', 'Gold': '#f8d7a5'
+      },
+      'iPhone 11': {
+        'Black': '#1a1919', 'White': '#f7f2f2', 'Purple': '#c7b8d7', 'Green': '#a5cf9f', 'Yellow': '#f5e07d', '(PRODUCT)RED': '#c0222a'
+      },
+      'iPhone XR': {
+        'Black': '#1a1a1a', 'White': '#f3ede3', 'Blue': '#9aafc4', 'Yellow': '#e4d159', 'Coral': '#e1614f', '(PRODUCT)RED': '#b92234'
+      },
+      'iPhone X': {
+        'Space Gray': '#6b6b6b', 'Silver': '#e3e4e0'
+      },
+      'iPhone 8': {
+        'Space Gray': '#6b6b6b', 'Silver': '#e3e4e0', 'Gold': '#f8d7a5', '(PRODUCT)RED': '#b92234'
+      },
+      'iPhone 7': {
+        'Black': '#1a1a1a', 'Jet Black': '#0a0a0a', 'Silver': '#e3e4e0', 'Gold': '#f8d7a5', 'Rose Gold': '#e3c1b1', '(PRODUCT)RED': '#b92234'
+      }
+    };
+
+    function renderUserColorSwatches(phoneName) {
+      const colorGroup = document.getElementById('nu-color-group');
+      const swatchContainer = document.getElementById('nu-color-swatches');
+      const colorHidden = document.getElementById('nu-device-color');
+      if (!colorGroup || !swatchContainer || !colorHidden) return;
+
+      colorHidden.value = '';
+      swatchContainer.innerHTML = '';
+
+      // Match model name to APPLE_MODEL_COLORS keys (longest match first)
+      let matchedColors = null;
+      const nameNorm = phoneName.trim().toLowerCase();
+      const sortedKeys = Object.keys(APPLE_MODEL_COLORS).sort((a, b) => b.length - a.length);
+      for (const modelKey of sortedKeys) {
+        if (nameNorm.includes(modelKey.toLowerCase())) {
+          matchedColors = APPLE_MODEL_COLORS[modelKey];
+          break;
+        }
+      }
+
+      if (!matchedColors || Object.keys(matchedColors).length === 0) {
+        colorGroup.style.display = 'none';
+        return;
+      }
+
+      colorGroup.style.display = 'block';
+      Object.entries(matchedColors).forEach(([colorName, hex]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = colorName;
+        btn.dataset.colorName = colorName;
+        btn.style.cssText = `
+          display:flex; align-items:center; gap:7px; padding:6px 12px; border-radius:20px;
+          border:2px solid var(--border); background:var(--surface); cursor:pointer; font-size:12px;
+          font-weight:600; color:var(--text-main); transition:all .15s;
+        `;
+        btn.innerHTML = `<span style="width:16px;height:16px;border-radius:50%;background:${hex};border:1px solid rgba(0,0,0,.2);flex-shrink:0;"></span>${colorName}`;
+        btn.addEventListener('click', () => {
+          swatchContainer.querySelectorAll('button').forEach(b => {
+            b.style.border = '2px solid var(--border)';
+            b.style.background = '#fff';
+            b.style.color = 'var(--text-main)';
+          });
+          btn.style.border = '2px solid #ec4899';
+          btn.style.background = '#fdf2f8';
+          btn.style.color = '#db2777';
+          colorHidden.value = colorName;
+        });
+        swatchContainer.appendChild(btn);
+      });
+    }
 
     if(form) form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -525,12 +733,16 @@
         return; 
       }
 
-      if (!supabaseAdmin) { 
-        aErrMsg.textContent = 'Admin client not configured';
-        aError.classList.add('open');
-        return; 
+      const colorGroup = document.getElementById('nu-color-group');
+      const deviceColorInput = document.getElementById('nu-device-color');
+      if (colorGroup && colorGroup.style.display !== 'none') {
+        if (!deviceColorInput || !deviceColorInput.value) {
+          aErrMsg.textContent = 'Please select a color for the loan unit.';
+          aError.classList.add('active');
+          return;
+        }
       }
-      
+
       submitBtn.disabled = true;
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i data-lucide="loader" class="spin" style="width:16px; animation: spin 1s linear infinite;"></i> Creating...';
@@ -538,71 +750,31 @@
       aLoading.classList.add('active');
       
       try {
-        // 1. Upload ID Image
+        const formData = new FormData();
+        formData.append('name', document.getElementById('nu-name').value);
+        formData.append('email', document.getElementById('nu-email').value);
+        formData.append('password', document.getElementById('nu-password').value);
+        formData.append('mobile', document.getElementById('nu-mobile').value);
+        formData.append('address', document.getElementById('nu-address').value);
+        formData.append('idType', document.getElementById('nu-idtype').value);
+        formData.append('loanModel', document.getElementById('nu-loan').value);
+        formData.append('loanTerm', document.getElementById('nu-term').value);
+        const deviceColorVal = document.getElementById('nu-device-color')?.value;
+        if (deviceColorVal) formData.append('deviceColor', deviceColorVal);
+        
         const file = document.getElementById('nu-idimg').files[0];
-        let idUrl = null;
         if (file) {
-          // Ensure bucket exists
-          const bucketName = 'valid_ids';
-          const { data: buckets } = await supabaseAdmin.storage.listBuckets();
-          if (!buckets || !buckets.find(b => b.name === bucketName)) {
-            await supabaseAdmin.storage.createBucket(bucketName, { public: true });
-          }
-          
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-          const { error: uploadError, data: uploadData } = await supabaseAdmin.storage.from(bucketName).upload(fileName, file);
-          
-          if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
-          
-          const { data: { publicUrl } } = supabaseAdmin.storage.from(bucketName).getPublicUrl(fileName);
-          idUrl = publicUrl;
+          formData.append('idImage', file);
         }
 
-        // 2. Create Auth User
-        const email = document.getElementById('nu-email').value;
-        const password = document.getElementById('nu-password').value;
-        const name = document.getElementById('nu-name').value;
-        
-        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-          email: email,
-          password: password,
-          email_confirm: true,
-          user_metadata: { full_name: name }
+        const res = await fetch('/api/users/create', {
+          method: 'POST',
+          body: formData
         });
         
-        if (authError) throw new Error(`Auth creation failed: ${authError.message}`);
-        const userId = authData.user.id;
-
-        // 3. Create Profile Entry
-        const mobile = document.getElementById('nu-mobile').value;
-        const address = document.getElementById('nu-address').value;
-        const idType = document.getElementById('nu-idtype').value;
-        // Note: loan model could be saved in profiles, or a separate loans table. 
-        // We'll save it in profiles for now as 'active_loan_model'
-        const loanModel = document.getElementById('nu-loan').value;
-
-        const { error: profileError } = await supabaseAdmin.from('profiles').insert({
-          id: userId,
-          full_name: name,
-          email: email,
-          mobile: mobile,
-          address: address,
-          id_type: idType,
-          id_url: idUrl,
-          active_loan_model: loanModel,
-          status: 'Active',
-          role: 'user'
-        });
-        
-        // It's possible the profiles table has an RLS policy or trigger that already created the row. 
-        // If there is an insert conflict, we might need to upsert.
-        if (profileError && profileError.code === '23505') { // unique violation
-           await supabaseAdmin.from('profiles').update({
-             full_name: name, mobile: mobile, address: address, id_type: idType, id_url: idUrl, active_loan_model: loanModel, status: 'Active', role: 'user'
-           }).eq('id', userId);
-        } else if (profileError) {
-           throw new Error(`Profile creation failed: ${profileError.message}`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Registration failed');
         }
 
         aLoading.classList.remove('active');
@@ -629,15 +801,37 @@
       document.getElementById('apple-error-modal').classList.remove('active');
     });
     
+    
+    // Search functionality
+    const searchInput = document.getElementById('user-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#users-tbody tr');
+        rows.forEach(row => {
+          if (row.children.length > 1) { // ensure it's not a loading or error row
+            // We search within the first column (Name + ID)
+            const textContent = row.children[0].textContent.toLowerCase();
+            if (textContent.includes(query)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+      });
+    }
+
     // Load users on page load
     loadUsers();
+
 
     });
   </script>
 
-    <script src="js/admin-ui.js"></script>
-    <script src="js/admin-auth.js"></script>
+    </script>
+
+    
+<script src="js/admin-auth.js"></script>
 </body>
 </html>
-
-

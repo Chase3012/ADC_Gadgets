@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — ADC Admin</title>
+  <meta name="description" content="ADC Gadgets Admin Dashboard — Analytics and Sales overview.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../../src/shared/css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    /* ── Dashboard-specific overrides ── */
+    .dash-tabs { display: flex; gap: 4px; background:var(--border); border-radius: 10px; padding: 4px; margin-bottom: 28px; width: fit-content; }
+    .dash-tab { padding: 8px 22px; font-size: 13px; font-weight: 600; border-radius: 7px; border: none; cursor: pointer; background: transparent; color: var(--text-muted); transition: all .2s; }
+    .dash-tab.active { background:var(--surface); color: var(--text-main); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .kpi-card { background:var(--surface); border-radius: 14px; padding: 22px 20px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 14px 14px 0 0; }
+    .kpi-card.pink::before  { background: #ec4899; }
+    .kpi-card.blue::before  { background: #3b82f6; }
+    .kpi-card.green::before { background: #22c55e; }
+    .kpi-card.orange::before{ background: #f59e0b; }
+    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 10px; }
+    .kpi-val   { font-size: 30px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; line-height: 1; }
+    .kpi-sub   { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+    .kpi-icon  { position: absolute; right: 18px; top: 18px; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .kpi-icon.pink   { background: #fce7f3; color: #ec4899; }
+    .kpi-icon.blue   { background: #dbeafe; color: #3b82f6; }
+    .kpi-icon.green  { background: #dcfce7; color: #22c55e; }
+    .kpi-icon.orange { background: #fef3c7; color: #f59e0b; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .grid-2-3 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+    .panel-card { background:var(--surface); border-radius: 14px; border: 1px solid #e2e8f0; padding: 24px; }
+    .panel-card h3 { font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+    .panel-card .card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+    .panel-card .divider { height: 1px; background:var(--border); margin: 16px 0; }
+
+    /* Loan rows */
+    .loan-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom:1px solid var(--border); }
+    .loan-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .loan-avatar { width: 38px; height: 38px; border-radius: 10px; background:var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: 700; color: var(--pink); }
+    .loan-name  { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .loan-device{ font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .loan-amount{ margin-left: auto; text-align: right; }
+    .loan-amount .amount { font-size: 14px; font-weight: 700; color: var(--text-main); }
+    .loan-amount .status-pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-top: 3px; }
+    .status-pill.active    { background: #dcfce7; color: #16a34a; }
+    .status-pill.completed { background: #dbeafe; color: #1d4ed8; }
+    .status-pill.overdue   { background: #fee2e2; color: #dc2626; }
+
+    /* Progress bar */
+    .prog-row { margin-bottom: 14px; }
+    .prog-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .prog-bar { height: 8px; background:var(--border); border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 4px; }
+    .prog-sub  { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Mini stat */
+    .mini-stat { display: flex; align-items: center; gap: 12px; padding: 14px; background:var(--surface); border-radius: 10px; margin-bottom: 10px; }
+    .mini-stat:last-child { margin-bottom: 0; }
+    .mini-stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mini-stat-label { font-size: 12px; color: var(--text-muted); }
+    .mini-stat-val   { font-size: 15px; font-weight: 700; color: var(--text-main); }
+
+    /* Empty / loading */
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; height: 20px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <img src="/images/logo.jpg" alt="ADC Logo" style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <span>ADC Gadgets<br><small style="font-size:10px;color:var(--text-muted);font-weight:500;">Loan Console</small></span>
+    </div>
+    <nav class="nav-list">
+      <a href="dashboard.html" class="nav-item ">
+        <div class="nav-item-left">Overview</div>
+      </a>
+      <a href="loan-ledger.html" class="nav-item ">
+        <div class="nav-item-left">Active Loans</div>
+        <div class="nav-badge">1</div>
+      </a>
+      <a href="communication.html" class="nav-item active">
+        <div class="nav-item-left">Communication</div>
+      </a>
+      <a href="inventory.html" class="nav-item ">
+        <div class="nav-item-left">Inventory</div>
+      </a>
+      <a href="manage-users.html" class="nav-item ">
+        <div class="nav-item-left">Customers</div>
+      </a>
+      <a href="reports.html" class="nav-item ">
+        <div class="nav-item-left">Reports</div>
+      </a>
+    </nav>
+    <div style="margin-top:auto; padding:20px 24px;">
+      <button id="logout-btn" style="width:100%; background:var(--surface); border:1px solid var(--border); padding:12px; border-radius:12px; color:var(--danger); font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition: background 0.2s;">
+        <i data-lucide="log-out" style="width:16px; height:16px;"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  
+  <main class="main" style="display:flex; flex-direction:column; height:100vh; overflow:hidden; background:var(--bg);">
+    <header class="header">
+      <div class="header-left">
+        <h1 class="page-title">Communication</h1>
+      </div>
+      <div class="header-right" style="display:flex; align-items:center; gap:16px;">
+        
+        <div style="width:36px; height:36px; background:#0F172A; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">AD</div>
+      </div>
+    </header>
+
+    <div class="content" style="flex:1; display:flex; flex-direction:column; min-height:0; padding: 24px; padding-top: 0; overflow:hidden;">
+        
+        <div class="card" style="display:flex; flex-direction:row; flex:1; min-height:0; width:100%; overflow:hidden; padding:0;">
+          <!-- Left sidebar: User list -->
+          <div class="chat-sidebar" style="width:320px; border-right:1px solid var(--border); display:flex; flex-direction:column; background:var(--surface);">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+              <div style="position:relative;">
+                <i data-lucide="search" style="position:absolute; left:12px; top:10px; width:16px; height:16px; color:var(--text-muted);"></i>
+                <input type="text" placeholder="Search conversations..." style="width:100%; padding:10px 10px 10px 36px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; background:var(--surface);">
+              </div>
+            </div>
+            <div id="admin-chat-list" style="flex:1; overflow-y:auto;">
+              <!-- Chat list items will be injected here -->
+              <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">Loading conversations...</div>
+            </div>
+          </div>
+
+          <!-- Right area: Chat thread -->
+          <div class="chat-main" style="flex:1; display:flex; flex-direction:column; min-height:0; background:var(--surface);">
+            
+            <div id="admin-chat-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div style="width:64px; height:64px; background:var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+                <i data-lucide="message-square" style="width:32px; height:32px; color:#94a3b8;"></i>
+              </div>
+              <div style="color:var(--text-main); font-weight:700; font-size:16px; margin-bottom:8px;">Your Messages</div>
+              <div style="color:var(--text-muted); font-size:14px;">Select a conversation to start messaging</div>
+            </div>
+
+            <!-- Chat Header -->
+            <div class="chat-header" id="chat-header-container" style="display:none; padding:20px 24px; border-bottom:1px solid var(--border); align-items:center; justify-content:space-between; background:var(--surface);">
+              <div style="display:flex; align-items:center; gap:12px;" id="admin-chat-user-info">
+                <div id="chat-header-initial" style="width:40px; height:40px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-weight:700; color:#475569;">U</div>
+                <div>
+                  <div id="chat-header-name" style="font-size:16px; font-weight:700; color:var(--text-main);">User Name</div>
+                  <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span> Online</div>
+                </div>
+              </div>
+              <div>
+                <button id="chat-resolve-btn" style="padding:8px 16px; font-size:12px; font-weight:600; color:var(--text-muted); background:transparent; border:1px solid var(--border); border-radius:20px; cursor:pointer;">Resolve</button>
+              </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="admin-chat-messages" style="display:none; flex:1; overflow-y:auto; padding:24px; background:#fafafa; display:flex; flex-direction:column; gap:16px;">
+              <!-- Messages go here -->
+            </div>
+
+            <!-- Input Box -->
+            <div id="chat-input-container" style="display:none; padding:20px 24px; border-top:1px solid var(--border); background:var(--surface);">
+              <div style="display:flex; gap:12px; align-items:flex-end;">
+                <textarea id="admin-chat-input" placeholder="Type your message..." disabled style="flex:1; border:1px solid var(--border); border-radius:12px; padding:12px 16px; font-family:inherit; font-size:14px; outline:none; resize:none; min-height:44px; max-height:120px; line-height:1.4;"></textarea>
+                <button id="admin-chat-send" disabled style="width:44px; height:44px; border-radius:50%; background:var(--primary); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;"><i data-lucide="send" style="width:18px; margin-left:-2px;"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+  </main>
+</div>
+
+<style>
+/* Chat UI Overrides for clean aesthetic */
+.chat-contact-item { padding: 16px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+.chat-contact-item:hover { background:var(--border); }
+.chat-contact-item.active { background:var(--surface); border-left: 3px solid var(--primary); padding-left: 17px; }
+.chat-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink:0; }
+.chat-contact-info { flex: 1; overflow: hidden; }
+.chat-contact-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.chat-contact-name { font-weight: 600; font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-contact-time { font-size: 11px; color: var(--text-muted); }
+.chat-contact-bottom { display: flex; justify-content: space-between; align-items: center; }
+.chat-contact-preview { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-badge { background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+
+/* Message Bubbles */
+.chat-msg-row { display: flex; gap: 12px; max-width: 80%; }
+.chat-msg-row.sent { flex-direction: row-reverse; align-self: flex-end; }
+.chat-msg-row.received { align-self: flex-start; }
+.chat-bubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
+.chat-msg-row.sent .chat-bubble { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+.chat-msg-row.received .chat-bubble { background:var(--surface); color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.chat-msg-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.chat-msg-row.sent .chat-msg-time { text-align: right; }
+</style>
+
+<script src="js/admin-ui.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="js/admin-chat.js?v=1790425793642"></script>
+<script>
+lucide.createIcons();
+// Overriding some display logic to match our new layout
+const observer = new MutationObserver(() => {
+    const empty = document.getElementById('admin-chat-empty');
+    if(empty && empty.style.display === 'none') {
+        document.getElementById('chat-header-container').style.display = 'flex';
+        document.getElementById('admin-chat-messages').style.display = 'flex';
+        document.getElementById('chat-input-container').style.display = 'block';
+    }
+});
+observer.observe(document.getElementById('admin-chat-empty'), { attributes: true, attributeFilter: ['style'] });
+</script>
+</body>
+</html>

@@ -47,7 +47,7 @@
 
     <!-- ━━━ SUB-NAV ━━━ -->
     <nav class="sub-nav">
-        <a href="user-home.html">All Models</a>
+        <a href="user-home.html">Featured</a>
         <a href="devices.html">Devices</a>
         <a href="support.html">Setup &amp; Support</a>
         <a href="account.html" class="active">Account</a>
@@ -104,6 +104,9 @@
                 <div class="profile-sidebar-nav">
                     <a href="#section-personal" class="side-nav-link active" id="snl-info">
                         <i data-lucide="user-circle" style="width:16px;height:16px;"></i> My Information
+                    </a>
+                    <a href="#section-documents" class="side-nav-link" id="snl-docs">
+                        <i data-lucide="file-check" style="width:16px;height:16px;"></i> Documents
                     </a>
                     <a href="#section-security" class="side-nav-link" id="snl-sec">
                         <i data-lucide="shield" style="width:16px;height:16px;"></i> Security
@@ -180,21 +183,79 @@
                         </div>
                     </div>
 
-                    <!-- ID Requirements Card -->
+                    <!-- ID Status Card -->
                     <div style="margin-top: 20px;">
                         <label style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--g500); display:block; margin-bottom:10px;">Submitted ID / Requirements</label>
-                        <div class="id-card">
+                        <div class="id-card" id="id-card-display">
                             <div class="id-icon-wrap">
                                 <i data-lucide="credit-card" style="width:24px;height:24px;"></i>
                             </div>
                             <div class="id-info">
                                 <div class="id-type">Government-Issued ID</div>
-                                <div class="id-name" id="info-id-type">Driver's License</div>
+                                <div class="id-name" id="info-id-type">Not yet uploaded</div>
                             </div>
-                            <div class="id-badge">
-                                <i data-lucide="shield-check" style="width:10px;height:10px;"></i> On File
+                            <div class="id-badge" id="id-status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;">
+                                <i data-lucide="alert-circle" style="width:10px;height:10px;"></i> <span id="id-status-text">Missing</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Documents Upload -->
+            <section class="acc-section" id="section-documents">
+                <div class="acc-section-header">
+                    <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;">
+                            <i data-lucide="file-check" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div>
+                            <div class="acc-section-title">Government ID</div>
+                            <div class="acc-section-desc">Upload a clear photo of your valid government-issued ID for account verification.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="acc-section-body">
+                    <!-- Current ID Preview -->
+                    <div id="id-preview-wrap" style="margin-bottom:20px; display:none;">
+                        <label style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--g500); display:block; margin-bottom:10px;">Current ID on File</label>
+                        <img id="id-preview-img" src="" alt="Government ID" style="max-width:100%; max-height:220px; border-radius:10px; border:2px solid #e2e8f0; object-fit:contain;">
+                    </div>
+
+                    <!-- Upload Form -->
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="form-group">
+                            <label for="id-type-select" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--g500); display:block; margin-bottom:8px;">ID Type</label>
+                            <select id="id-type-select" style="width:100%; border:1px solid #e2e8f0; border-radius:10px; padding:11px 14px; font-size:14px; font-family:inherit; outline:none; background:#fff; transition:border .2s;">
+                                <option value="Driver's License">Driver's License</option>
+                                <option value="Philippine Passport">Philippine Passport</option>
+                                <option value="SSS ID">SSS ID</option>
+                                <option value="GSIS ID">GSIS ID</option>
+                                <option value="PhilHealth ID">PhilHealth ID</option>
+                                <option value="Voter's ID">Voter's ID</option>
+                                <option value="National ID (PhilSys)">National ID (PhilSys)</option>
+                                <option value="PRC ID">PRC ID</option>
+                                <option value="Postal ID">Postal ID</option>
+                                <option value="TIN ID">TIN ID</option>
+                            </select>
+                        </div>
+
+                        <div id="id-drop-area" style="border:2px dashed #e2e8f0; border-radius:12px; padding:32px; text-align:center; cursor:pointer; transition:border .2s; background:#fafafa;" onclick="document.getElementById('id-file-input').click()">
+                            <i data-lucide="upload-cloud" style="width:36px;height:36px;color:#94a3b8;margin-bottom:10px;"></i>
+                            <p style="font-size:14px; font-weight:600; color:var(--text-main); margin-bottom:4px;">Click to upload your ID</p>
+                            <p style="font-size:12px; color:var(--g500);">JPG, PNG or PDF &bull; Max 10MB</p>
+                            <input type="file" id="id-file-input" accept="image/*,.pdf" style="display:none;">
+                        </div>
+
+                        <div id="id-file-chosen" style="display:none; align-items:center; gap:10px; padding:12px; background:#f0fdf4; border-radius:10px; border:1px solid #bbf7d0;">
+                            <i data-lucide="file-check" style="width:18px;height:18px;color:#22c55e;"></i>
+                            <span id="id-file-name" style="font-size:13px; font-weight:600; color:#166534;"></span>
+                        </div>
+
+                        <button id="id-upload-btn" style="display:flex; align-items:center; gap:8px; justify-content:center; padding:12px 24px; background:var(--pink); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s;" disabled>
+                            <i data-lucide="upload" style="width:16px;height:16px;"></i>
+                            <span id="id-upload-btn-text">Upload ID</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -452,6 +513,8 @@
             reader.readAsDataURL(file);
         });
 
+
+
         /* ── Toast ── */
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
@@ -465,53 +528,39 @@
             setTimeout(() => toast.classList.remove('show'), 3800);
         }
 
-        /* ── Supabase ── */
-        var supabaseClient = window.supabase ? window.supabase.createClient(
-            'http://127.0.0.1:54321',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
-        ) : null;
-
-        /* ── Populate profile data from Supabase session + profiles table ── */
+        /* ── Load Profile Data ── */
         async function loadProfile() {
-            if (!supabaseClient) {
-                console.warn('Supabase not available – showing demo data.');
-                populateDemo();
+            const storedUser = localStorage.getItem('customer_user');
+            if (!storedUser) {
+                window.location.href = '/src/user/login.html';
+                return;
+            }
+            
+            let session;
+            try {
+                session = JSON.parse(storedUser);
+            } catch(e) {
+                window.location.href = '/src/user/login.html';
                 return;
             }
 
-            const { data: sessionData } = await supabaseClient.auth.getSession();
-            const session = sessionData?.session;
-
-            if (!session) {
-                window.location.href = '../../index.html';
-                return;
-            }
-
-            const user = session.user;
-            const email = user.email || '—';
+            const email = session.email || '—';
 
             // Fill email from auth
             document.getElementById('info-email').textContent = email;
             document.getElementById('sb-user-email').textContent = email;
             document.getElementById('profile-email-disp').textContent = email;
 
-            // Try fetching extended profile from "profiles" table
-            // Adjust table/column names to match your actual Supabase schema
             try {
-                const { data: profile, error } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-                if (!error && profile) {
-                    applyProfileData(profile, email, user.created_at);
+                const res = await fetch('/profiles/' + session.id);
+                if (res.ok) {
+                    const profile = await res.json();
+                    applyProfileData(profile, email, new Date().toISOString());
                 } else {
-                    // Fallback: use email-based display
-                    applyEmailFallback(email, user.created_at);
+                    applyEmailFallback(email, new Date().toISOString());
                 }
             } catch (err) {
-                applyEmailFallback(email, user.created_at);
+                applyEmailFallback(email, new Date().toISOString());
             }
         }
 
@@ -521,10 +570,12 @@
             const mobile = profile.mobile || profile.phone || '—';
             const address = profile.address || profile.home_address || '—';
             const status = profile.status || 'Active';
-            const idType = profile.id_type || profile.government_id || 'Driver\'s License';
+            const idType = profile.id_type || profile.government_id || '';
             const dateReg = profile.created_at || createdAt;
+            const idUrl = profile.id_url || null;
 
-            fillUI(fullName, firstName, email, mobile, address, status, idType, dateReg);
+            fillUI(fullName, firstName, email, mobile, address, status, idType || 'Not yet uploaded', dateReg);
+            updateIdStatus(idUrl, idType);
         }
 
         function applyEmailFallback(email, createdAt) {
@@ -576,7 +627,97 @@
             lucide.createIcons();
         }
 
+        function updateIdStatus(idUrl, idType) {
+            const badge = document.getElementById('id-status-badge');
+            const text = document.getElementById('id-status-text');
+            const idTypeEl = document.getElementById('info-id-type');
+            const previewWrap = document.getElementById('id-preview-wrap');
+            const previewImg = document.getElementById('id-preview-img');
+
+            if (idUrl) {
+                // ID on file
+                if (badge) { badge.style.background='rgba(34,197,94,0.1)'; badge.style.color='#22c55e'; }
+                if (text) text.textContent = 'On File';
+                if (idTypeEl) idTypeEl.textContent = idType || 'Government ID';
+                // Show preview if it's an image
+                if (previewWrap && previewImg && !idUrl.endsWith('.pdf')) {
+                    previewImg.src = '' + idUrl;
+                    previewWrap.style.display = 'block';
+                }
+                // Pre-select ID type in the upload form
+                const sel = document.getElementById('id-type-select');
+                if (sel && idType) { sel.value = idType; }
+            } else {
+                if (badge) { badge.style.background='rgba(239,68,68,0.1)'; badge.style.color='#ef4444'; }
+                if (text) text.textContent = 'Missing';
+                if (idTypeEl) idTypeEl.textContent = 'Not yet uploaded';
+            }
+            lucide.createIcons();
+        }
+
         loadProfile();
+
+        /* ── ID Upload Wiring ── */
+        const idFileInput = document.getElementById('id-file-input');
+        const idFileChosen = document.getElementById('id-file-chosen');
+        const idFileName = document.getElementById('id-file-name');
+        const idUploadBtn = document.getElementById('id-upload-btn');
+        const idUploadBtnText = document.getElementById('id-upload-btn-text');
+        const idDropArea = document.getElementById('id-drop-area');
+        let selectedIdFile = null;
+
+        if (idFileInput) {
+            idFileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                selectedIdFile = file;
+                idFileName.textContent = file.name;
+                idFileChosen.style.display = 'flex';
+                idUploadBtn.disabled = false;
+                idDropArea.style.borderColor = 'var(--pink)';
+                lucide.createIcons();
+            });
+        }
+
+        if (idUploadBtn) {
+            idUploadBtn.addEventListener('click', async function() {
+                if (!selectedIdFile) return;
+                const storedUser = localStorage.getItem('customer_user');
+                if (!storedUser) return;
+                const session = JSON.parse(storedUser);
+                const idType = document.getElementById('id-type-select').value;
+
+                idUploadBtn.disabled = true;
+                idUploadBtnText.textContent = 'Uploading...';
+
+                const formData = new FormData();
+                formData.append('idImage', selectedIdFile);
+                formData.append('id_type', idType);
+
+                try {
+                    const res = await fetch('/api/profiles/' + session.id + '/upload-id', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        showToast('ID uploaded successfully!', 'success');
+                        updateIdStatus(data.id_url, data.id_type);
+                        idFileChosen.style.display = 'none';
+                        idDropArea.style.borderColor = '#e2e8f0';
+                        selectedIdFile = null;
+                        idFileInput.value = '';
+                    } else {
+                        showToast(data.error || 'Upload failed.', 'error');
+                    }
+                } catch (err) {
+                    showToast('Failed to upload ID.', 'error');
+                }
+                idUploadBtn.disabled = false;
+                idUploadBtnText.textContent = 'Upload ID';
+                lucide.createIcons();
+            });
+        }
 
         /* ── Password Change Form ── */
         const pwdForm = document.getElementById('password-form');
@@ -620,69 +761,49 @@
             savePwdBtn.classList.add('loading');
             saveBtnText.textContent = 'Updating…';
 
-            if (!supabaseClient) {
-                // Demo mode – simulate success
-                await new Promise(r => setTimeout(r, 1200));
-                savePwdBtn.classList.remove('loading');
-                savePwdBtn.classList.add('success-state');
-                saveBtnText.textContent = 'Password Updated ✓';
-                showToast('Password updated successfully!', 'success');
-                pwdForm.reset();
-                document.getElementById('strength-wrap').style.display = 'none';
-                setTimeout(() => {
-                    savePwdBtn.classList.remove('success-state');
+            const storedUser = localStorage.getItem('customer_user');
+            if (!storedUser) { window.location.href = '/src/user/login.html'; return; }
+            let session = JSON.parse(storedUser);
+
+            try {
+                const res = await fetch('/profiles/' + session.id + '/password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ curPwd, newPwd })
+                });
+
+                if (res.ok) {
+                    savePwdBtn.classList.remove('loading');
+                    savePwdBtn.classList.add('success-state');
+                    saveBtnText.textContent = 'Password Updated ✓';
+                    showToast('Password updated successfully!', 'success');
+                    pwdForm.reset();
+                    document.getElementById('strength-wrap').style.display = 'none';
+                    setTimeout(() => {
+                        savePwdBtn.classList.remove('success-state');
+                        saveBtnText.textContent = 'Update Password';
+                        lucide.createIcons();
+                    }, 2500);
+                } else {
+                    const data = await res.json();
+                    savePwdBtn.classList.remove('loading');
                     saveBtnText.textContent = 'Update Password';
+                    showFieldError('err-cur-pwd', true, data.error || 'Update failed.');
+                    showToast(data.error || 'Update failed.', 'error');
                     lucide.createIcons();
-                }, 2500);
-                return;
-            }
-
-            // Re-authenticate first (verify current password)
-            const { data: sessionData } = await supabaseClient.auth.getSession();
-            const session = sessionData?.session;
-            if (!session) { window.location.href = '../../index.html'; return; }
-
-            const { error: signInError } = await supabaseClient.auth.signInWithPassword({
-                email: session.user.email,
-                password: curPwd
-            });
-
-            if (signInError) {
+                }
+            } catch (err) {
                 savePwdBtn.classList.remove('loading');
                 saveBtnText.textContent = 'Update Password';
-                showFieldError('err-cur-pwd', true, 'Current password is incorrect.');
-                showToast('Current password is incorrect.', 'error');
-                lucide.createIcons();
-                return;
-            }
-
-            // Update password
-            const { error: updateError } = await supabaseClient.auth.updateUser({ password: newPwd });
-
-            savePwdBtn.classList.remove('loading');
-
-            if (updateError) {
-                saveBtnText.textContent = 'Update Password';
-                showToast('Failed to update password: ' + updateError.message, 'error');
-                lucide.createIcons();
-            } else {
-                savePwdBtn.classList.add('success-state');
-                saveBtnText.textContent = 'Password Updated ✓';
-                showToast('Password updated successfully!', 'success');
-                pwdForm.reset();
-                document.getElementById('strength-wrap').style.display = 'none';
-                setTimeout(() => {
-                    savePwdBtn.classList.remove('success-state');
-                    saveBtnText.textContent = 'Update Password';
-                    lucide.createIcons();
-                }, 2500);
+                showToast('Failed to update password.', 'error');
             }
         });
 
         /* ── Logout ── */
-        document.getElementById('sb-logout').addEventListener('click', async function () {
-            if (supabaseClient) await supabaseClient.auth.signOut();
-            window.location.href = '../../index.html';
+        document.getElementById('sb-logout').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('customer_user');
+            window.location.href = '/src/user/login.html';
         });
     </script>
 

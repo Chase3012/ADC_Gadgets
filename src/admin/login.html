@@ -983,8 +983,8 @@
 
     <!-- â”â”â” HEADER â”â”â” -->
     <header class="hdr">
-      <a href="index.html" class="logo" aria-label="ADC Gadgets home">
-        <img src="../../images/logo.jpg" alt="" class="logo-img">
+      <a href="#" class="logo" aria-label="ADC Gadgets home">
+        <img src="/images/logo.jpg" alt="" class="logo-img">
         <span class="logo-name">ADC Gadgets</span>
       </a>
       <nav class="hdr-nav" aria-label="Main">
@@ -1250,40 +1250,42 @@
 
       submitBtn.classList.add('loading'); submitBtn.disabled = true;
 
-      var result = await supabaseClient.auth.signInWithPassword({ email: emailVal, password: pwdVal });
-
-      if (result.error) {
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailVal, password: pwdVal })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          submitBtn.classList.remove('loading'); submitBtn.disabled = false;
+          showErr(data.error || 'Login failed. Please check your credentials.');
+          return;
+        }
+        
+        if (data.role !== 'admin') {
+          submitBtn.classList.remove('loading'); submitBtn.disabled = false;
+          showErr('Access Denied: This portal is for Administrators only.');
+          return;
+        }
+        
+        localStorage.setItem('admin_user', JSON.stringify(data));
+        submitBtn.classList.remove('loading'); submitBtn.classList.add('ok');
+        btnText.textContent = 'Signed in ✓';
+        
+        setTimeout(() => {
+            window.location.href = '/src/admin/dashboard.html';
+        }, 700);
+      } catch (err) {
         submitBtn.classList.remove('loading'); submitBtn.disabled = false;
-        showErr(result.error.message || 'Login failed. Please check your credentials.');
-        return;
+        showErr('Network error occurred during login.');
       }
-
-      var profileRes = await supabaseClient.from('profiles').select('role').eq('id', result.data.user.id).single();
-      if (profileRes.error || profileRes.data.role !== 'admin') {
-        await supabaseClient.auth.signOut();
-        submitBtn.classList.remove('loading'); submitBtn.disabled = false;
-        showErr('Access Denied: Administrator privileges required.');
-        return;
-      }
-
-      submitBtn.classList.remove('loading'); submitBtn.classList.add('ok');
-      btnText.textContent = 'Signed in ✓';
-      setTimeout(function () { window.location.href = 'dashboard.html'; }, 700);
     });
   </script>
 
 
-    <script>
-      var supabaseClient = window.supabase ? window.supabase.createClient(
-        'http://127.0.0.1:54321',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
-        {
-          auth: {
-            storageKey: 'admin-auth-token'
-          }
-        }
-      ) : null;
-    </script>
 </body>
 
 </html>

@@ -42,18 +42,18 @@
         </nav>
     </header>
 
-    <!-- ━━━ SUB-NAV ━━━ -->
+    <!-- 📱 SUB-NAV 📱 -->
     <nav class="sub-nav">
-        <a href="user-home.html" class="active">All Models</a>
+        <a href="user-home.html" class="active">Featured</a>
         <a href="devices.html">Devices</a>
         <a href="support.html">Setup & Support</a>
     </nav>
 
-    <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
+    <!-- 🌟 HERO 🌟 -->
     <div class="hero-wrap">
         <section class="hero">
             <h1 class="hero-title">Shop <span>ADC Gadgets.</span></h1>
-            <p class="hero-subtitle"><span>All models.</span> Take your pick.</p>
+            <p class="hero-subtitle"><span>Featured.</span> Take your pick.</p>
         </section>
     </div>
 
@@ -82,8 +82,8 @@
             <!-- NEWS CONTAINER -->
             <div class="fn-news card">
                 <div class="fn-badge">Latest News</div>
-                <h2 class="fn-title">We've just restocked the latest iPhone 16 Pro models!</h2>
-                <p class="fn-desc">Get your hands on the newest technology. Available now for pre-approval with flexible
+                <h2 class="fn-title" id="news-title">We've just restocked the latest iPhone 16 Pro models!</h2>
+                <p class="fn-desc" id="news-desc">Get your hands on the newest technology. Available now for pre-approval with flexible
                     loan plans and fast processing. Don't miss out on our limited time zero-interest promos.</p>
                 <a href="#" class="btn-buy" style="margin-top:auto; align-self:flex-start; text-decoration:none;">Read
                     More</a>
@@ -240,7 +240,7 @@
 
         <!-- Logout Footer -->
         <div class="sb-foot">
-            <button class="sb-signout" id="sb-logout" onclick="window.location.href='../../index.html'">
+            <button class="sb-signout" id="sb-logout" onclick="window.location.href='/src/user/login.html'">
                 <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;"></i></span>
                 Logout
             </button>
@@ -417,8 +417,20 @@
 
     <script src="js/appledb.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            if(window.loadAppleDBDevices) window.loadAppleDBDevices("#products-scroll");
+        document.addEventListener("DOMContentLoaded", async () => {
+            if(window.loadAppleDBDevices) window.loadAppleDBDevices("#products-scroll", true);
+
+            // Fetch latest announcement
+            try {
+                const res = await fetch('/api/announcements/latest');
+                if (res.ok) {
+                    const news = await res.json();
+                    document.getElementById('news-title').textContent = news.title;
+                    document.getElementById('news-desc').textContent = news.description;
+                }
+            } catch (err) {
+                console.error("Failed to load announcements", err);
+            }
         });
     </script>
 
@@ -426,7 +438,7 @@
     <!-- Shared UI & Auth -->
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/support-chat.js"></script>
+    <script src="js/support-chat.js?v=1790425793642"></script>
 </body>
 
 </html>
