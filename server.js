@@ -17,15 +17,8 @@ app.use(express.json());
 const IMAGES_DIR = path.join(__dirname, 'images', 'phones');
 app.use('/images/phones', express.static(IMAGES_DIR));
 
-// Multer storage — save directly to images/phones/
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, IMAGES_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.png';
-    const base = path.basename(file.originalname, ext).replace(/\s+/g, '_');
-    cb(null, `${base}${ext}`);
-  }
-});
+// Multer storage — save in memory for serverless environments
+const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
 const pool = new Pool({
@@ -38,7 +31,9 @@ app.get('/', (req, res) => res.send('ADC Gadgets Server is running!'));
 // ─── IMAGE UPLOAD ──────────────────────────────────────────────────────────────
 app.post('/api/upload-image', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  res.json({ filename: req.file.filename, url: `/images/phones/${req.file.filename}` });
+  const base64Data = req.file.buffer.toString('base64');
+  const url = `data:${req.file.mimetype};base64,${base64Data}`;
+  res.json({ filename: req.file.originalname, url });
 });
 
 // ─── AUTH: Login, OTP, Reset Password ──────────────────────────────────────────
@@ -237,7 +232,11 @@ app.post('/api/users/create', upload.single('idImage'), async (req, res) => {
   const actualIdType   = idType || id_type || "Driver's License";
   const actualLoanModel = loanModel || active_loan_model || null;
   const actualTerm     = parseInt(loanTerm || term_months) || 24;
-  const idUrl          = req.file ? `/images/phones/${req.file.filename}` : null;
+  let idUrl = null;
+  if (req.file) {
+    const base64Data = req.file.buffer.toString('base64');
+    idUrl = `data:${req.file.mimetype};base64,${base64Data}`;
+  }
 
   try {
     if (!actualEmail) return res.status(400).json({ error: 'Email is required' });
@@ -1002,17 +1001,7 @@ app.post('/api/admin/migrate', async (req, res) => {
 });
 
 // ─── ID UPLOAD (User can upload their government ID) ───────────────────────────
-const idStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, 'uploads', 'ids');
-    fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `id_${req.params.id}_${Date.now()}${ext}`);
-  }
-});
+const idStorage = multer.memoryStorage();
 const idUpload = multer({ storage: idStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 app.use('/uploads/ids', express.static(path.join(__dirname, 'uploads', 'ids')));
 
@@ -1020,7 +1009,8 @@ app.post('/api/profiles/:id/upload-id', idUpload.single('idImage'), async (req, 
   const { id } = req.params;
   const { id_type } = req.body;
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const idUrl = `/uploads/ids/${req.file.filename}`;
+  const base64Data = req.file.buffer.toString('base64');
+  const idUrl = `data:${req.file.mimetype};base64,${base64Data}`;
   try {
     const result = await pool.query(
       `UPDATE profiles SET id_url = $1, id_type = COALESCE($2, id_type) WHERE id = $3 RETURNING id, id_url, id_type`,
