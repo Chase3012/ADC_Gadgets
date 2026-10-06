@@ -43,9 +43,9 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
             const soc = adb && adb.soc ? adb.soc : "Apple";
             const isNew = index === 0;
             
-            // Format price with commas
-            const calculatedMonthly = Math.ceil(parseFloat(device.srp) / 24);
-            const formattedMonthly = calculatedMonthly.toLocaleString('en-PH');
+            // Format price with commas exactly down to the cent
+            const calculatedMonthly = parseFloat(device.srp) / 24;
+            const formattedMonthly = calculatedMonthly.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const formattedSrp = parseFloat(device.srp).toLocaleString('en-PH');
             
             // Out of stock styles
