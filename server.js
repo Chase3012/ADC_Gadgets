@@ -490,7 +490,6 @@ app.get('/loans/:id/payments', async (req, res) => {
 // ─── PAYMONGO CHECKOUT ─────────────────────────────────────────────────────────
 const PAYMONGO_SECRET = process.env.PAYMONGO_SECRET_KEY;
 const PAYMONGO_BASE   = 'https://api.paymongo.com/v1';
-const FRONTEND_BASE   = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 async function paymongoRequest(method, path, body) {
   const auth = Buffer.from(`${PAYMONGO_SECRET}:`).toString('base64');
@@ -524,6 +523,8 @@ app.post('/pay', async (req, res) => {
     // Only GCash and Maya accepted
     const allowedMethods = ['gcash', 'paymaya'];
 
+    const frontendBase = req.headers.origin || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
+
     const session = await paymongoRequest('POST', '/checkout_sessions', {
       data: {
         attributes: {
@@ -534,8 +535,8 @@ app.post('/pay', async (req, res) => {
           send_email_receipt: false,
           show_description: true,
           show_line_items: true,
-          cancel_url: `${FRONTEND_BASE}/src/user/loan.html?payment=cancel&loan_id=${loan_id}`,
-          success_url: `${FRONTEND_BASE}/src/user/loan.html?payment=success&loan_id=${loan_id}&session_id={id}`,
+          cancel_url: `${frontendBase}/src/user/loan.html?payment=cancel&loan_id=${loan_id}`,
+          success_url: `${frontendBase}/src/user/loan.html?payment=success&loan_id=${loan_id}&session_id={id}`,
           description: `Monthly payment for ${loan.device_name}`,
           payment_method_types: allowedMethods,
           line_items: [{
