@@ -366,8 +366,8 @@
         }
 
         .p-img {
-            max-width: 80%;
-            max-height: 90%;
+            max-width: 65%;
+            max-height: 75%;
             object-fit: contain;
             transition: transform 0.4s var(--ease);
         }
