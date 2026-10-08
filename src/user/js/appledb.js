@@ -87,6 +87,30 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
             count++;
         });
         
+        if (count === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; width: 100%;">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; border-radius: 16px; border: 2px dashed var(--g200); padding: 48px; text-align: center; width: 100%; max-width: 500px; background: rgba(255,255,255,0.4);">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="position: relative; margin-bottom: 24px;">
+                                <div style="display: flex; width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid var(--g200); background: var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                                    <i data-lucide="tag" style="width: 24px; height: 24px; color: var(--pink);"></i>
+                                </div>
+                            </div>
+                            <h2 style="font-size: 28px; font-weight: 800; font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; margin-bottom: 8px; background: linear-gradient(to right, var(--black), #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">No products found</h2>
+                            <p style="color: var(--g500); font-size: 15px; max-width: 300px; line-height: 1.5;">No products match your search criteria.</p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                            <button class="btn-buy" onclick="window.location.href='devices.html'" style="display: flex; align-items: center; gap: 8px; padding: 10px 24px; font-size: 14px;">
+                                <i data-lucide="tag" style="width: 16px; height: 16px;"></i> Browse products
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+        }
+        
         // Update tab counts if elements exist
         if (statusFilter === 'available') {
             const availCount = document.querySelector('#tab-available .tab-count');
