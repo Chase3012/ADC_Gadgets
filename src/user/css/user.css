@@ -621,7 +621,7 @@
             font-weight: 600;
             letter-spacing: 0.02em;
             color: var(--white);
-            transition: background 0.18s, color 0.18s;
+            transition: background 0.18s, color 0.18s, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
             cursor: pointer;
             text-decoration: none;
         }
@@ -649,8 +649,9 @@
         }
 
         .sb-link:hover {
-            background: var(--white);
-            color: var(--black);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--pink);
+            transform: translateX(4px);
         }
 
         .sb-link:hover .sb-icon img {
@@ -658,7 +659,7 @@
         }
 
         .sb-link:hover .sb-icon i {
-            color: var(--black);
+            color: var(--pink);
         }
 
         .sb-link.active {
@@ -667,8 +668,8 @@
         }
 
         .sb-link.active:hover {
-            background: var(--white);
-            color: var(--black);
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--white);
         }
 
         /* ── Footer ── */
@@ -689,7 +690,7 @@
             font-size: 18px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            transition: background 0.2s, color 0.2s;
+            transition: background 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
             cursor: pointer;
             border: none;
             text-align: left;
@@ -710,12 +711,13 @@
         }
 
         .sb-signout:hover {
-            background: var(--white);
-            color: var(--black);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--pink);
+            transform: translateX(4px);
         }
 
         .sb-signout:hover .sb-icon i {
-            color: var(--black);
+            color: var(--pink);
         }
 
         /* ═══ FOOTER ═══ */

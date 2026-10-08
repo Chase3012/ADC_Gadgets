@@ -350,46 +350,57 @@
 
     <!-- ━━━ SIDEBAR DRAWER ━━━ -->
     <div id="sb-overlay"></div>
-    <aside id="sidebar">
-        <div class="sb-head">
+        <aside id="sidebar">
+        <!-- Logo Header -->
+        <div class="sb-head" style="padding-top: 40px; border-bottom: none;">
             <button class="sb-close" id="sb-close" aria-label="Close menu">
                 <i data-lucide="x" style="width:14px;height:14px;"></i>
             </button>
-            <div class="sb-user">
-                <div class="sb-avatar-wrap">
-                    <img src="../../images/logo.jpg" alt="User" class="sb-avatar" id="sb-avatar-img">
-                    <span class="sb-avatar-dot"></span>
-                </div>
-                <div class="sb-user-info">
-                    <div class="sb-name" id="sb-user-name">ADC Member</div>
-                    <div class="sb-email" id="sb-user-email">—</div>
-                </div>
-            </div>
+            <a href="user-home.html" style="display:flex; align-items:center; gap:12px; font-weight:700; font-size: 20px; font-family: 'Outfit', sans-serif;">
+                <img src="../../images/logo.jpg" alt="Logo" style="width:36px; height:36px; border-radius:8px;">
+                ADC Gadgets
+            </a>
         </div>
 
-        <nav class="sb-nav">
-            <a href="user-home.html" class="sb-link">
-                <span class="sb-icon"><i data-lucide="shopping-bag" style="width:16px;height:16px;"></i></span>
+        <!-- Nav Links -->
+        <nav class="sb-nav" style="padding: 8px 16px; display: flex; flex-direction: column; gap: 4px;">
+
+            <a href="user-home.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="shopping-bag" style="width:18px;height:18px;"></i></span>
                 Shop
             </a>
-            <a href="account.html" class="sb-link active">
-                <span class="sb-icon"><img src="../../images/icons/profile.svg" style="width:16px;height:16px;" alt="Profile"></span>
+
+            <a href="account.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="user-cog" style="width:18px;height:18px;"></i></span>
                 Profile
             </a>
-            <a href="loan.html" class="sb-link">
-                <span class="sb-icon"><img src="../../images/icons/loan.svg" style="width:16px;height:16px;" alt="Loan"></span>
+
+            <a href="loan.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
                 Loan
             </a>
-            <a href="support.html" class="sb-link">
-                <span class="sb-icon"><img src="../../images/icons/account_setting.svg" style="width:16px;height:16px;" alt="Support"></span>
+
+            <a href="support.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></span>
                 Support
             </a>
 
-</nav>
+        </nav>
 
-        <div class="sb-foot">
-            <button class="sb-signout" id="sb-logout">
-                <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;"></i></span>
+        <!-- Profile Footer -->
+        <div class="sb-foot" style="padding: 24px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
+            <div class="sb-user" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.03);">
+                <div class="sb-avatar-wrap">
+                    <img src="../../images/logo.jpg" alt="User" class="sb-avatar" id="sb-avatar-img" style="width:40px; height:40px;">
+                    <span class="sb-avatar-dot"></span>
+                </div>
+                <div class="sb-user-info">
+                    <div class="sb-name" id="sb-user-name" style="font-size: 15px; font-weight: 600;">ADC Member</div>
+                    <div class="sb-email" id="sb-user-email" style="font-size: 13px; color: rgba(255,255,255,0.5);">test123@test.com</div>
+                </div>
+            </div>
+            <button class="sb-signout" id="sb-logout" onclick="window.location.href='/src/user/login.html'" style="border-radius: 8px; justify-content: flex-start;">
+                <span class="sb-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
                 Logout
             </button>
         </div>
@@ -809,3 +820,4 @@
 
 </body>
 </html>
+
