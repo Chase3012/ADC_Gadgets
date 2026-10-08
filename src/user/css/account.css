@@ -1,6 +1,5 @@
         /* ═══ ACCOUNT HERO STYLES ═══ */
         .account-hero {
-            padding: 60px 20px 40px;
             text-align: center;
         }
 
@@ -22,7 +21,7 @@
 
         @media (max-width: 640px) {
             .account-hero {
-                padding: 30px 20px 20px;
+                /* padding handled by user.css responsive rules */
             }
             .account-title {
                 font-size: 24px;
