@@ -434,6 +434,7 @@
 
     <script>
         lucide.createIcons();
+        let userProfile = null;
 
         /* ── Sidebar toggle ── */
         const navHamBtn = document.getElementById('nav-ham-btn');
@@ -640,6 +641,7 @@
                 const res = await fetch('/profiles/' + session.id);
                 if (res.ok) {
                     const profile = await res.json();
+                    userProfile = profile;
                     applyProfileData(profile, email, new Date().toISOString());
                 } else {
                     applyEmailFallback(email, new Date().toISOString());
