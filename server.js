@@ -971,7 +971,7 @@ app.get('/chats/conversations', async (req, res) => {
       SELECT DISTINCT ON (c.user_id) c.user_id, c.message, c.created_at, c.is_read, c.sender,
              p.full_name AS profile_full_name, p.email AS profile_email, p.active_loan_model AS profile_active_loan_model
       FROM chats c
-      LEFT JOIN profiles p ON c.user_id::uuid = p.id
+      LEFT JOIN profiles p ON c.user_id::text = p.id::text
       ORDER BY c.user_id, c.created_at DESC
     `);
     res.json(rows);
