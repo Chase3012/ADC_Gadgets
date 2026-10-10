@@ -375,11 +375,12 @@
         wrap.className = `msg-bubble-wrap ${isUser ? 'user' : 'admin'}`;
 
         const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const senderLabel = isUser ? 'You' : 'Support';
+        const isAi = msg.sender === 'ai';
+        const senderLabel = isUser ? 'You' : (isAi ? '<i data-lucide="bot" style="width:12px;height:12px;"></i> ADC Assistant' : 'Support');
 
         wrap.innerHTML = `
-            <div class="msg-info">${senderLabel} &bull; ${time}</div>
-            <div class="msg-bubble">${msg.message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="msg-info" ${isAi ? 'style="color:#8b5cf6; font-weight:700;"' : ''}>${senderLabel} &bull; ${time}</div>
+            <div class="msg-bubble" ${isAi ? 'style="background:linear-gradient(135deg, #8b5cf6, #5b21b6); color:white; box-shadow: 0 4px 12px rgba(139,92,246,0.25); border:1px solid rgba(255,255,255,0.1);"' : ''}>${msg.message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
         `;
         messagesEl.appendChild(wrap);
         // smooth scroll

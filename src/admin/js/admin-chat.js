@@ -170,7 +170,8 @@
     }
 
     function renderMessage(msg) {
-        const isAdmin = msg.sender === 'admin';
+        const isAdmin = msg.sender === 'admin' || msg.sender === 'ai';
+        const isAi = msg.sender === 'ai';
         const bubble = document.createElement('div');
         
         const rowClass = isAdmin ? 'sent' : 'received';
@@ -194,7 +195,7 @@
         bubble.innerHTML = `
             ${!isAdmin ? `<div class="chat-avatar" style="${bgStyle}">${userInitial}</div>` : ''}
             <div style="display:flex; flex-direction:column;">
-                <div class="chat-bubble">${msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+                <div class="chat-bubble" ${isAi ? 'style="background:linear-gradient(135deg, #8b5cf6, #5b21b6); color:white; box-shadow: 0 0 10px rgba(139,92,246,0.3);"' : ''}>${isAi ? '<div style="font-size:10px; opacity:0.8; margin-bottom:4px; font-weight:700;"><i data-lucide="bot" style="width:12px;height:12px;"></i> AI ASSISTANT</div>' : ''}${msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
                 <div class="chat-msg-time">${time}</div>
             </div>
         `;

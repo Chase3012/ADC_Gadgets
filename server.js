@@ -1014,16 +1014,76 @@ app.get('/chats/:userId', async (req, res) => {
 app.post('/chats', async (req, res) => {
   const { user_id, message, sender } = req.body;
   try {
+    const finalSender = sender || 'user';
     const result = await pool.query(
       `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, $3, false) RETURNING *`,
-      [user_id, message, sender || 'user']
+      [user_id, message, finalSender]
     );
-    res.status(201).json(result.rows[0]);
+    const insertedMsg = result.rows[0];
+
+    // Trigger AI Assistant asynchronously
+    if (finalSender === 'user' && process.env.OPENAI_API_KEY) {
+      const lower = message.toLowerCase();
+      // If user wants a human, let admin handle it
+      const wantsHuman = lower.includes('human') || lower.includes('admin') || lower.includes('agent') || lower.includes('support') || lower.includes('talk to');
+      
+      if (!wantsHuman) {
+        handleAIAssistant(user_id, message).catch(err => console.error("AI Error:", err));
+      }
+    }
+
+    res.status(201).json(insertedMsg);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+async function handleAIAssistant(userId, userMessage) {
+    try {
+        const OpenAI = require('openai');
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        // Fetch user context
+        const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
+        const profile = userRes.rows[0];
+        
+        let systemPrompt = "You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans. Keep your answers brief, friendly, and professional (1-3 sentences).";
+        
+        if (profile) {
+            systemPrompt += ` You are talking to ${profile.full_name || 'a customer'}.`;
+            if (profile.active_loan_model) {
+                systemPrompt += ` They currently have an active loan for a ${profile.active_loan_model}.`;
+            } else {
+                systemPrompt += ` They do not have an active loan right now.`;
+            }
+            if (profile.status) {
+                systemPrompt += ` Their account status is '${profile.status}'.`;
+            }
+        }
+        
+        systemPrompt += " If they ask complex questions or want to complain, tell them they can type 'Talk to human' to reach an admin.";
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMessage }
+            ],
+            max_tokens: 150
+        });
+
+        const aiResponse = completion.choices[0].message.content;
+
+        await pool.query(
+            `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, $3, false)`,
+            [userId, aiResponse, 'ai']
+        );
+    } catch(err) {
+        console.error("OpenAI request failed:", err);
+    }
+}
+
 
 app.put('/chats/:id/read', async (req, res) => {
   const { id } = req.params;
