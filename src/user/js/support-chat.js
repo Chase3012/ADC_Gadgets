@@ -415,12 +415,57 @@
         }
     }
 
+    // Typing Indicator Logic
+    let typingBubble = null;
+    function showTypingIndicator() {
+        if (typingBubble) return;
+        if (placeholderEl) placeholderEl.style.display = 'none';
+        
+        typingBubble = document.createElement('div');
+        typingBubble.className = 'msg-bubble-wrap admin';
+        typingBubble.innerHTML = `
+            <div class="msg-info" style="color:#8b5cf6; font-weight:700;">
+                <i data-lucide="bot" style="width:12px;height:12px;"></i> ADC Assistant
+            </div>
+            <div class="msg-bubble" style="background:linear-gradient(135deg, #8b5cf6, #5b21b6); padding: 12px 18px; border-radius: 20px; box-shadow: 0 4px 12px rgba(139,92,246,0.25);">
+                <div style="display:flex; gap:4px; align-items:center;">
+                    <span style="width:6px; height:6px; background:#fff; border-radius:50%; animation: bounce 1.4s infinite ease-in-out both;"></span>
+                    <span style="width:6px; height:6px; background:#fff; border-radius:50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay:-0.32s;"></span>
+                    <span style="width:6px; height:6px; background:#fff; border-radius:50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay:-0.16s;"></span>
+                </div>
+            </div>
+            <style>
+                @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+            </style>
+        `;
+        messagesEl.appendChild(typingBubble);
+        messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+    }
+
+    function removeTypingIndicator() {
+        if (typingBubble) {
+            typingBubble.remove();
+            typingBubble = null;
+        }
+    }
+
     // Send message
     async function sendMessage() {
         const text = inputEl.value.trim();
         if (!text) return;
         inputEl.value = '';
         sendBtn.disabled = true;
+
+        // Render user message optimistically
+        renderMessage({
+            sender: 'user',
+            message: text,
+            created_at: new Date().toISOString()
+        });
+        renderedMessageCount++; // increment to prevent duplicate from loadMessages
+
+        // Show AI is typing...
+        showTypingIndicator();
 
         try {
             const res = await fetch('/chats', {
@@ -433,9 +478,11 @@
                 })
             });
             if (!res.ok) throw new Error('Failed to send');
+            removeTypingIndicator();
             await loadMessages();
         } catch (error) {
             console.error('Send error:', error);
+            removeTypingIndicator();
             inputEl.value = text;
         }
         sendBtn.disabled = false;
