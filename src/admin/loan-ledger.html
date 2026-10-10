@@ -515,7 +515,12 @@ async function loadUserLoanDetails(userId) {
         </div>
     </div>
     
-    <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 16px;">Ledger Details</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin: 0;">Ledger Details</h3>
+        <button onclick="addManualPayment('${l.id}')" style="padding: 8px 16px; font-size: 12px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; display: ${l.status === 'active' ? 'inline-block' : 'none'}; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.2);">
+            + Add Manual Payment
+        </button>
+    </div>
     <div class="table-wrapper" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
         <table class="data-table" style="margin: 0; width: 100%; border-collapse: collapse;">
             <thead style="background:var(--surface);">
@@ -570,6 +575,36 @@ async function loadUserLoanDetails(userId) {
 }
 
 loadContracts();
+
+window.addManualPayment = async function(loanId) {
+    const amountStr = prompt("Enter the manual payment amount (₱):");
+    if (!amountStr) return;
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount) || amount <= 0) {
+        alert("Invalid amount.");
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to log a payment of ₱${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}?`)) {
+        try {
+            const res = await fetch('/api/admin/add-cash-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ loan_id: loanId, amount_paid: amount })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Payment added successfully.");
+                if (lastViewedUserId) loadUserLoanDetails(lastViewedUserId); // Refresh ledger
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to add payment.");
+        }
+    }
+};
 </script>
 <script src="js/admin-auth.js"></script>
 </body>
