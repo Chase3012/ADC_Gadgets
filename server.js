@@ -1021,14 +1021,14 @@ app.post('/chats', async (req, res) => {
     );
     const insertedMsg = result.rows[0];
 
-    // Trigger AI Assistant asynchronously
+    // Trigger AI Assistant
     if (finalSender === 'user' && process.env.OPENAI_API_KEY) {
       const lower = message.toLowerCase();
-      // If user wants a human, let admin handle it
       const wantsHuman = lower.includes('human') || lower.includes('admin') || lower.includes('agent') || lower.includes('support') || lower.includes('talk to');
       
       if (!wantsHuman) {
-        handleAIAssistant(user_id, message).catch(err => console.error("AI Error:", err));
+        // We MUST await this so Vercel Serverless doesn't kill the background process!
+        await handleAIAssistant(user_id, message).catch(err => console.error("AI Error:", err));
       }
     }
 
@@ -1044,7 +1044,6 @@ async function handleAIAssistant(userId, userMessage) {
         const OpenAI = require('openai');
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-        // Fetch user context
         const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
         const profile = userRes.rows[0];
         
@@ -1062,7 +1061,7 @@ async function handleAIAssistant(userId, userMessage) {
             }
         }
         
-        systemPrompt += " If they ask complex questions or want to complain, tell them they can type 'Talk to human' to reach an admin.";
+        systemPrompt += " CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
