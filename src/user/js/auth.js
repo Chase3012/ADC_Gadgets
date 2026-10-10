@@ -50,6 +50,8 @@ function initUserPortalAuth() {
             const acolor = user.avatar_color || 'blue';
             sbAvatar.style.background = gradients[acolor] || gradients.blue;
             sbAvatar.textContent = initial;
+        }
+
         const logoutBtn = document.getElementById('sb-logout');
         if (logoutBtn) {
             logoutBtn.onclick = async (e) => {
@@ -62,4 +64,8 @@ function initUserPortalAuth() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initUserPortalAuth);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUserPortalAuth);
+} else {
+    initUserPortalAuth();
+}

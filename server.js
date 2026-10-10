@@ -872,6 +872,7 @@ app.post('/pay/confirm', async (req, res) => {
 
     if (newBalance < 1) {
       await pool.query(`UPDATE loans SET status = 'completed' WHERE id = $1`, [actualLoanId]);
+      await pool.query(`UPDATE profiles SET active_loan_model = NULL WHERE id = (SELECT user_id FROM loans WHERE id = $1)`, [actualLoanId]);
     }
 
     console.log(`[pay/confirm] loan=${actualLoanId} ₱${amountPaid} via ${methodLabel} | bal: ${loan.remaining_balance}→${newBalance} | next: ${newNextDate.toDateString()}`);
@@ -933,6 +934,7 @@ app.post('/pay/webhook', express.raw({ type: 'application/json' }), async (req, 
 
       if (newBal < 1) {
         await pool.query("UPDATE loans SET status = 'completed' WHERE id = $1", [loan_id]);
+        await pool.query("UPDATE profiles SET active_loan_model = NULL WHERE id = (SELECT user_id FROM loans WHERE id = $1)", [loan_id]);
       }
     }
 
@@ -960,6 +962,7 @@ app.post('/pay/record', async (req, res) => {
     const updated = await pool.query('SELECT remaining_balance FROM loans WHERE id = $1', [loan_id]);
     if (updated.rows.length > 0 && parseFloat(updated.rows[0].remaining_balance) < 1) {
       await pool.query("UPDATE loans SET status = 'completed' WHERE id = $1", [loan_id]);
+      await pool.query("UPDATE profiles SET active_loan_model = NULL WHERE id = (SELECT user_id FROM loans WHERE id = $1)", [loan_id]);
     }
     res.json({ success: true });
   } catch (err) {
@@ -1144,13 +1147,16 @@ async function handleAIAssistant(userId, userMessage) {
         
         const loanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status IN ('active', 'pending') ORDER BY created_at DESC LIMIT 1", [userId]);
         const activeLoan = loanRes.rows[0];
+
+        const completedLoanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status = 'completed' ORDER BY updated_at DESC LIMIT 1", [userId]);
+        const completedLoan = completedLoanRes.rows[0];
         
         if (profile) {
             contextInfo += `You are talking to ${profile.full_name || 'a customer'}. `;
             if (activeLoan) {
-                contextInfo += `They have an active loan for a ${activeLoan.device_name}. Their total loan amount is ₱${activeLoan.total_amount}. Their remaining balance is ₱${activeLoan.remaining_balance}. Their next monthly payment is ₱${activeLoan.monthly_payment} due on ${activeLoan.next_payment_date}. `;
-            } else if (profile.active_loan_model) {
-                contextInfo += `They currently have an active loan for a ${profile.active_loan_model}. `;
+                contextInfo += `They currently have an active loan for a ${activeLoan.device_name}. Their total loan amount is ₱${activeLoan.total_amount}. Their remaining balance is ₱${activeLoan.remaining_balance}. Their next monthly payment is ₱${activeLoan.monthly_payment} due on ${activeLoan.next_payment_date}. `;
+            } else if (completedLoan) {
+                contextInfo += `They do NOT have any active loans right now. Their previous loan for a ${completedLoan.device_name} has been fully settled and completed. If they ask whether they have an active loan, explicitly confirm that they do not have any active loans, and mention that their ${completedLoan.device_name} loan is completely paid off. `;
             } else {
                 contextInfo += `They do not have an active loan right now. `;
             }
@@ -1219,10 +1225,13 @@ async function handleAIAssistant(userId, userMessage) {
             const nameMatch = contextInfo.match(/You are talking to (.*?)\./);
             const userName = nameMatch ? nameMatch[1] : "there";
             aiResponse = `Yes! I know you are ${userName}. How can I assist you with your ADC Gadgets account today?`;
-        } else if (lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
-            const loanMatch = contextInfo.match(/active loan for a (.*?)\./);
+        } else if (lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans") || lowerMsg.includes("do i have active") || lowerMsg.includes("my loans")) {
+            const loanMatch = contextInfo.match(/currently have an active loan for a (.*?)\./);
+            const completedMatch = contextInfo.match(/previous loan for a (.*?) has been fully settled/);
             if (loanMatch) {
                 aiResponse = `Yes! Based on our records, you have an active loan for a ${loanMatch[1]}. Let me know if you need specific details about your payments or remaining balance!`;
+            } else if (completedMatch) {
+                aiResponse = `Based on our records, you do not have any active loans right now. Your previous loan for the ${completedMatch[1]} has been fully settled and completed! Are you interested in getting a new device?`;
             } else {
                 aiResponse = "Based on our records, you do not have an active loan right now. Are you interested in getting a new device?";
             }
@@ -1483,6 +1492,7 @@ app.post('/api/admin/add-cash-payment', async (req, res) => {
 
     if (newBalance < 1) {
       await pool.query(`UPDATE loans SET status = 'completed' WHERE id = $1`, [loan_id]);
+      await pool.query(`UPDATE profiles SET active_loan_model = NULL WHERE id = (SELECT user_id FROM loans WHERE id = $1)`, [loan_id]);
     }
 
     console.log(`[Cash Payment] loan=${loan_id} ₱${paid} | bal: ${loan.remaining_balance}→${newBalance} | next: ${newNextDate.toDateString()}`);

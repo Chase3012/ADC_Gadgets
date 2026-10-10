@@ -14,9 +14,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Set greeting name
+    // Set greeting name and ensure sidebar profile details are updated
     const firstName = user.email.split('@')[0] || 'there';
     document.getElementById('hero-first-name').textContent = firstName;
+
+    const sbUserName = document.getElementById('sb-user-name');
+    const sbUserEmail = document.getElementById('sb-user-email');
+    const sbAvatar = document.getElementById('sb-avatar-img');
+    const email = user.email || '—';
+    const fullName = user.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const initial = fullName.charAt(0).toUpperCase();
+
+    if (sbUserName) sbUserName.textContent = fullName;
+    if (sbUserEmail) sbUserEmail.textContent = email;
+    if (sbAvatar) {
+        const gradients = {
+            blue: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+            pink: 'linear-gradient(135deg, #FF4191, #d9266e)',
+            emerald: 'linear-gradient(135deg, #10b981, #047857)',
+            amber: 'linear-gradient(135deg, #f59e0b, #b45309)',
+            purple: 'linear-gradient(135deg, #8b5cf6, #5b21b6)'
+        };
+        const acolor = user.avatar_color || 'blue';
+        sbAvatar.style.background = gradients[acolor] || gradients.blue;
+        sbAvatar.textContent = initial;
+    }
 
     // ── Load Loans ───────────────────────────────────────────────────────────────
     async function loadLoans() {
@@ -72,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         try {
-            const res = await fetch('/loans?user_id=' + user.id);
+            const res = await fetch('/loans?user_id=' + user.id + '&all=true');
             if (!res.ok) throw new Error('Failed to fetch loans');
             const loans = await res.json();
 
