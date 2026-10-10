@@ -58,7 +58,8 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-adc-gadgets-2026';
 
 function verifyToken(req, res, next) {
-    const token = req.cookies.auth_token;
+    // Check for either an admin token or a user token
+    const token = req.cookies.admin_auth_token || req.cookies.auth_token;
     if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
@@ -70,12 +71,20 @@ function verifyToken(req, res, next) {
 }
 
 function verifyAdmin(req, res, next) {
-    verifyToken(req, res, () => {
-        if (!req.user || req.user.role !== 'admin') {
+    // Admins must use the admin_auth_token specifically to prevent role hijacking/conflict
+    const token = req.cookies.admin_auth_token;
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No admin token provided' });
+    
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        if (req.user.role !== 'admin') {
             return res.status(403).json({ error: 'Forbidden: Admin access required' });
         }
         next();
-    });
+    } catch(err) {
+        return res.status(403).json({ error: 'Forbidden: Invalid or expired admin token' });
+    }
 }
 
 // ─── AUTH: Login, OTP, Reset Password ──────────────────────────────────────────
@@ -151,7 +160,7 @@ app.post('/login', async (req, res) => {
 
     if (user.role === 'admin') {
       const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-      res.cookie('auth_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+      res.cookie('admin_auth_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
       return res.json({ success: true, user, role: user.role });
     }
 
