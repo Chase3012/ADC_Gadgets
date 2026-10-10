@@ -1197,7 +1197,7 @@ async function handleAIAssistant(userId, userMessage) {
         const { GoogleGenerativeAI } = require("@google/generative-ai");
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-3.8-flash",
+            model: "gemini-1.5-flash",
             systemInstruction: `You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans and inquiries. Keep your answers brief, friendly, and professional (1-3 sentences). Use Markdown for formatting (like **bold** or bullet points) if helpful.\n\n[SYSTEM CONTEXT: ${contextInfo}]`
         });
 
