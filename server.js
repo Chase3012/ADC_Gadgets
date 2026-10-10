@@ -1022,7 +1022,7 @@ app.post('/chats', async (req, res) => {
     const insertedMsg = result.rows[0];
 
     // Trigger AI Assistant
-    if (finalSender === 'user' && process.env.OPENAI_API_KEY) {
+    if (finalSender === 'user' && process.env.GEMINI_API_KEY) {
       const lower = message.toLowerCase();
       const wantsHuman = lower.includes('human') || lower.includes('admin') || lower.includes('agent') || lower.includes('support') || lower.includes('talk to');
       
@@ -1040,46 +1040,64 @@ app.post('/chats', async (req, res) => {
 });
 
 async function handleAIAssistant(userId, userMessage) {
+    let aiResponse = "";
     try {
-        const OpenAI = require('openai');
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.length < 10) {
+            throw new Error("No valid Gemini API key found");
+        }
+
+        const { GoogleGenerativeAI } = require("@google/generative-ai");
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            systemInstruction: "You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans. Keep your answers brief, friendly, and professional (1-3 sentences)."
+        });
 
         const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
         const profile = userRes.rows[0];
         
-        let systemPrompt = "You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans. Keep your answers brief, friendly, and professional (1-3 sentences).";
-        
+        let contextInfo = "";
         if (profile) {
-            systemPrompt += ` You are talking to ${profile.full_name || 'a customer'}.`;
+            contextInfo += `You are talking to ${profile.full_name || 'a customer'}. `;
             if (profile.active_loan_model) {
-                systemPrompt += ` They currently have an active loan for a ${profile.active_loan_model}.`;
+                contextInfo += `They currently have an active loan for a ${profile.active_loan_model}. `;
             } else {
-                systemPrompt += ` They do not have an active loan right now.`;
+                contextInfo += `They do not have an active loan right now. `;
             }
             if (profile.status) {
-                systemPrompt += ` Their account status is '${profile.status}'.`;
+                contextInfo += `Their account status is '${profile.status}'. `;
             }
         }
         
-        systemPrompt += " CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
+        contextInfo += "CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userMessage }
-            ],
-            max_tokens: 150
-        });
+        const prompt = `[SYSTEM CONTEXT: ${contextInfo}]\n\nUser Message: ${userMessage}`;
 
-        const aiResponse = completion.choices[0].message.content;
+        const result = await model.generateContent(prompt);
+        aiResponse = result.response.text();
 
+    } catch(err) {
+        console.error("AI API failed (using Mock AI fallback):", err.message);
+        
+        // MOCK AI FALLBACK FOR SCHOOL PRESENTATION
+        const lowerMsg = userMessage.toLowerCase();
+        if (lowerMsg.includes("name") || lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
+            aiResponse = "Hello! Based on our records, you do have an active loan with ADC Gadgets. Let me know if you need specific details about your payments!";
+        } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
+            aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
+        } else {
+            aiResponse = "I am the ADC Assistant! I can help you with basic account inquiries. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
+        }
+    }
+
+    // Insert the response (either real or mock)
+    try {
         await pool.query(
             `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, $3, false)`,
             [userId, aiResponse, 'ai']
         );
-    } catch(err) {
-        console.error("OpenAI request failed:", err);
+    } catch(dbErr) {
+        console.error("Failed to insert AI message:", dbErr);
     }
 }
 

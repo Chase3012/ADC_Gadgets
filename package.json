@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@neondatabase/neon-js": "^0.7.0-beta",
     "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-slot": "^1.4.0",
@@ -27,7 +28,6 @@
     "lucide-react": "^1.53.0",
     "multer": "^2.4.0",
     "nodemailer": "^10.0.10",
-    "openai": "^7.32.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",
