@@ -1203,14 +1203,18 @@ async function handleAIAssistant(userId, userMessage) {
 
                 // Fetch Chat History for Conversational Memory (ROBUST METHOD)
         const historyRes = await pool.query(
-            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at ASC LIMIT 10",
+            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10",
             [userId]
         );
         
         let memoryText = "--- PAST CONVERSATION HISTORY ---\n";
+        
+        // Reverse rows to put them in chronological order
+        const recentMessages = historyRes.rows.reverse();
+
         // We do length - 1 to exclude the message the user JUST sent (since it's already in the DB)
-        for (let i = 0; i < historyRes.rows.length - 1; i++) {
-            const row = historyRes.rows[i];
+        for (let i = 0; i < recentMessages.length - 1; i++) {
+            const row = recentMessages[i];
             const roleName = row.sender === 'user' ? 'Customer' : 'ADC Assistant';
             memoryText += `${roleName}: ${row.message}\n`;
         }
