@@ -1106,7 +1106,7 @@ async function handleAIAssistant(userId, userMessage) {
         } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
             aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
         } else {
-            aiResponse = "DEBUG ERROR (Please show me this): " + err.message;
+            aiResponse = "I am the ADC Assistant! I can tell you about your active loan, next payment date, and remaining balance. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
         }
     }
 
