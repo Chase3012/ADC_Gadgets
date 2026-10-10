@@ -1183,10 +1183,12 @@ app.post('/api/admin/add-cash-payment', async (req, res) => {
     const newNextDate = new Date(currentNextDate);
     newNextDate.setMonth(newNextDate.getMonth() + 1);
 
+    const manualSessionId = 'manual_cash_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+
     await pool.query(
       `INSERT INTO payments (loan_id, amount_paid, payment_date, payment_method, checkout_session_id)
-       VALUES ($1, $2, NOW(), 'cash', 'manual_cash')`,
-      [loan_id, paid]
+       VALUES ($1, $2, NOW(), 'cash', $3)`,
+      [loan_id, paid, manualSessionId]
     );
 
     await pool.query(
