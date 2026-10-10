@@ -164,7 +164,12 @@ app.post('/login', async (req, res) => {
     
     // Check password if it exists on the account
     if (user.password !== null) {
-      const isMatch = await bcrypt.compare(password, user.password);
+      let isMatch = false;
+      if (typeof user.password === 'string' && (user.password.startsWith('$2a$') || user.password.startsWith('$2b$'))) {
+        isMatch = await bcrypt.compare(password, user.password);
+      } else {
+        isMatch = (password === user.password);
+      }
       if (!isMatch) {
         return res.status(401).json({ error: 'Invalid password' });
       }
@@ -389,10 +394,15 @@ app.post('/api/users/create', upload.single('idImage'), async (req, res) => {
     if (existing.rows.length > 0) return res.status(409).json({ error: 'Email already exists' });
 
     // 1. Insert Profile
+    let hashedPassword = actualPassword;
+    if (actualPassword && !actualPassword.startsWith('$2a$') && !actualPassword.startsWith('$2b$')) {
+      hashedPassword = await bcrypt.hash(actualPassword, 10);
+    }
+
     const profRes = await pool.query(
       `INSERT INTO profiles (full_name, email, mobile, address, id_type, id_url, active_loan_model, loan_term, password, role, status, is_first_login)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'user', 'Active', true) RETURNING *`,
-      [actualFullName, actualEmail, actualMobile, actualAddress, actualIdType, idUrl, actualLoanModel, actualTerm, actualPassword]
+      [actualFullName, actualEmail, actualMobile, actualAddress, actualIdType, idUrl, actualLoanModel, actualTerm, hashedPassword]
     );
     const newUser = profRes.rows[0];
 
