@@ -1135,7 +1135,6 @@ async function handleAIAssistant(userId, userMessage) {
             aiResponse = "I am the ADC Assistant! I can tell you about your active loan, next payment date, and remaining balance. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
         }
     }
-    }
 
     try {
         await pool.query(
