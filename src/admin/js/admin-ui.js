@@ -108,3 +108,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
+
+// Global Chat Badge Logic
+async function updateGlobalChatBadge() {
+    try {
+        const res = await fetch('/dashboard/stats');
+        if (!res.ok) return;
+        const data = await res.json();
+        const badge = document.getElementById('global-chat-badge');
+        if (badge) {
+            if (data.unreadMessages && data.unreadMessages > 0) {
+                badge.textContent = data.unreadMessages;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        // fail silently
+    }
+}
+updateGlobalChatBadge();
+setInterval(updateGlobalChatBadge, 30000);
