@@ -50,6 +50,30 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// ─── MIDDLEWARE ──────────────────────────────────────────────────────────────
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-adc-gadgets-2026';
+
+function verifyToken(req, res, next) {
+    const token = req.cookies.auth_token;
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch(err) {
+        return res.status(403).json({ error: 'Forbidden: Invalid or expired token' });
+    }
+}
+
+function verifyAdmin(req, res, next) {
+    verifyToken(req, res, () => {
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        }
+        next();
+    });
+}
+
 // ─── AUTH: Login, OTP, Reset Password ──────────────────────────────────────────
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -197,6 +221,8 @@ app.post('/verify-otp', async (req, res) => {
     if (user.is_first_login) {
       res.json({ requiresPasswordReset: true });
     } else {
+      const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+      res.cookie('auth_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
       res.json({ success: true, user });
     }
   } catch (err) {
@@ -1238,10 +1264,10 @@ app.post('/api/profiles/:id/upload-id', idUpload.single('idImage'), async (req, 
   }
 });
 
-// ─── ADMIN TASK APIs ────────────────────────────────────────────────────────────
+// ─── ADMIN TASK APIs (Protected) ────────────────────────────────────────────────
 
 // Missing Documents: customers with active loans but no id_url uploaded
-app.get('/api/admin/missing-documents', async (req, res) => {
+app.get('/api/admin/missing-documents', verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT DISTINCT p.id, p.full_name, p.email, p.mobile, p.id_url,
@@ -1423,7 +1449,7 @@ app.post('/api/admin/add-cash-payment', async (req, res) => {
 });
 
 // ─── ADMIN EMAIL STATEMENT ────────────────────────────────────────────────────
-app.post('/api/admin/email-statement', async (req, res) => {
+app.post('/api/admin/email-statement', verifyAdmin, async (req, res) => {
   const { loan_id } = req.body;
   if (!loan_id) return res.status(400).json({ error: 'loan_id is required' });
 
