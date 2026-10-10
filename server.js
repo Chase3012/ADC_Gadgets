@@ -1311,9 +1311,9 @@ app.post('/api/admin/email-statement', async (req, res) => {
 
     // 5. Send Email
     await transporter.sendMail({
-      from: \`"ADC Gadgets" <\${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>\`,
+      from: `"ADC Gadgets" <${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>`,
       to: loan.email,
-      subject: \`Statement of Account: \${loan.device_name} - ADC Gadgets\`,
+      subject: `Statement of Account: ${loan.device_name} - ADC Gadgets`,
       html: htmlEmail
     });
 
