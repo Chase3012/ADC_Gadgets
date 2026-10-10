@@ -90,18 +90,22 @@ const getOtpTemplate = (otp) => `
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    // Try password match first, fall back to email-only for accounts without passwords
-    let result = await pool.query(
-      'SELECT * FROM profiles WHERE email = $1 AND (password = $2 OR password IS NULL)',
-      [email, password]
-    );
+    // Check if email exists
+    let result = await pool.query('SELECT * FROM profiles WHERE email = $1', [email]);
+    
     if (result.rows.length === 0) {
-      // Check if email exists at all
-      const emailCheck = await pool.query('SELECT id FROM profiles WHERE email = $1', [email]);
-      if (emailCheck.rows.length > 0) return res.status(401).json({ error: 'Invalid password' });
       return res.status(401).json({ error: 'Email not found' });
     }
+    
     const user = result.rows[0];
+    
+    // Check password if it exists on the account
+    if (user.password !== null) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ error: 'Invalid password' });
+      }
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -190,9 +194,10 @@ app.post('/verify-otp', async (req, res) => {
 app.post('/reset-password', async (req, res) => {
   const { userId, newPassword } = req.body;
   try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
     const result = await pool.query(
       'UPDATE profiles SET password = $1, is_first_login = false WHERE id = $2 RETURNING *',
-      [newPassword, userId]
+      [hashedPassword, userId]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     res.json({ success: true, user: result.rows[0] });
@@ -239,8 +244,12 @@ app.post('/profiles/:id/password', async (req, res) => {
   try {
     const result = await pool.query('SELECT password FROM profiles WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    if (result.rows[0].password !== current_password) return res.status(401).json({ error: 'Current password is incorrect' });
-    await pool.query('UPDATE profiles SET password = $1 WHERE id = $2', [new_password, id]);
+    
+    const isMatch = await bcrypt.compare(current_password, result.rows[0].password);
+    if (!isMatch) return res.status(401).json({ error: 'Current password is incorrect' });
+    
+    const hashedNewPassword = await bcrypt.hash(new_password, 10);
+    await pool.query('UPDATE profiles SET password = $1 WHERE id = $2', [hashedNewPassword, id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
