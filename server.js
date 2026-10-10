@@ -1022,7 +1022,7 @@ app.post('/chats', async (req, res) => {
     const insertedMsg = result.rows[0];
 
     // Trigger AI Assistant
-    if (finalSender === 'user' && process.env.GEMINI_API_KEY) {
+    if (finalSender === 'user') {
       const lower = message.toLowerCase();
       const wantsHuman = lower.includes('human') || lower.includes('admin') || lower.includes('agent') || lower.includes('support') || lower.includes('talk to');
       
