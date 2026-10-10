@@ -47,6 +47,44 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const getOtpTemplate = (otp) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Your OTP Code - ADC Gadgets</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 40px 0;">
+    
+    <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border-top: 6px solid #FF4191; padding: 40px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+        
+        <h1 style="color: #FF4191; margin: 0 0 10px 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">ADC Gadgets</h1>
+        
+        <p style="color: #64748b; font-size: 15px; margin: 0 0 30px 0;">Secure Login Verification</p>
+        
+        <h2 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0;">Here is your login code:</h2>
+        
+        <div style="background-color: #fce7f3; border: 1px dashed #FF4191; border-radius: 8px; padding: 20px; margin: 0 auto 30px auto; display: inline-block;">
+            <span style="font-family: monospace; font-size: 36px; font-weight: bold; color: #831843; letter-spacing: 6px;">${otp}</span>
+        </div>
+        
+        <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+            Please enter this One-Time Password (OTP) in the app to verify your identity. This code is valid for exactly <strong>10 minutes</strong>. Do not share this code with anyone.
+        </p>
+        
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                If you did not request this code, you can safely ignore this email.<br>
+                &copy; ADC Gadgets. All rights reserved.
+            </p>
+        </div>
+        
+    </div>
+    
+</body>
+</html>
+`;
+
 // Memory store removed for serverless compatibility
 
 app.post('/login', async (req, res) => {
@@ -74,7 +112,7 @@ app.post('/login', async (req, res) => {
         from: `"ADC Gadgets" <${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>`,
         to: email,
         subject: 'Your OTP Code - ADC Gadgets',
-        html: `<p>Your OTP code is: <strong>${otp}</strong>. Valid for 10 minutes.</p>`
+        html: getOtpTemplate(otp)
       });
       console.log(`OTP Email sent to ${email}. Response: ${info.response}`);
     } catch (emailErr) {
@@ -105,7 +143,7 @@ app.post('/resend-otp', async (req, res) => {
         from: `"ADC Gadgets" <${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>`,
         to: user.email,
         subject: 'Your OTP Code - ADC Gadgets',
-        html: `<p>Your OTP code is: <strong>${otp}</strong>. Valid for 10 minutes.</p>`
+        html: getOtpTemplate(otp)
       });
       res.json({ success: true, message: `OTP Email successfully sent to ${user.email}.` });
     } catch (emailErr) {
