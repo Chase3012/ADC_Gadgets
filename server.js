@@ -1085,39 +1085,56 @@ async function handleAIAssistant(userId, userMessage) {
             systemInstruction: `You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans and inquiries. Keep your answers brief, friendly, and professional (1-3 sentences). Use Markdown for formatting (like **bold** or bullet points) if helpful.\n\n[SYSTEM CONTEXT: ${contextInfo}]`
         });
 
-        // Fetch Chat History for Conversational Memory
+                // Fetch Chat History for Conversational Memory (ROBUST METHOD)
         const historyRes = await pool.query(
-            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 6",
+            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at ASC LIMIT 10",
             [userId]
         );
         
-        // Reverse to chronological order
-        const pastMessages = historyRes.rows.reverse();
-        
-        // Build history array, excluding the very last message (which is the current userMessage)
-        const chatHistory = [];
-        for (let i = 0; i < pastMessages.length - 1; i++) {
-            const row = pastMessages[i];
-            chatHistory.push({
-                role: row.sender === 'user' ? 'user' : 'model',
-                parts: [{ text: row.message }]
-            });
+        let memoryText = "--- PAST CONVERSATION HISTORY ---\n";
+        // We do length - 1 to exclude the message the user JUST sent (since it's already in the DB)
+        for (let i = 0; i < historyRes.rows.length - 1; i++) {
+            const row = historyRes.rows[i];
+            const roleName = row.sender === 'user' ? 'Customer' : 'ADC Assistant';
+            memoryText += `${roleName}: ${row.message}\n`;
         }
+        memoryText += "--- END HISTORY ---\n\n";
 
-        const chatSession = model.startChat({
-            history: chatHistory
-        });
+        const prompt = `[SYSTEM CONTEXT: ${contextInfo}]\n\n${memoryText}Customer: ${userMessage}\nADC Assistant:`;
 
-        const result = await chatSession.sendMessage(userMessage);
+        const result = await model.generateContent(prompt);
         aiResponse = result.response.text();
 
     } catch(err) {
         console.error("AI API failed (using Mock AI fallback):", err.message);
-        aiResponse = "DEBUG ERROR (Please show me this): " + err.message;
-        // Comment out the rest of the mock AI so it falls through to this error
         
         // MOCK AI FALLBACK FOR SCHOOL PRESENTATION
-        /* MOCK AI COMMENTED OUT FOR DEBUGGING */
+        const lowerMsg = userMessage.toLowerCase();
+        
+        if (lowerMsg.includes("balance") || lowerMsg.includes("how much")) {
+            const balMatch = contextInfo.match(/remaining balance is (₱[0-9.,]+)/);
+            if (balMatch) {
+                aiResponse = `Your remaining balance is ${balMatch[1]}. Please let me know if you need help making a payment.`;
+            } else {
+                aiResponse = `You do not currently have a balance on your account. Let me know if you want to apply for a new device!`;
+            }
+        } else if (lowerMsg.includes("name")) {
+            const nameMatch = contextInfo.match(/You are talking to (.*?)\./);
+            const userName = nameMatch ? nameMatch[1] : "there";
+            aiResponse = `Yes! I know you are ${userName}. How can I assist you with your ADC Gadgets account today?`;
+        } else if (lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
+            const loanMatch = contextInfo.match(/active loan for a (.*?)\./);
+            if (loanMatch) {
+                aiResponse = `Yes! Based on our records, you have an active loan for a ${loanMatch[1]}. Let me know if you need specific details about your payments or remaining balance!`;
+            } else {
+                aiResponse = "Based on our records, you do not have an active loan right now. Are you interested in getting a new device?";
+            }
+        } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
+            aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
+        } else {
+            aiResponse = "I am the ADC Assistant! I can tell you about your active loan, next payment date, and remaining balance. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
+        }
+    }
     }
 
     try {
