@@ -651,38 +651,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// --- Custom Modals ---
+function showCustomConfirm(message, onConfirm) {
+    document.getElementById('custom-confirm-message').textContent = message;
+    const modal = document.getElementById('custom-confirm-modal');
+    modal.style.display = 'flex';
+    
+    const confirmBtn = document.getElementById('custom-confirm-btn');
+    const cancelBtn = document.getElementById('custom-cancel-btn');
+    
+    // Remove old listeners by cloning
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    newCancelBtn.onclick = () => { modal.style.display = 'none'; };
+    newConfirmBtn.onclick = () => {
+        modal.style.display = 'none';
+        onConfirm();
+    };
+}
+
+function showCustomAlert(message) {
+    document.getElementById('custom-alert-message').textContent = message;
+    const modal = document.getElementById('custom-alert-modal');
+    modal.style.display = 'flex';
+}
+
+function closeCustomAlert() {
+    document.getElementById('custom-alert-modal').style.display = 'none';
+}
+
 // --- Email Statement Logic ---
 window.emailStatement = async function(loanId) {
-    if (!confirm("Are you sure you want to send the Statement of Account to the customer's email?")) return;
-    
-    const btn = document.getElementById(`btn-email-${loanId}`);
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px; height:14px;"></i> Sending...';
-    btn.disabled = true;
-    lucide.createIcons();
+    showCustomConfirm("Are you sure you want to send the Statement of Account to the customer's email?", async () => {
+        const btn = document.getElementById(`btn-email-${loanId}`);
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px; height:14px;"></i> Sending...';
+        btn.disabled = true;
+        lucide.createIcons();
 
-    try {
-        const res = await fetch('/api/admin/email-statement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ loan_id: loanId })
-        });
-        const data = await res.json();
-        
-        btn.innerHTML = originalContent;
-        btn.disabled = false;
-        
-        if (data.success) {
-            alert('Statement emailed successfully to the customer.');
-        } else {
-            alert('Error: ' + data.error);
+        try {
+            const res = await fetch('/api/admin/email-statement', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ loan_id: loanId })
+            });
+            const data = await res.json();
+            
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            
+            if (data.success) {
+                showCustomAlert('Statement emailed successfully to the customer.');
+            } else {
+                showCustomAlert('Error: ' + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            showCustomAlert('Failed to send statement due to a network error.');
         }
-    } catch (err) {
-        console.error(err);
-        alert('Failed to send email statement.');
-        btn.innerHTML = originalContent;
-        btn.disabled = false;
-    }
+    });
 };
 
 // --- Print Statement Logic ---
@@ -742,7 +774,35 @@ window.printStatement = function(loanId) {
 };
 
 </script>
+<script src="js/admin-ui.js"></script>
 <script src="js/admin-auth.js"></script>
+
+<!-- Custom Confirm Modal -->
+<div id="custom-confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.3); animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="background:rgba(255, 65, 145, 0.1); width:64px; height:64px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 20px auto;">
+            <i data-lucide="mail" style="color:var(--pink); width:32px; height:32px;"></i>
+        </div>
+        <h3 style="margin:0 0 10px 0; font-size:18px; color:var(--text-main);">Send Statement?</h3>
+        <p id="custom-confirm-message" style="color:var(--text-muted); font-size:14px; line-height:1.5; margin:0 0 24px 0;"></p>
+        <div style="display:flex; justify-content:center; gap:12px;">
+            <button id="custom-cancel-btn" style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-main); font-weight:600; cursor:pointer; transition: 0.2s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='transparent'">Cancel</button>
+            <button id="custom-confirm-btn" style="flex:1; padding:12px; border-radius:8px; border:none; background:var(--pink); color:white; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(255, 65, 145, 0.3); transition: 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Send Email</button>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Alert Modal -->
+<div id="custom-alert-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.3); animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="background:rgba(34, 197, 94, 0.1); width:64px; height:64px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 20px auto;">
+            <i data-lucide="check" style="color:var(--success); width:32px; height:32px;"></i>
+        </div>
+        <h3 style="margin:0 0 10px 0; font-size:18px; color:var(--text-main);">Success</h3>
+        <p id="custom-alert-message" style="color:var(--text-muted); font-size:14px; line-height:1.5; margin:0 0 24px 0;"></p>
+        <button onclick="closeCustomAlert()" style="width:100%; padding:12px; border-radius:8px; border:none; background:var(--primary); color:white; font-weight:600; cursor:pointer; transition: 0.2s;">Okay</button>
+    </div>
+</div>
 
 <!-- Manual Payment Modal -->
 <div id="manual-payment-modal" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center;">
