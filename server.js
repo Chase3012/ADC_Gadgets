@@ -1041,7 +1041,28 @@ app.post('/chats', async (req, res) => {
 
 async function handleAIAssistant(userId, userMessage) {
     let aiResponse = "";
+    let contextInfo = "";
+    
     try {
+        const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
+        const profile = userRes.rows[0];
+        
+        const loanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status IN ('active', 'pending') ORDER BY created_at DESC LIMIT 1", [userId]);
+        const activeLoan = loanRes.rows[0];
+        
+        if (profile) {
+            contextInfo += `You are talking to ${profile.full_name || 'a customer'}. `;
+            if (activeLoan) {
+                contextInfo += `They have an active loan for a ${activeLoan.device_name}. Their total loan amount is ₱${activeLoan.total_amount}. Their remaining balance is ₱${activeLoan.remaining_balance}. Their next monthly payment is ₱${activeLoan.monthly_payment} due on ${activeLoan.next_payment_date}. `;
+            } else if (profile.active_loan_model) {
+                contextInfo += `They currently have an active loan for a ${profile.active_loan_model}. `;
+            } else {
+                contextInfo += `They do not have an active loan right now. `;
+            }
+        }
+        
+        contextInfo += "CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
+
         if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.length < 10) {
             throw new Error("No valid Gemini API key found");
         }
@@ -1053,24 +1074,6 @@ async function handleAIAssistant(userId, userMessage) {
             systemInstruction: "You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans. Keep your answers brief, friendly, and professional (1-3 sentences)."
         });
 
-        const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
-        const profile = userRes.rows[0];
-        
-        let contextInfo = "";
-        if (profile) {
-            contextInfo += `You are talking to ${profile.full_name || 'a customer'}. `;
-            if (profile.active_loan_model) {
-                contextInfo += `They currently have an active loan for a ${profile.active_loan_model}. `;
-            } else {
-                contextInfo += `They do not have an active loan right now. `;
-            }
-            if (profile.status) {
-                contextInfo += `Their account status is '${profile.status}'. `;
-            }
-        }
-        
-        contextInfo += "CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
-
         const prompt = `[SYSTEM CONTEXT: ${contextInfo}]\n\nUser Message: ${userMessage}`;
 
         const result = await model.generateContent(prompt);
@@ -1081,16 +1084,24 @@ async function handleAIAssistant(userId, userMessage) {
         
         // MOCK AI FALLBACK FOR SCHOOL PRESENTATION
         const lowerMsg = userMessage.toLowerCase();
-        if (lowerMsg.includes("name") || lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
-            aiResponse = "Hello! Based on our records, you do have an active loan with ADC Gadgets. Let me know if you need specific details about your payments!";
+        
+        if (lowerMsg.includes("balance") || lowerMsg.includes("how much")) {
+            // Extract remaining balance from context string if possible, else generic
+            const balMatch = contextInfo.match(/remaining balance is (₱[0-9.,]+)/);
+            if (balMatch) {
+                aiResponse = `Your remaining balance is ${balMatch[1]}. Please let me know if you need help making a payment.`;
+            } else {
+                aiResponse = `You do not currently have a balance on your account. Let me know if you want to apply for a new device!`;
+            }
+        } else if (lowerMsg.includes("name") || lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
+            aiResponse = "Hello! Based on our records, you do have an active loan with ADC Gadgets. Let me know if you need specific details about your payments or remaining balance!";
         } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
             aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
         } else {
-            aiResponse = "I am the ADC Assistant! I can help you with basic account inquiries. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
+            aiResponse = "I am the ADC Assistant! I can tell you about your active loan, next payment date, and remaining balance. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
         }
     }
 
-    // Insert the response (either real or mock)
     try {
         await pool.query(
             `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, $3, false)`,
