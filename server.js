@@ -1086,15 +1086,23 @@ async function handleAIAssistant(userId, userMessage) {
         const lowerMsg = userMessage.toLowerCase();
         
         if (lowerMsg.includes("balance") || lowerMsg.includes("how much")) {
-            // Extract remaining balance from context string if possible, else generic
             const balMatch = contextInfo.match(/remaining balance is (₱[0-9.,]+)/);
             if (balMatch) {
                 aiResponse = `Your remaining balance is ${balMatch[1]}. Please let me know if you need help making a payment.`;
             } else {
                 aiResponse = `You do not currently have a balance on your account. Let me know if you want to apply for a new device!`;
             }
-        } else if (lowerMsg.includes("name") || lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
-            aiResponse = "Hello! Based on our records, you do have an active loan with ADC Gadgets. Let me know if you need specific details about your payments or remaining balance!";
+        } else if (lowerMsg.includes("name")) {
+            const nameMatch = contextInfo.match(/You are talking to (.*?)\./);
+            const userName = nameMatch ? nameMatch[1] : "there";
+            aiResponse = `Yes! I know you are ${userName}. How can I assist you with your ADC Gadgets account today?`;
+        } else if (lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans")) {
+            const loanMatch = contextInfo.match(/active loan for a (.*?)\./);
+            if (loanMatch) {
+                aiResponse = `Yes! Based on our records, you have an active loan for a ${loanMatch[1]}. Let me know if you need specific details about your payments or remaining balance!`;
+            } else {
+                aiResponse = "Based on our records, you do not have an active loan right now. Are you interested in getting a new device?";
+            }
         } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
             aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
         } else {
