@@ -72,6 +72,7 @@
     .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; height: 20px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="app">
@@ -272,6 +273,16 @@
             <div class="kpi-label">Monthly Installments</div>
             <div class="kpi-val" id="sales-kpi-monthly">—</div>
             <div class="kpi-sub">Expected monthly collections</div>
+          </div>
+        </div>
+
+        
+        <!-- Revenue Chart -->
+        <div class="panel-card" style="margin-bottom:24px;">
+          <h3>Revenue Overview</h3>
+          <div class="card-sub" style="margin-bottom:16px;">Monthly total collected payments</div>
+          <div style="height:300px; width:100%;">
+            <canvas id="revenueChart"></canvas>
           </div>
         </div>
 

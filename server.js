@@ -1448,6 +1448,28 @@ app.post('/api/admin/add-cash-payment', async (req, res) => {
   }
 });
 
+
+// ─── ADMIN CHART DATA ────────────────────────────────────────────────────────
+app.get('/api/admin/chart-data', verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        TO_CHAR(payment_date, 'Mon YYYY') as month_label,
+        TO_CHAR(payment_date, 'YYYY-MM') as sort_key,
+        SUM(amount_paid) as total_collected
+      FROM payments
+      WHERE payment_method != 'pending'
+      GROUP BY sort_key, month_label
+      ORDER BY sort_key ASC
+      LIMIT 12
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ─── ADMIN EMAIL STATEMENT ────────────────────────────────────────────────────
 app.post('/api/admin/email-statement', verifyAdmin, async (req, res) => {
   const { loan_id } = req.body;
