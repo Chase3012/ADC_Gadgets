@@ -1140,16 +1140,19 @@ app.post('/chats', async (req, res) => {
 async function handleAIAssistant(userId, userMessage) {
     let aiResponse = "";
     let contextInfo = "";
+    let profile = null;
+    let activeLoan = null;
+    let completedLoan = null;
     
     try {
         const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
-        const profile = userRes.rows[0];
+        profile = userRes.rows[0];
         
         const loanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status IN ('active', 'pending') ORDER BY created_at DESC LIMIT 1", [userId]);
-        const activeLoan = loanRes.rows[0];
+        activeLoan = loanRes.rows[0];
 
-        const completedLoanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status = 'completed' ORDER BY updated_at DESC LIMIT 1", [userId]);
-        const completedLoan = completedLoanRes.rows[0];
+        const completedLoanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status = 'completed' ORDER BY created_at DESC LIMIT 1", [userId]);
+        completedLoan = completedLoanRes.rows[0];
         
         if (profile) {
             contextInfo += `You are talking to ${profile.full_name || 'a customer'}. `;
@@ -1214,31 +1217,38 @@ async function handleAIAssistant(userId, userMessage) {
         // MOCK AI FALLBACK FOR SCHOOL PRESENTATION
         const lowerMsg = userMessage.toLowerCase();
         
-        if (lowerMsg.includes("balance") || lowerMsg.includes("how much")) {
-            const balMatch = contextInfo.match(/remaining balance is (₱[0-9.,]+)/);
-            if (balMatch) {
-                aiResponse = `Your remaining balance is ${balMatch[1]}. Please let me know if you need help making a payment.`;
+        if (lowerMsg.includes("balance") || lowerMsg.includes("how much") || lowerMsg.includes("pay")) {
+            if (activeLoan) {
+                const bal = parseFloat(activeLoan.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                const nextDate = activeLoan.next_payment_date ? new Date(activeLoan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'soon';
+                const mpay = parseFloat(activeLoan.monthly_payment).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                aiResponse = `Your remaining balance for the ${activeLoan.device_name} is **₱${bal}**. Your next monthly installment of **₱${mpay}** is due on **${nextDate}**.`;
+            } else if (completedLoan) {
+                aiResponse = `You currently have **₱0.00** remaining balance! Your previous loan for the ${completedLoan.device_name} has been fully settled and completed.`;
             } else {
-                aiResponse = `You do not currently have a balance on your account. Let me know if you want to apply for a new device!`;
+                aiResponse = `You do not currently have an active balance on your account. Let me know if you want to apply for a new device!`;
             }
-        } else if (lowerMsg.includes("name")) {
-            const nameMatch = contextInfo.match(/You are talking to (.*?)\./);
-            const userName = nameMatch ? nameMatch[1] : "there";
-            aiResponse = `Yes! I know you are ${userName}. How can I assist you with your ADC Gadgets account today?`;
+        } else if (lowerMsg.includes("name") || lowerMsg.includes("who am i")) {
+            const userName = profile ? (profile.full_name || profile.email.split('@')[0]) : "there";
+            aiResponse = `Yes! I know you are **${userName}**. How can I assist you with your ADC Gadgets account today?`;
         } else if (lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans") || lowerMsg.includes("do i have active") || lowerMsg.includes("my loans")) {
-            const loanMatch = contextInfo.match(/currently have an active loan for a (.*?)\./);
-            const completedMatch = contextInfo.match(/previous loan for a (.*?) has been fully settled/);
-            if (loanMatch) {
-                aiResponse = `Yes! Based on our records, you have an active loan for a ${loanMatch[1]}. Let me know if you need specific details about your payments or remaining balance!`;
-            } else if (completedMatch) {
-                aiResponse = `Based on our records, you do not have any active loans right now. Your previous loan for the ${completedMatch[1]} has been fully settled and completed! Are you interested in getting a new device?`;
+            if (activeLoan) {
+                const bal = parseFloat(activeLoan.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                aiResponse = `Yes! Based on our records, you have an active loan for a **${activeLoan.device_name}** with a remaining balance of **₱${bal}**. Let me know if you need specific details about your payments!`;
+            } else if (completedLoan) {
+                aiResponse = `Based on our records, you do not have any active loans right now. Your previous loan for the **${completedLoan.device_name}** has been fully settled and completed! Would you like to apply for a new device?`;
             } else {
                 aiResponse = "Based on our records, you do not have an active loan right now. Are you interested in getting a new device?";
             }
         } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
             aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
         } else {
-            aiResponse = "I am the ADC Assistant! I can tell you about your active loan, next payment date, and remaining balance. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
+            if (activeLoan) {
+                const bal = parseFloat(activeLoan.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                aiResponse = `I am the ADC Assistant! You currently have an active loan for a **${activeLoan.device_name}** with a remaining balance of **₱${bal}**. You can ask me about your balance, next due date, or available devices!`;
+            } else {
+                aiResponse = "I am the ADC Assistant! I can help answer questions about our devices, monthly installment plans, and account status. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
+            }
         }
     }
 
