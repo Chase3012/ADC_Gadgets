@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         </div>
                                         <div>
                                             <div style="font-weight:600; color:var(--text-main); font-size:15px;">
-                                                Payment <span style="font-weight:400; font-size:13px; color:var(--g500); margin-left:4px;">via ${p.payment_method || 'GCash / Maya'}</span>
+                                                Payment <span style="font-weight:400; font-size:13px; color:var(--g500); margin-left:4px;">via ${p.payment_method === 'cash' ? 'Cash (Admin)' : (p.payment_method || 'GCash / Maya')}</span>
                                             </div>
                                             <div style="color:var(--text-muted); font-size:13px;">${date}</div>
                                         </div>
