@@ -69,14 +69,9 @@
                 <!-- Dark top section -->
                 <div class="profile-card-top">
                     <div class="avatar-ring">
-                        <div class="avatar-placeholder" id="avatar-placeholder">
-                            <i data-lucide="user" style="width:38px;height:38px;"></i>
+                        <div class="avatar-placeholder" id="avatar-placeholder" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; display:flex; align-items:center; justify-content:center; border-radius:50%; width:100%; height:100%; font-size:40px; font-weight:bold;">
+                            ?
                         </div>
-                        <img class="avatar-img" id="avatar-img" src="" alt="Profile" style="display:none; position:absolute; inset:0; z-index:1;">
-                        <button class="avatar-upload-btn" id="avatar-upload-btn" title="Change photo">
-                            <i data-lucide="camera" style="width:12px;height:12px;"></i>
-                        </button>
-                        <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
                     </div>
                     <div class="profile-name" id="profile-full-name">—</div>
                     <div class="profile-email-text" id="profile-email-disp">—</div>
@@ -199,6 +194,31 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- Section: Avatar Customization -->
+            <section class="acc-section" id="section-avatar">
+                <div class="acc-section-header">
+                    <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">
+                            <i data-lucide="palette" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div>
+                            <div class="acc-section-title">Profile Avatar</div>
+                            <div class="acc-section-desc">Choose a premium gradient avatar for your profile.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="acc-section-body">
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;" id="avatar-selector">
+                        <div class="avatar-option" data-color="blue" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #3b82f6, #1d4ed8); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
+                        <div class="avatar-option" data-color="pink" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #FF4191, #d9266e); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
+                        <div class="avatar-option" data-color="emerald" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #10b981, #047857); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
+                        <div class="avatar-option" data-color="amber" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #f59e0b, #b45309); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
+                        <div class="avatar-option" data-color="purple" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #8b5cf6, #5b21b6); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
+                    </div>
+                    <button class="primary-btn" id="save-avatar-btn" disabled>Save Selection</button>
                 </div>
             </section>
 
@@ -391,7 +411,7 @@
         <div class="sb-foot" style="padding: 24px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
             <div class="sb-user" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.03);">
                 <div class="sb-avatar-wrap">
-                    <img src="../../images/logo.jpg" alt="User" class="sb-avatar" id="sb-avatar-img" style="width:40px; height:40px;">
+                    <div id="sb-avatar-img" style="width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:18px; background:linear-gradient(135deg, #3b82f6, #1d4ed8);">?</div>
                     <span class="sb-avatar-dot"></span>
                 </div>
                 <div class="sb-user-info">
@@ -503,26 +523,80 @@
             strengthLabel.style.color = clr;
         });
 
-        /* ── Avatar upload ── */
-        const avatarUploadBtn = document.getElementById('avatar-upload-btn');
-        const avatarFileInput = document.getElementById('avatar-file-input');
-        const avatarImg = document.getElementById('avatar-img');
-        const avatarPlaceholder = document.getElementById('avatar-placeholder');
+                /* ── Avatar upload ── */
+        const avatarOptions = document.querySelectorAll('.avatar-option');
+        const saveAvatarBtn = document.getElementById('save-avatar-btn');
+        let selectedAvatarColor = null;
 
-        avatarUploadBtn.addEventListener('click', () => avatarFileInput.click());
-        avatarFileInput.addEventListener('change', function () {
-            const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                avatarImg.src = e.target.result;
-                avatarImg.style.display = 'block';
-                avatarPlaceholder.style.display = 'none';
-                // Also update sidebar avatar
-                document.getElementById('sb-avatar-img').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        avatarOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                avatarOptions.forEach(o => {
+                    o.style.border = '3px solid transparent';
+                    o.style.transform = 'scale(1)';
+                });
+                opt.style.border = '3px solid #1e293b';
+                opt.style.transform = 'scale(1.1)';
+                selectedAvatarColor = opt.getAttribute('data-color');
+                saveAvatarBtn.disabled = false;
+            });
         });
+
+        saveAvatarBtn.addEventListener('click', async () => {
+            if (!selectedAvatarColor || !userProfile.id) return;
+            const btn = saveAvatarBtn;
+            const originalText = btn.textContent;
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/profiles/${userProfile.id}/avatar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatar_color: selectedAvatarColor })
+                });
+
+                if (!res.ok) throw new Error('Failed to update avatar');
+                
+                showToast('Avatar updated successfully!');
+                
+                // Update local storage so auth.js uses it next time
+                userProfile.avatar_color = selectedAvatarColor;
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                
+                // Update UI right now
+                applyAvatarColor(selectedAvatarColor, userProfile.full_name);
+                
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+            }
+        });
+
+        function applyAvatarColor(color, name) {
+            const gradients = {
+                blue: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                pink: 'linear-gradient(135deg, #FF4191, #d9266e)',
+                emerald: 'linear-gradient(135deg, #10b981, #047857)',
+                amber: 'linear-gradient(135deg, #f59e0b, #b45309)',
+                purple: 'linear-gradient(135deg, #8b5cf6, #5b21b6)'
+            };
+            const bg = gradients[color] || gradients.blue;
+            const initial = name ? name.charAt(0).toUpperCase() : '?';
+
+            const sbAvatar = document.getElementById('sb-avatar-img');
+            if (sbAvatar) {
+                sbAvatar.style.background = bg;
+                sbAvatar.textContent = initial;
+            }
+
+            const phAvatar = document.getElementById('avatar-placeholder');
+            if (phAvatar) {
+                phAvatar.style.background = bg;
+                phAvatar.textContent = initial;
+            }
+        }
 
 
 
@@ -570,6 +644,20 @@
                 } else {
                     applyEmailFallback(email, new Date().toISOString());
                 }
+
+                // Initial Avatar load
+                if (userProfile) {
+                    applyAvatarColor(userProfile.avatar_color, userProfile.full_name);
+                    if (userProfile.avatar_color) {
+                        const opt = document.querySelector(`.avatar-option[data-color="${userProfile.avatar_color}"]`);
+                        if (opt) {
+                            opt.style.border = '3px solid #1e293b';
+                            opt.style.transform = 'scale(1.1)';
+                            selectedAvatarColor = userProfile.avatar_color;
+                        }
+                    }
+                }
+
             } catch (err) {
                 applyEmailFallback(email, new Date().toISOString());
             }

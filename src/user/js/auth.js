@@ -32,10 +32,25 @@ function initUserPortalAuth() {
         }
 
         const email = user.email || '—';
-        const fullName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const fullName = user.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const initial = fullName.charAt(0).toUpperCase();
 
         if (sbUserName) sbUserName.textContent = fullName;
         if (sbUserEmail) sbUserEmail.textContent = email;
+        
+        const sbAvatar = document.getElementById('sb-avatar-img');
+        if (sbAvatar) {
+            const gradients = {
+                blue: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                pink: 'linear-gradient(135deg, #FF4191, #d9266e)',
+                emerald: 'linear-gradient(135deg, #10b981, #047857)',
+                amber: 'linear-gradient(135deg, #f59e0b, #b45309)',
+                purple: 'linear-gradient(135deg, #8b5cf6, #5b21b6)'
+            };
+            const acolor = user.avatar_color || 'blue';
+            sbAvatar.style.background = gradients[acolor] || gradients.blue;
+            sbAvatar.textContent = initial;
+        }
     }
 }
 

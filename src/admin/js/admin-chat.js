@@ -36,6 +36,7 @@
                         full_name: msg.profile_full_name || 'Unknown User',
                         email: msg.profile_email || ('Account ID: ' + (msg.user_id ? parseInt(msg.user_id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000')),
                         active_loan: msg.profile_active_loan_model || 'None',
+                        avatar_color: msg.profile_avatar_color || 'blue',
                         last_message: msg.message,
                         last_time: msg.created_at,
                         unread: 0
@@ -61,9 +62,7 @@
                 div.className = 'chat-contact-item' + (currentUserId === c.user_id ? ' active' : '');
                 
                 // Randomish color for avatar based on first letter
-                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-                const charCode = c.full_name.charCodeAt(0) || 0;
-                const bg = colors[charCode % colors.length];
+                const gradients = { blue: "linear-gradient(135deg, #3b82f6, #1d4ed8)", pink: "linear-gradient(135deg, #FF4191, #d9266e)", emerald: "linear-gradient(135deg, #10b981, #047857)", amber: "linear-gradient(135deg, #f59e0b, #b45309)", purple: "linear-gradient(135deg, #8b5cf6, #5b21b6)" }; const bg = gradients[c.avatar_color] || gradients.blue;
 
                 // Format date: if today, show time, else show short date
                 const dateObj = new Date(c.last_time);
@@ -166,12 +165,20 @@
         const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         let userInitial = '?';
-        if (!isAdmin && headerName.textContent) {
-            userInitial = headerName.textContent.charAt(0).toUpperCase();
+        let bgStyle = 'background:#f1f5f9; color:var(--text-main);';
+        if (!isAdmin) {
+            if (headerName.textContent) userInitial = headerName.textContent.charAt(0).toUpperCase();
+            
+            // Get color from map
+            if (currentUserId && map.has(currentUserId)) {
+                const acolor = map.get(currentUserId).avatar_color;
+                const gradients = { blue: "linear-gradient(135deg, #3b82f6, #1d4ed8)", pink: "linear-gradient(135deg, #FF4191, #d9266e)", emerald: "linear-gradient(135deg, #10b981, #047857)", amber: "linear-gradient(135deg, #f59e0b, #b45309)", purple: "linear-gradient(135deg, #8b5cf6, #5b21b6)" };
+                bgStyle = `background: ${gradients[acolor] || gradients.blue}; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2);`;
+            }
         }
 
         bubble.innerHTML = `
-            ${!isAdmin ? `<div class="chat-avatar" style="background:#f1f5f9; color:var(--text-main);">${userInitial}</div>` : ''}
+            ${!isAdmin ? `<div class="chat-avatar" style="${bgStyle}">${userInitial}</div>` : ''}
             <div style="display:flex; flex-direction:column;">
                 <div class="chat-bubble">${msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
                 <div class="chat-msg-time">${time}</div>

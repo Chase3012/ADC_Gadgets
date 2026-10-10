@@ -248,6 +248,22 @@ app.post('/profiles/:id/password', async (req, res) => {
   }
 });
 
+app.put('/api/profiles/:id/avatar', async (req, res) => {
+  const { id } = req.params;
+  const { avatar_color } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE profiles SET avatar_color = $1 WHERE id = $2 RETURNING *',
+      [avatar_color, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ─── CREATE USER & LOAN (Admin action) ─────────────────────────────────────────
 app.post('/api/users/create', upload.single('idImage'), async (req, res) => {
   const {
@@ -969,7 +985,7 @@ app.get('/chats/conversations', async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT DISTINCT ON (c.user_id) c.user_id, c.message, c.created_at, c.is_read, c.sender,
-             p.full_name AS profile_full_name, p.email AS profile_email, p.active_loan_model AS profile_active_loan_model
+             p.full_name AS profile_full_name, p.email AS profile_email, p.active_loan_model AS profile_active_loan_model, p.avatar_color AS profile_avatar_color
       FROM chats c
       LEFT JOIN profiles p ON c.user_id::text = p.id::text
       ORDER BY c.user_id, c.created_at DESC
