@@ -576,36 +576,111 @@ async function loadUserLoanDetails(userId) {
 
 loadContracts();
 
-window.addManualPayment = async function(loanId) {
-    const amountStr = prompt("Enter the manual payment amount (₱):");
-    if (!amountStr) return;
-    const amount = parseFloat(amountStr);
-    if (isNaN(amount) || amount <= 0) {
-        alert("Invalid amount.");
-        return;
-    }
-    
-    if (confirm(`Are you sure you want to log a payment of ₱${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}?`)) {
-        try {
-            const res = await fetch('/api/admin/add-cash-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ loan_id: loanId, amount_paid: amount })
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert("Payment added successfully.");
-                if (lastViewedUserId) loadUserLoanDetails(lastViewedUserId); // Refresh ledger
-            } else {
-                alert("Error: " + data.error);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Failed to add payment.");
-        }
+let pendingManualLoanId = null;
+
+window.addManualPayment = function(loanId) {
+    pendingManualLoanId = loanId;
+    const modal = document.getElementById('manual-payment-modal');
+    if (modal) {
+        document.getElementById('manual-payment-amount').value = '';
+        modal.style.display = 'flex';
+        // Re-initialize icons just in case
+        if (window.lucide) lucide.createIcons({ root: modal });
     }
 };
+
+window.closeManualPaymentModal = function() {
+    pendingManualLoanId = null;
+    const modal = document.getElementById('manual-payment-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmBtn = document.getElementById('confirm-manual-payment-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const amountStr = document.getElementById('manual-payment-amount').value;
+            const amount = parseFloat(amountStr);
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert("Please enter a valid amount greater than 0.");
+                return;
+            }
+            
+            if (!pendingManualLoanId) return;
+
+            const originalText = confirmBtn.textContent;
+            confirmBtn.textContent = 'Processing...';
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.7';
+            
+            try {
+                const res = await fetch('/api/admin/add-cash-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ loan_id: pendingManualLoanId, amount_paid: amount })
+                });
+                const data = await res.json();
+                
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+                
+                if (data.success) {
+                    closeManualPaymentModal();
+                    if (lastViewedUserId) loadUserLoanDetails(lastViewedUserId); // Refresh ledger
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to add payment. Please check your connection.");
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+            }
+        });
+    }
+});
 </script>
 <script src="js/admin-auth.js"></script>
+
+<!-- Manual Payment Modal -->
+<div id="manual-payment-modal" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-backdrop" onclick="closeManualPaymentModal()" style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);"></div>
+    <div class="modal-content" style="position: relative; background: var(--surface); width: 100%; max-width: 400px; border-radius: 16px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid var(--border); animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <button onclick="closeManualPaymentModal()" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 24px;">
+            <div style="width: 48px; height: 48px; background: rgba(236, 72, 153, 0.1); color: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                <i data-lucide="banknote" style="width: 24px; height: 24px;"></i>
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin: 0 0 8px 0; letter-spacing: -0.02em;">Log Manual Payment</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.5;">Enter the exact amount paid by the customer. This will update their ledger and remaining balance immediately.</p>
+        </div>
+        
+        <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Payment Amount (₱)</label>
+            <div style="position: relative;">
+                <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-weight: 600; color: var(--text-muted);">₱</span>
+                <input type="number" id="manual-payment-amount" placeholder="0.00" style="width: 100%; height: 48px; padding: 0 16px 0 36px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface); font-family: inherit; font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; transition: all 0.2s;" onfocus="this.style.borderColor='var(--pink)'; this.style.boxShadow='0 0 0 3px rgba(236,72,153,0.1)';" onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';">
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+            <button onclick="closeManualPaymentModal()" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 600; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='transparent'">Cancel</button>
+            <button id="confirm-manual-payment-btn" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.3);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Confirm Payment</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+
 </body>
 </html>
