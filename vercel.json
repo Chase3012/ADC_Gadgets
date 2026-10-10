@@ -51,5 +51,11 @@
       "source": "/dashboard(.*)",
       "destination": "/server.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/due-reminders",
+      "schedule": "0 0 * * *"
+    }
   ]
 }

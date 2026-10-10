@@ -1206,6 +1206,68 @@ app.post('/api/admin/add-cash-payment', async (req, res) => {
   }
 });
 
+// ─── CRON JOB: PAYMENT REMINDERS ──────────────────────────────────────────────
+app.get('/api/cron/due-reminders', async (req, res) => {
+  try {
+    // Look for active loans where next_payment_date is exactly 3 days from now
+    // We use DATE() to compare just the date parts.
+    const query = `
+      SELECT l.*, p.email, p.full_name 
+      FROM loans l
+      JOIN profiles p ON l.user_id = p.id
+      WHERE l.status = 'active' 
+        AND DATE(l.next_payment_date) = DATE(NOW() + INTERVAL '3 days')
+    `;
+    const { rows } = await pool.query(query);
+
+    let emailsSent = 0;
+
+    for (const loan of rows) {
+      if (!loan.email) continue;
+      
+      const dueDate = new Date(loan.next_payment_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+      const amount = parseFloat(loan.monthly_payment).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+      
+      try {
+        await transporter.sendMail({
+          from: `"ADC Gadgets" <${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>`,
+          to: loan.email,
+          subject: 'Payment Reminder - ADC Gadgets',
+          html: `
+            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #FF4191;">Payment Reminder</h2>
+              <p>Hi ${loan.full_name || 'Customer'},</p>
+              <p>This is a friendly reminder from ADC Gadgets that your monthly installment for the <strong>${loan.device_name}</strong> is coming up soon.</p>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Due Date</td>
+                  <td style="padding: 10px; border: 1px solid #ddd;">${dueDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Amount Due</td>
+                  <td style="padding: 10px; border: 1px solid #ddd; color: #FF4191; font-weight: bold;">₱${amount}</td>
+                </tr>
+              </table>
+              <p>Please ensure your payment is made on or before the due date to keep your account in good standing.</p>
+              <p>You can pay conveniently via GCash or Maya by logging into your account on the ADC Gadgets platform.</p>
+              <br>
+              <p>Thank you,<br><strong>The ADC Gadgets Team</strong></p>
+            </div>
+          `
+        });
+        emailsSent++;
+      } catch (emailErr) {
+        console.error("Failed to send reminder email to:", loan.email, emailErr.message);
+      }
+    }
+
+    res.json({ success: true, processed: rows.length, emailsSent });
+  } catch (err) {
+    console.error('Error in /api/cron/due-reminders:', err);
+    res.status(500).json({ error: 'Server error running cron job' });
+  }
+});
+
 // ─── START SERVER ──────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {

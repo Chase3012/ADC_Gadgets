@@ -60,8 +60,10 @@
     <!-- ━━━ MAIN (Solid White) ━━━ -->
     <main class="main">
 
-        <!-- Tabs -->
-        <div class="tab-bar">
+        <!-- Controls (Tabs & Search) -->
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <!-- Tabs -->
+            <div class="tab-bar" style="margin-bottom: 0;">
             <button class="tab-btn active" id="tab-available">
                 <i data-lucide="smartphone" style="width: 18px; height: 18px;"></i> Available Now <span
                     class="tab-count">9</span>
@@ -71,6 +73,12 @@
             </button>
         </div>
 
+            <!-- Search -->
+            <div style="position: relative; flex: 1; min-width: 200px; max-width: 320px;">
+                <i data-lucide="search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--g500); width: 18px; height: 18px; pointer-events: none;"></i>
+                <input type="text" id="device-search" placeholder="Search devices..." style="width: 100%; height: 44px; padding: 0 16px 0 44px; border-radius: 999px; border: 1.5px solid var(--g200); background: var(--white); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--g800); outline: none; transition: border-color 0.2s, box-shadow 0.2s;" onfocus="this.style.borderColor='var(--pink)'; this.style.boxShadow='0 0 0 3px rgba(255, 65, 145, 0.12)';" onblur="this.style.borderColor='var(--g200)'; this.style.boxShadow='none';">
+            </div>
+        </div>
         <div id="panel-available">
             <!-- Products Grid -->
             <section class="products-grid" id="grid-available">
@@ -346,6 +354,23 @@
                 // Load Upcoming Devices
                 window.loadAppleDBDevices("#grid-upcoming", false, 'upcoming');
             }
+
+            const searchInput = document.getElementById('device-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const term = this.value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('.p-card');
+                    
+                    cards.forEach(card => {
+                        const title = card.querySelector('.p-title').textContent.toLowerCase();
+                        if (title.includes(term)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
         });
     </script>
 
@@ -358,4 +383,7 @@
 </body>
 
 </html>
+
+
+
 
