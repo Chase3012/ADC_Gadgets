@@ -88,10 +88,10 @@
       </a>
       <a href="loan-ledger.html" class="nav-item ">
         <div class="nav-item-left">Active Loans</div>
-        <div class="nav-badge">1</div>
       </a>
-      <a href="communication.html" class="nav-item ">
+      <a href="communication.html" class="nav-item " id="nav-communications">
         <div class="nav-item-left">Communication</div>
+        <div class="nav-badge" id="global-chat-badge" style="display:none;"></div>
       </a>
       <a href="inventory.html" class="nav-item ">
         <div class="nav-item-left">Inventory</div>
@@ -324,7 +324,11 @@
     document.getElementById('cm-submit').addEventListener('click', async function() {
         const loanId = window._currentLoanId;
         const amount = parseFloat(document.getElementById('cm-amount').value);
-        if (!amount || amount <= 0) { alert('Enter a valid amount.'); return; }
+        if (!amount || amount <= 0) {
+            if (window.showCustomAlert) window.showCustomAlert('Enter a valid amount greater than 0.', 'Invalid Amount');
+            else alert('Enter a valid amount.');
+            return;
+        }
         const btn = document.getElementById('cm-submit');
         btn.textContent = 'Recording...'; btn.disabled = true;
         try {
@@ -335,10 +339,22 @@
             const d = await r.json();
             if (r.ok) {
                 document.getElementById('cash-modal').classList.remove('active');
-                alert('Cash payment of PHP ' + amount.toLocaleString('en-PH', {minimumFractionDigits:2}) + ' recorded!\nNew balance: PHP ' + parseFloat(d.new_balance).toLocaleString('en-PH', {minimumFractionDigits:2}));
-                location.reload();
-            } else alert('Error: ' + d.error);
-        } catch(e) { alert('Failed.'); }
+                const successMsg = 'Cash payment of ₱' + amount.toLocaleString('en-US', {minimumFractionDigits:2}) + ' recorded!\nNew balance: ₱' + parseFloat(d.new_balance).toLocaleString('en-US', {minimumFractionDigits:2});
+                if (window.showCustomAlert) {
+                    window.showCustomAlert(successMsg, 'Payment Recorded');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    alert(successMsg);
+                    location.reload();
+                }
+            } else {
+                if (window.showCustomAlert) window.showCustomAlert('Error: ' + d.error, 'Error');
+                else alert('Error: ' + d.error);
+            }
+        } catch(e) {
+            if (window.showCustomAlert) window.showCustomAlert('Failed to record payment.', 'Network Error');
+            else alert('Failed.');
+        }
         btn.textContent = 'Record Cash Payment'; btn.disabled = false;
     });
 
@@ -347,6 +363,7 @@
         document.getElementById('lightbox').classList.add('active');
     }
   </script>
+  <script src="js/admin-ui.js"></script>
   <script src="js/admin-auth.js"></script>
 </body>
 </html>

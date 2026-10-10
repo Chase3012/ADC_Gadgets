@@ -36,8 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     var logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
+        logoutBtn.addEventListener('click', async function(e) {
             e.preventDefault();
+            try { await fetch('/api/logout', { method: 'POST' }); } catch(err) {}
             localStorage.removeItem('admin_user');
             window.location.replace('/src/admin/login.html');
         });

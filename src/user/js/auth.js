@@ -50,6 +50,14 @@ function initUserPortalAuth() {
             const acolor = user.avatar_color || 'blue';
             sbAvatar.style.background = gradients[acolor] || gradients.blue;
             sbAvatar.textContent = initial;
+        const logoutBtn = document.getElementById('sb-logout');
+        if (logoutBtn) {
+            logoutBtn.onclick = async (e) => {
+                e.preventDefault();
+                try { await fetch('/api/logout', { method: 'POST' }); } catch(err) {}
+                localStorage.removeItem('customer_user');
+                window.location.replace('/src/user/login.html');
+            };
         }
     }
 }

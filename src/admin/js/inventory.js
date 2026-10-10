@@ -219,7 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
             imgDropzone.style.opacity = '1';
           } catch (err) {
             console.error('Image upload failed:', err);
-            alert('Image upload failed. Please try again.');
+            if (window.showCustomAlert) window.showCustomAlert('Image upload failed. Please try again.', 'Upload Error');
+            else alert('Image upload failed. Please try again.');
             imgDropzone.style.opacity = '1';
           }
         }, 'image/png');
@@ -273,7 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const imgVal = document.getElementById('inv-img').value;
 
     if (!imgVal) {
-      alert('Please upload a device image before saving.');
+      if (window.showCustomAlert) window.showCustomAlert('Please upload a device image before saving.', 'Missing Image');
+      else alert('Please upload a device image before saving.');
       return;
     }
 
@@ -306,7 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
       inventoryModal.classList.remove('active');
       loadDevices();
     } catch (err) {
-      alert(err.message);
+      if (window.showCustomAlert) window.showCustomAlert(err.message, 'Save Error');
+      else alert(err.message);
     }
   });
 
@@ -344,13 +347,20 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.deleteDevice = async (id) => {
-    if (!confirm('Are you sure you want to delete this device?')) return;
-    try {
-      const res = await fetch(`/api/devices/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete device');
-      loadDevices();
-    } catch (err) {
-      alert(err.message);
+    const doDelete = async () => {
+      try {
+        const res = await fetch(`/api/devices/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete device');
+        loadDevices();
+      } catch (err) {
+        if (window.showCustomAlert) window.showCustomAlert(err.message, 'Error');
+        else alert(err.message);
+      }
+    };
+    if (window.showCustomConfirm) {
+      window.showCustomConfirm('Are you sure you want to delete this device?', doDelete, 'Delete Device');
+    } else if (confirm('Are you sure you want to delete this device?')) {
+      doDelete();
     }
   };
 

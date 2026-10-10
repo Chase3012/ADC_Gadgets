@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { Pool } = require('@neondatabase/serverless');
+const { createClient } = require('@supabase/supabase-js');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -17,9 +18,10 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-// Serve phone images statically
+// Serve phone images and static assets
 const IMAGES_DIR = path.join(__dirname, 'images', 'phones');
 app.use('/images/phones', express.static(IMAGES_DIR));
+app.use(express.static(__dirname));
 
 // Multer storage — save in memory for serverless environments
 const storage = multer.memoryStorage();
@@ -29,7 +31,17 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_zFS0vR4esBQf@ep-lucky-waterfall-b36agqcv.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
 });
 
+// Supabase client instance (with graceful fallback)
+const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_KEY)
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
+  : null;
+
+// UUID validation helper to protect PostgreSQL queries from 22P02 syntax errors
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isUUID = (val) => typeof val === 'string' && UUID_REGEX.test(val);
+
 // ─── Health Check ──────────────────────────────────────────────────────────────
+app.get('/api/health', (req, res) => res.json({ status: 'healthy', uptime: process.uptime(), timestamp: new Date().toISOString() }));
 app.get('/', (req, res) => res.send('ADC Gadgets Server is running!'));
 
 // ─── IMAGE UPLOAD ──────────────────────────────────────────────────────────────
@@ -259,11 +271,20 @@ app.post('/reset-password', async (req, res) => {
       [hashedPassword, userId]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    res.json({ success: true, user: result.rows[0] });
+    const user = result.rows[0];
+    const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('auth_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+    res.json({ success: true, user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to reset password' });
   }
+});
+
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('auth_token');
+  res.clearCookie('admin_auth_token');
+  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // ─── PROFILES ──────────────────────────────────────────────────────────────────
@@ -530,6 +551,9 @@ app.delete('/api/devices/:id', async (req, res) => {
 // ─── LOANS ─────────────────────────────────────────────────────────────────────
 app.get('/loans', async (req, res) => {
   const { user_id, all: showAll } = req.query;
+  if (user_id && !isUUID(user_id)) {
+    return res.json([]);
+  }
   try {
     let query, params;
     if (user_id && !showAll) {
@@ -949,6 +973,7 @@ app.get('/loans/:id/ledger', async (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   try {
     const { id } = req.params;
+    if (!isUUID(id)) return res.status(404).json({ error: 'Loan not found' });
     const loanRes = await pool.query(
       `SELECT l.*, p.full_name, p.email, p.mobile, p.address, p.id_type
        FROM loans l JOIN profiles p ON l.user_id = p.id WHERE l.id = $1`,
@@ -1429,6 +1454,7 @@ app.post('/api/admin/nudge', async (req, res) => {
 app.post('/api/admin/add-cash-payment', async (req, res) => {
   const { loan_id, amount_paid } = req.body;
   if (!loan_id || !amount_paid) return res.status(400).json({ error: 'loan_id and amount_paid are required' });
+  if (!isUUID(loan_id)) return res.status(400).json({ error: 'Invalid loan ID format' });
   try {
     const loanRes = await pool.query('SELECT * FROM loans WHERE id = $1', [loan_id]);
     if (loanRes.rows.length === 0) return res.status(404).json({ error: 'Loan not found' });
@@ -1493,6 +1519,7 @@ app.get('/api/admin/chart-data', verifyAdmin, async (req, res) => {
 app.post('/api/admin/email-statement', verifyAdmin, async (req, res) => {
   const { loan_id } = req.body;
   if (!loan_id) return res.status(400).json({ error: 'loan_id is required' });
+  if (!isUUID(loan_id)) return res.status(400).json({ error: 'Invalid loan ID format' });
 
   try {
     // 1. Fetch Loan & User details
@@ -1602,7 +1629,118 @@ app.post('/api/admin/email-statement', verifyAdmin, async (req, res) => {
 
   } catch (err) {
     console.error('Error emailing statement:', err);
-    res.status(500).json({ error: 'Failed to send email statement.' });
+    res.status(500).json({ error: 'Failed to send email statement: ' + (err.message || 'Server error') });
+  }
+});
+
+// ─── USER EMAIL STATEMENT (User side) ─────────────────────────────────────────
+app.post('/api/user/email-statement', verifyToken, async (req, res) => {
+  const { loan_id } = req.body;
+  if (!loan_id) return res.status(400).json({ error: 'loan_id is required' });
+  if (!isUUID(loan_id)) return res.status(400).json({ error: 'Invalid loan ID format' });
+
+  try {
+    const loanQuery = `
+      SELECT l.*, p.email, p.full_name, p.mobile, p.address 
+      FROM loans l
+      JOIN profiles p ON l.user_id = p.id
+      WHERE l.id = $1 AND l.user_id = $2
+    `;
+    const loanRes = await pool.query(loanQuery, [loan_id, req.user.id]);
+    if (loanRes.rows.length === 0) return res.status(404).json({ error: 'Loan not found or access denied.' });
+    const loan = loanRes.rows[0];
+
+    if (!loan.email) return res.status(400).json({ error: 'User does not have an email address.' });
+
+    const payRes = await pool.query(
+      "SELECT * FROM payments WHERE loan_id = $1 AND payment_method != 'pending' ORDER BY payment_date ASC",
+      [loan_id]
+    );
+    const payments = payRes.rows;
+
+    let currentBalance = parseFloat(loan.total_amount);
+    let tableHtml = `
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; text-align: left;">
+        <thead>
+          <tr style="background-color: #fce7f3; color: #831843;">
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8;">Date</th>
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8;">Description</th>
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8; text-align: right;">Amount Paid</th>
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8; text-align: right;">Running Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3;">${new Date(loan.created_at).toLocaleDateString()}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; font-weight: bold;">Loan Issued</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right;">-</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right; font-weight: bold;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          </tr>
+    `;
+
+    for (const p of payments) {
+      currentBalance -= parseFloat(p.amount_paid);
+      tableHtml += `
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3;">${new Date(p.payment_date).toLocaleDateString()}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3;">Payment Received (${p.payment_method})</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right; color: #16a34a;">- ₱${parseFloat(p.amount_paid).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right; font-weight: bold;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          </tr>
+      `;
+    }
+
+    tableHtml += `
+        </tbody>
+      </table>
+    `;
+
+    const htmlEmail = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 650px; margin: 0 auto; padding: 20px; border: 1px solid #fbcfe8; border-radius: 12px;">
+        <div style="text-align: center; border-bottom: 2px solid #fbcfe8; padding-bottom: 20px; margin-bottom: 20px;">
+          <h1 style="color: #FF4191; margin: 0;">ADC Gadgets</h1>
+          <h2 style="color: #64748b; font-size: 16px; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px;">Statement of Account</h2>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap;">
+          <div style="margin-bottom: 16px; margin-right: 20px;">
+            <p style="margin: 4px 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-size: 11px; font-weight: bold;">Account Holder</p>
+            <p style="margin: 0; font-weight: bold; font-size: 16px;">${loan.full_name || 'Customer'}</p>
+            <p style="margin: 4px 0; font-size: 14px;">${loan.email}</p>
+          </div>
+          <div>
+            <p style="margin: 4px 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-size: 11px; font-weight: bold;">Contract Details</p>
+            <p style="margin: 0; font-weight: bold; font-size: 16px;">${loan.device_name}</p>
+            <p style="margin: 4px 0; font-size: 14px;">Total SRP: ₱${parseFloat(loan.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+            <p style="margin: 0; font-size: 14px;">Status: <strong style="color: ${loan.status === 'completed' ? '#16a34a' : '#FF4191'}">${loan.status.toUpperCase()}</strong></p>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 8px; color: #333; font-size: 16px;">Transaction Ledger</h3>
+        ${tableHtml}
+
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8fafc; border-radius: 8px; text-align: center;">
+          <p style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">Remaining Balance: <span style="color: #FF4191;">₱${parseFloat(loan.remaining_balance).toLocaleString('en-US', {minimumFractionDigits:2})}</span></p>
+          ${loan.status !== 'completed' ? `<p style="margin: 8px 0 0 0; font-size: 14px; color: #64748b;">Next Payment Due: ${new Date(loan.next_payment_date).toLocaleDateString()}</p>` : `<p style="margin: 8px 0 0 0; font-size: 14px; color: #16a34a; font-weight: bold;">Congratulations! This device is fully paid.</p>`}
+        </div>
+
+        <p style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: center;">
+          This is an official Statement of Account requested from your ADC Gadgets portal account.
+        </p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"ADC Gadgets" <${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>`,
+      to: loan.email,
+      subject: `Statement of Account: ${loan.device_name} - ADC Gadgets`,
+      html: htmlEmail
+    });
+
+    res.json({ success: true, message: 'Statement emailed successfully to your email.' });
+  } catch (err) {
+    console.error('Error emailing user statement:', err);
+    res.status(500).json({ error: 'Failed to send email statement: ' + (err.message || 'Server error') });
   }
 });
 

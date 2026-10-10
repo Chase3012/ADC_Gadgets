@@ -901,8 +901,9 @@
         });
 
         /* ── Logout ── */
-        document.getElementById('sb-logout').addEventListener('click', function(e) {
+        document.getElementById('sb-logout').addEventListener('click', async function(e) {
             e.preventDefault();
+            try { await fetch('/api/logout', { method: 'POST' }); } catch(err) {}
             localStorage.removeItem('customer_user');
             window.location.href = '/src/user/login.html';
         });

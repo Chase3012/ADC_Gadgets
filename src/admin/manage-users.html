@@ -30,10 +30,10 @@
       </a>
       <a href="loan-ledger.html" class="nav-item ">
         <div class="nav-item-left">Active Loans</div>
-        <div class="nav-badge">1</div>
       </a>
-      <a href="communication.html" class="nav-item ">
+      <a href="communication.html" class="nav-item " id="nav-communications">
         <div class="nav-item-left">Communication</div>
+        <div class="nav-badge" id="global-chat-badge" style="display:none;"></div>
       </a>
       <a href="inventory.html" class="nav-item ">
         <div class="nav-item-left">Inventory</div>
@@ -579,41 +579,47 @@
           renderUserColorSwatches(phone);
         } else if (phoneSelectionMode === 'loan') {
           // Issue new loan API call
-          if (!confirm(`Are you sure you want to issue a new ${phone} loan to this user?`)) return;
-          
-          const aLoading = document.getElementById('apple-loading-overlay');
-          const aSuccess = document.getElementById('apple-success-modal');
-          const aError = document.getElementById('apple-error-modal');
-          const aErrMsg = document.getElementById('apple-error-msg');
-          
-          aLoading.querySelector('h3').textContent = 'Issuing Loan...';
-          aLoading.classList.add('active');
-          
-          try {
-            const res = await fetch('/loans', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                user_id: lastViewedUserId,
-                device_name: phone,
-                device_image: imgSrc
-              })
-            });
-            if (!res.ok) throw new Error('Failed to issue loan');
+          const doIssue = async () => {
+            const aLoading = document.getElementById('apple-loading-overlay');
+            const aSuccess = document.getElementById('apple-success-modal');
+            const aError = document.getElementById('apple-error-modal');
+            const aErrMsg = document.getElementById('apple-error-msg');
             
-            aLoading.classList.remove('active');
-            aSuccess.querySelector('h2').textContent = 'Loan Issued';
-            aSuccess.querySelector('p').textContent = 'The new loan has been successfully added to the user.';
-            aSuccess.classList.add('active');
+            aLoading.querySelector('h3').textContent = 'Issuing Loan...';
+            aLoading.classList.add('active');
             
-            loadUserLoanDetails(lastViewedUserId);
-            loadUsers();
-          } catch (err) {
-            console.error(err);
-            aLoading.classList.remove('active');
-            aErrMsg.textContent = err.message;
-            aError.querySelector('h2').textContent = 'Issue Failed';
-            aError.classList.add('active');
+            try {
+              const res = await fetch('/loans', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id: lastViewedUserId,
+                  device_name: phone,
+                  device_image: imgSrc
+                })
+              });
+              if (!res.ok) throw new Error('Failed to issue loan');
+              
+              aLoading.classList.remove('active');
+              aSuccess.querySelector('h2').textContent = 'Loan Issued';
+              aSuccess.querySelector('p').textContent = 'The new loan has been successfully added to the user.';
+              aSuccess.classList.add('active');
+              
+              loadUserLoanDetails(lastViewedUserId);
+              loadUsers();
+            } catch (err) {
+              console.error(err);
+              aLoading.classList.remove('active');
+              aErrMsg.textContent = err.message;
+              aError.querySelector('h2').textContent = 'Issue Failed';
+              aError.classList.add('active');
+            }
+          };
+
+          if (window.showCustomConfirm) {
+            window.showCustomConfirm(`Are you sure you want to issue a new ${phone} loan to this user?`, doIssue, 'Issue Loan');
+          } else if (confirm(`Are you sure you want to issue a new ${phone} loan to this user?`)) {
+            doIssue();
           }
         }
       });

@@ -106,9 +106,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 item.innerHTML = `
                     <div class="loan-header">
                         <img src="${imgPath}" alt="${loan.device_name}" class="loan-img">
-                        <div>
+                        <div style="flex:1;">
                             <div class="loan-title">${loan.device_name}${loan.device_color ? ` - ${loan.device_color}` : ''}</div>
                             ${statusBadge}
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <button onclick="window.printUserStatement('${loan.id}')" style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; color:var(--text-main); cursor:pointer; transition:background 0.2s;">
+                                <i data-lucide="printer" style="width:14px; height:14px;"></i> PDF / Print
+                            </button>
+                            <button id="btn-email-user-${loan.id}" onclick="window.emailUserStatement('${loan.id}')" style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; font-weight:600; color:#2563eb; cursor:pointer; transition:background 0.2s;">
+                                <i data-lucide="mail" style="width:14px; height:14px;"></i> Email Statement
+                            </button>
                         </div>
                     </div>
 
@@ -275,14 +283,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                             window.location.href = data.checkout_url;
                         } else {
-                            alert(data.error || 'Failed to start payment.');
+                            const errText = data.error || 'Failed to start payment.';
+                            if (window.showToast) window.showToast(errText, 'error');
+                            else console.error(errText);
                             payBtn.textContent = originalText;
                             payBtn.disabled = false;
                             payBtn.style.opacity = '1';
                         }
                     } catch (err) {
                         console.error(err);
-                        alert('Network error. Please try again.');
+                        if (window.showToast) window.showToast('Network error. Please try again.', 'error');
                         payBtn.textContent = originalText;
                         payBtn.disabled = false;
                         payBtn.style.opacity = '1';
@@ -301,3 +311,150 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Init
     loadLoans();
 });
+
+// ─── Print / PDF Statement Logic ──────────────────────────────────────────────
+window.printUserStatement = async function(loanId) {
+    try {
+        const res = await fetch(`/loans/${loanId}/ledger`);
+        if (!res.ok) throw new Error('Failed to fetch ledger details');
+        const data = await res.json();
+        const l = data.loan;
+        const payments = data.payments || [];
+
+        let currentBalance = parseFloat(l.total_amount);
+        let rowsHtml = `
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">${new Date(l.created_at).toLocaleDateString()}</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; font-weight:bold;">Loan Issued</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right;">-</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:bold;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+            </tr>
+        `;
+
+        for (const p of payments) {
+            currentBalance -= parseFloat(p.amount_paid);
+            rowsHtml += `
+                <tr>
+                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">${new Date(p.payment_date).toLocaleDateString()}</td>
+                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">Payment Received (${p.payment_method})</td>
+                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right; color:#16a34a; font-weight:bold;">-₱${parseFloat(p.amount_paid).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right;">₱${Math.max(0, currentBalance).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                </tr>
+            `;
+        }
+
+        const printWindow = window.open('', '_blank', 'width=800,height=900');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Statement of Account - ${l.device_name}</title>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', -apple-system, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; }
+                    .header { text-align: center; border-bottom: 2px solid #FF4191; padding-bottom: 20px; margin-bottom: 24px; }
+                    .title { color: #FF4191; font-size: 28px; font-weight: 800; margin: 0; }
+                    .subtitle { font-size: 13px; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+                    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+                    .info-box { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+                    .info-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 6px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+                    th { background: #fce7f3; color: #831843; padding: 10px 12px; text-align: left; font-weight: 700; }
+                    .summary { margin-top: 24px; padding: 20px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; text-align: center; }
+                    .footer { text-align: center; margin-top: 40px; font-size: 11px; color: #94a3b8; }
+                    @media print { body { padding: 15px; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1 class="title">ADC Gadgets</h1>
+                    <div class="subtitle">Official Statement of Account</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-box">
+                        <div class="info-label">Customer Information</div>
+                        <div style="font-weight:700; font-size:15px;">${l.full_name || 'Customer'}</div>
+                        <div style="font-size:13px; color:#64748b; margin-top:4px;">${l.email || ''}</div>
+                        <div style="font-size:13px; color:#64748b;">${l.mobile || ''}</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Contract Overview</div>
+                        <div style="font-weight:700; font-size:15px;">${l.device_name}${l.device_color ? ' - ' + l.device_color : ''}</div>
+                        <div style="font-size:13px; color:#64748b; margin-top:4px;">Total SRP: ₱${parseFloat(l.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}</div>
+                        <div style="font-size:13px; color:#64748b;">Monthly Amortization: ₱${parseFloat(l.monthly_payment).toLocaleString('en-US', {minimumFractionDigits:2})}</div>
+                        <div style="font-size:13px; font-weight:600; color:${l.status === 'completed' ? '#16a34a' : '#FF4191'}; margin-top:2px;">Status: ${l.status.toUpperCase()}</div>
+                    </div>
+                </div>
+
+                <div style="font-size:14px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">Transaction Ledger</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th style="text-align:right;">Amount Paid</th>
+                            <th style="text-align:right;">Running Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+
+                <div class="summary">
+                    <div style="font-size:18px; font-weight:800; color:#1e293b;">
+                        Remaining Balance: <span style="color:#FF4191;">₱${parseFloat(l.remaining_balance).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+                    </div>
+                    ${l.status !== 'completed' ? `<div style="font-size:13px; color:#64748b; margin-top:6px;">Next Payment Due: ${new Date(l.next_payment_date).toLocaleDateString()}</div>` : `<div style="font-size:13px; color:#16a34a; font-weight:700; margin-top:6px;">All obligations for this device are complete. Thank you!</div>`}
+                </div>
+
+                <div class="footer">
+                    Generated from ADC Gadgets Online Portal &bull; System Verified &bull; ${new Date().toLocaleDateString()}
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+        }, 500);
+    } catch(err) {
+        console.error(err);
+        if (window.showToast) window.showToast('Unable to prepare statement for printing.', 'error');
+    }
+};
+
+// ─── Email Statement Logic ───────────────────────────────────────────────────
+window.emailUserStatement = async function(loanId) {
+    const btn = document.getElementById(`btn-email-user-${loanId}`);
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px; height:14px;"></i> Sending...';
+        btn.disabled = true;
+        lucide.createIcons();
+    }
+
+    try {
+        const res = await fetch('/api/user/email-statement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ loan_id: loanId })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            if (window.showToast) window.showToast('Statement of account sent to your email!', 'success');
+        } else {
+            if (window.showToast) window.showToast(data.error || 'Failed to send email statement.', 'error');
+        }
+    } catch(err) {
+        console.error(err);
+        if (window.showToast) window.showToast('Network error while requesting statement.', 'error');
+    } finally {
+        if (btn) {
+            btn.innerHTML = origHtml;
+            btn.disabled = false;
+            lucide.createIcons();
+        }
+    }
+};

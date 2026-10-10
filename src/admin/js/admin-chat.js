@@ -53,13 +53,22 @@
             updateBadge(totalUnread);
 
             const convos = Array.from(map.values());
-            if (convos.length === 0) {
-                listEl.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">No active conversations</div>';
+            const searchInput = document.getElementById('chat-search-input');
+            const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            const filteredConvos = q ? convos.filter(c => 
+                (c.full_name && c.full_name.toLowerCase().includes(q)) ||
+                (c.email && c.email.toLowerCase().includes(q)) ||
+                (c.last_message && c.last_message.toLowerCase().includes(q))
+            ) : convos;
+
+            if (filteredConvos.length === 0) {
+                listEl.innerHTML = `<div style="padding:20px;text-align:center;color:#999;">${q ? 'No matching conversations' : 'No active conversations'}</div>`;
                 return;
             }
 
             listEl.innerHTML = '';
-            convos.forEach(c => {
+            filteredConvos.forEach(c => {
                 const div = document.createElement('div');
                 div.className = 'chat-contact-item' + (currentUserId === c.user_id ? ' active' : '');
                 
@@ -245,24 +254,37 @@
         });
     }
 
-    resolveBtn.addEventListener('click', async () => {
-        if (!currentUserId || !confirm('Are you sure you want to resolve and clear this conversation?')) return;
-        
-        // Wait, I didn't create a DELETE endpoint for chats!
-        // But for display purposes, I will just hide it from the UI or skip.
-        // Actually, let's just clear the UI. 
-        if (pollInterval) clearInterval(pollInterval);
-        
-        currentUserId = null;
-        emptyEl.style.display = 'flex';
-        messagesEl.innerHTML = '';
-        inputEl.disabled = true;
-        sendBtn.disabled = true;
-        if (clearBtn) clearBtn.disabled = true;
-        headerName.textContent = 'Select a user';
-        
-        await loadConversations();
-    });
+    }
+
+    const searchInputEl = document.getElementById('chat-search-input');
+    if (searchInputEl) {
+        searchInputEl.addEventListener('input', () => {
+            loadConversations();
+        });
+    }
+
+    if (resolveBtn) {
+        resolveBtn.addEventListener('click', () => {
+            if (!currentUserId) return;
+            const action = async () => {
+                if (pollInterval) clearInterval(pollInterval);
+                currentUserId = null;
+                emptyEl.style.display = 'flex';
+                messagesEl.innerHTML = '';
+                inputEl.disabled = true;
+                sendBtn.disabled = true;
+                if (clearBtn) clearBtn.disabled = true;
+                headerName.textContent = 'Select a user';
+                await loadConversations();
+            };
+
+            if (window.showCustomConfirm) {
+                window.showCustomConfirm('Are you sure you want to resolve and clear this conversation view?', action, 'Resolve Chat');
+            } else if (confirm('Are you sure you want to resolve and clear this conversation?')) {
+                action();
+            }
+        });
+    }
 
     loadConversations();
     // Global poll for new conversations
