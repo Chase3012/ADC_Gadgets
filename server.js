@@ -505,7 +505,9 @@ app.post('/loans', async (req, res) => {
         srp = srp || parseFloat(d.srp);
         img = img || d.image;
         if (!monthly) {
-          monthly = (term === 24 && d.monthly) ? parseFloat(d.monthly) : Math.round((srp / term) * 100) / 100;
+          const interestRates = { 3: 0, 6: 0.03, 12: 0.05, 24: 0.08 };
+          const interest = interestRates[term] !== undefined ? interestRates[term] : 0.08;
+          monthly = Math.round(((srp * (1 + interest)) / term) * 100) / 100;
         }
       }
     }
@@ -1061,16 +1063,18 @@ async function handleAIAssistant(userId, userMessage) {
             }
         }
         
-        // Fetch Live Inventory
-        const deviceRes = await pool.query("SELECT name, storage, srp, monthly FROM devices WHERE status = 'available' AND stock > 0");
+                // Fetch Live Inventory
+        const deviceRes = await pool.query("SELECT name, storage, srp FROM devices WHERE status = 'available' AND stock > 0");
         if (deviceRes.rows.length > 0) {
             contextInfo += "CURRENTLY IN STOCK DEVICES: ";
             deviceRes.rows.forEach(d => {
-                contextInfo += `${d.name} (${d.storage}) for ₱${d.srp} (₱${d.monthly}/mo). `;
+                contextInfo += `${d.name} (${d.storage}) Base Cash Price: ₱${d.srp}. `;
             });
         } else {
             contextInfo += "Currently, we have no devices in stock. ";
         }
+        
+        contextInfo += "AMORTIZATION RULES (CRITICAL): If a user asks for the monthly payment of a device, explain that we offer flexible terms. Calculate the exact monthly payment using these rules: 3 months (0% interest), 6 months (3% total interest), 12 months (5% total interest), 24 months (8% total interest). Formula: (Cash Price * (1 + Interest)) / Months. Example for ₱10000 device at 12 months: (10000 * 1.05) / 12 = ₱875/mo.";
         
         contextInfo += "CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
 
