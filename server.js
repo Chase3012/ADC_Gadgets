@@ -6,12 +6,16 @@ const fs = require('fs');
 const multer = require('multer');
 const { Pool } = require('@neondatabase/serverless');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // Serve phone images statically
 const IMAGES_DIR = path.join(__dirname, 'images', 'phones');
