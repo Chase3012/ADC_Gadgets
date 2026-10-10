@@ -1061,6 +1061,17 @@ async function handleAIAssistant(userId, userMessage) {
             }
         }
         
+        // Fetch Live Inventory
+        const deviceRes = await pool.query("SELECT name, storage, srp, monthly FROM devices WHERE status = 'available' AND stock > 0");
+        if (deviceRes.rows.length > 0) {
+            contextInfo += "CURRENTLY IN STOCK DEVICES: ";
+            deviceRes.rows.forEach(d => {
+                contextInfo += `${d.name} (${d.storage}) for ₱${d.srp} (₱${d.monthly}/mo). `;
+            });
+        } else {
+            contextInfo += "Currently, we have no devices in stock. ";
+        }
+        
         contextInfo += "CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
 
         if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.length < 10) {
@@ -1071,12 +1082,33 @@ async function handleAIAssistant(userId, userMessage) {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ 
             model: "gemini-3.8-flash",
-            systemInstruction: "You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans. Keep your answers brief, friendly, and professional (1-3 sentences)."
+            systemInstruction: `You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans and inquiries. Keep your answers brief, friendly, and professional (1-3 sentences). Use Markdown for formatting (like **bold** or bullet points) if helpful.\n\n[SYSTEM CONTEXT: ${contextInfo}]`
         });
 
-        const prompt = `[SYSTEM CONTEXT: ${contextInfo}]\n\nUser Message: ${userMessage}`;
+        // Fetch Chat History for Conversational Memory
+        const historyRes = await pool.query(
+            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 6",
+            [userId]
+        );
+        
+        // Reverse to chronological order
+        const pastMessages = historyRes.rows.reverse();
+        
+        // Build history array, excluding the very last message (which is the current userMessage)
+        const chatHistory = [];
+        for (let i = 0; i < pastMessages.length - 1; i++) {
+            const row = pastMessages[i];
+            chatHistory.push({
+                role: row.sender === 'user' ? 'user' : 'model',
+                parts: [{ text: row.message }]
+            });
+        }
 
-        const result = await model.generateContent(prompt);
+        const chatSession = model.startChat({
+            history: chatHistory
+        });
+
+        const result = await chatSession.sendMessage(userMessage);
         aiResponse = result.response.text();
 
     } catch(err) {

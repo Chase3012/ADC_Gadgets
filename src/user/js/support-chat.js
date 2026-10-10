@@ -367,6 +367,16 @@
     sendBtn.disabled = false;
     inputEl.placeholder = 'Type a message...';
 
+    
+    function parseMarkdown(text) {
+        let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+        html = html.replace(/_(.*?)_/g, '<em>$1</em>'); // Italics
+        html = html.replace(/^\s*[-*]\s+(.*)$/gm, '&bull; $1'); // Bullets
+        html = html.replace(/\n/g, '<br>'); // Line breaks
+        return html;
+    }
+
     let renderedMessageCount = 0;
     function renderMessage(msg) {
         if (placeholderEl) placeholderEl.style.display = 'none';
@@ -377,10 +387,12 @@
         const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const isAi = msg.sender === 'ai';
         const senderLabel = isUser ? 'You' : (isAi ? '<i data-lucide="bot" style="width:12px;height:12px;"></i> ADC Assistant' : 'Support');
+        
+        const content = isUser ? msg.message.replace(/</g, '&lt;').replace(/>/g, '&gt;') : parseMarkdown(msg.message);
 
         wrap.innerHTML = `
             <div class="msg-info" ${isAi ? 'style="color:#8b5cf6; font-weight:700;"' : ''}>${senderLabel} &bull; ${time}</div>
-            <div class="msg-bubble" ${isAi ? 'style="background:linear-gradient(135deg, #8b5cf6, #5b21b6); color:white; box-shadow: 0 4px 12px rgba(139,92,246,0.25); border:1px solid rgba(255,255,255,0.1);"' : ''}>${msg.message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="msg-bubble" ${isAi ? 'style="background:linear-gradient(135deg, #8b5cf6, #5b21b6); color:white; box-shadow: 0 4px 12px rgba(139,92,246,0.25); border:1px solid rgba(255,255,255,0.1);"' : ''}>${content}</div>
         `;
         messagesEl.appendChild(wrap);
         // smooth scroll
