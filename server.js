@@ -1208,6 +1208,123 @@ app.post('/api/admin/add-cash-payment', async (req, res) => {
   }
 });
 
+// ─── ADMIN EMAIL STATEMENT ────────────────────────────────────────────────────
+app.post('/api/admin/email-statement', async (req, res) => {
+  const { loan_id } = req.body;
+  if (!loan_id) return res.status(400).json({ error: 'loan_id is required' });
+
+  try {
+    // 1. Fetch Loan & User details
+    const loanQuery = `
+      SELECT l.*, p.email, p.full_name, p.mobile, p.address 
+      FROM loans l
+      JOIN profiles p ON l.user_id = p.id
+      WHERE l.id = $1
+    `;
+    const loanRes = await pool.query(loanQuery, [loan_id]);
+    if (loanRes.rows.length === 0) return res.status(404).json({ error: 'Loan not found' });
+    const loan = loanRes.rows[0];
+
+    if (!loan.email) return res.status(400).json({ error: 'User does not have an email address.' });
+
+    // 2. Fetch Payment History
+    const payRes = await pool.query(
+      "SELECT * FROM payments WHERE loan_id = $1 AND payment_method != 'pending' ORDER BY payment_date ASC",
+      [loan_id]
+    );
+    const payments = payRes.rows;
+
+    // 3. Build HTML Table
+    let currentBalance = parseFloat(loan.total_amount);
+    let tableHtml = `
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; text-align: left;">
+        <thead>
+          <tr style="background-color: #fce7f3; color: #831843;">
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8;">Date</th>
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8;">Description</th>
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8; text-align: right;">Amount Paid</th>
+            <th style="padding: 12px; border-bottom: 2px solid #fbcfe8; text-align: right;">Running Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3;">${new Date(loan.created_at).toLocaleDateString()}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; font-weight: bold;">Loan Issued</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right;">-</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right; font-weight: bold;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          </tr>
+    `;
+
+    for (const p of payments) {
+      currentBalance -= parseFloat(p.amount_paid);
+      tableHtml += `
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3;">${new Date(p.payment_date).toLocaleDateString()}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3;">Payment Received (${p.payment_method})</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right; color: #16a34a;">- ₱${parseFloat(p.amount_paid).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #fce7f3; text-align: right; font-weight: bold;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          </tr>
+      `;
+    }
+
+    tableHtml += `
+        </tbody>
+      </table>
+    `;
+
+    // 4. Construct Final Email
+    const htmlEmail = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 650px; margin: 0 auto; padding: 20px; border: 1px solid #fbcfe8; border-radius: 12px;">
+        <div style="text-align: center; border-bottom: 2px solid #fbcfe8; padding-bottom: 20px; margin-bottom: 20px;">
+          <h1 style="color: #FF4191; margin: 0;">ADC Gadgets</h1>
+          <h2 style="color: #64748b; font-size: 16px; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px;">Statement of Account</h2>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap;">
+          <div style="margin-bottom: 16px; margin-right: 20px;">
+            <p style="margin: 4px 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-size: 11px; font-weight: bold;">Billed To</p>
+            <p style="margin: 0; font-weight: bold; font-size: 16px;">${loan.full_name || 'Customer'}</p>
+            <p style="margin: 4px 0; font-size: 14px;">${loan.email}</p>
+            <p style="margin: 0; font-size: 14px;">${loan.mobile || ''}</p>
+          </div>
+          <div>
+            <p style="margin: 4px 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-size: 11px; font-weight: bold;">Contract Details</p>
+            <p style="margin: 0; font-weight: bold; font-size: 16px;">${loan.device_name}</p>
+            <p style="margin: 4px 0; font-size: 14px;">Total SRP: ₱${parseFloat(loan.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+            <p style="margin: 0; font-size: 14px;">Status: <strong style="color: ${loan.status === 'completed' ? '#16a34a' : '#FF4191'}">${loan.status.toUpperCase()}</strong></p>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 8px; color: #333; font-size: 16px;">Transaction Ledger</h3>
+        ${tableHtml}
+
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8fafc; border-radius: 8px; text-align: center;">
+          <p style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">Remaining Balance: <span style="color: #FF4191;">₱${parseFloat(loan.remaining_balance).toLocaleString('en-US', {minimumFractionDigits:2})}</span></p>
+          ${loan.status !== 'completed' ? `<p style="margin: 8px 0 0 0; font-size: 14px; color: #64748b;">Next Payment Due: ${new Date(loan.next_payment_date).toLocaleDateString()}</p>` : `<p style="margin: 8px 0 0 0; font-size: 14px; color: #16a34a; font-weight: bold;">Congratulations! This device is fully paid.</p>`}
+        </div>
+
+        <p style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: center;">
+          This is an automatically generated receipt from the ADC Gadgets Administration System.<br>If you have any questions, please contact support.
+        </p>
+      </div>
+    `;
+
+    // 5. Send Email
+    await transporter.sendMail({
+      from: \`"ADC Gadgets" <\${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>\`,
+      to: loan.email,
+      subject: \`Statement of Account: \${loan.device_name} - ADC Gadgets\`,
+      html: htmlEmail
+    });
+
+    res.json({ success: true, message: 'Statement emailed successfully.' });
+
+  } catch (err) {
+    console.error('Error emailing statement:', err);
+    res.status(500).json({ error: 'Failed to send email statement.' });
+  }
+});
+
 // ─── CRON JOB: PAYMENT REMINDERS ──────────────────────────────────────────────
 app.get('/api/cron/due-reminders', async (req, res) => {
   try {

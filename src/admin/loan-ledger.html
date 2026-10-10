@@ -517,9 +517,17 @@ async function loadUserLoanDetails(userId) {
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin: 0;">Ledger Details</h3>
-        <button onclick="addManualPayment('${l.id}')" style="padding: 8px 16px; font-size: 12px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; display: ${l.status === 'active' ? 'inline-block' : 'none'}; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.2);">
-            + Add Manual Payment
-        </button>
+        <div style="display: flex; gap: 8px;">
+            <button onclick="printStatement('${l.id}')" style="padding: 8px 16px; font-size: 12px; font-weight: 600; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="printer" style="width:14px; height:14px;"></i> Print / PDF
+            </button>
+            <button onclick="emailStatement('${l.id}')" id="btn-email-${l.id}" style="padding: 8px 16px; font-size: 12px; font-weight: 600; background: var(--surface); color: #3b82f6; border: 1px solid #bfdbfe; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="mail" style="width:14px; height:14px;"></i> Email Statement
+            </button>
+            <button onclick="addManualPayment('${l.id}')" style="padding: 8px 16px; font-size: 12px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; display: ${l.status === 'active' ? 'flex' : 'none'}; align-items: center; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.2);">
+                + Add Manual Payment
+            </button>
+        </div>
     </div>
     <div class="table-wrapper" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
         <table class="data-table" style="margin: 0; width: 100%; border-collapse: collapse;">
@@ -642,6 +650,97 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// --- Email Statement Logic ---
+window.emailStatement = async function(loanId) {
+    if (!confirm("Are you sure you want to send the Statement of Account to the customer's email?")) return;
+    
+    const btn = document.getElementById(`btn-email-${loanId}`);
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px; height:14px;"></i> Sending...';
+    btn.disabled = true;
+    lucide.createIcons();
+
+    try {
+        const res = await fetch('/api/admin/email-statement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ loan_id: loanId })
+        });
+        const data = await res.json();
+        
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        
+        if (data.success) {
+            alert('Statement emailed successfully to the customer.');
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Failed to send email statement.');
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    }
+};
+
+// --- Print Statement Logic ---
+window.printStatement = function(loanId) {
+    // A simple robust approach to print exactly what's inside the ledger content
+    const ledgerContent = document.getElementById('ledger-content').innerHTML;
+    
+    // Create a hidden iframe or popup to print
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Statement of Account - ADC Gadgets</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <style>
+                body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; }
+                h3 { color: #831843; font-size: 16px; margin-top: 30px; text-transform: uppercase; border-bottom: 2px solid #fbcfe8; padding-bottom: 8px; }
+                .table-wrapper { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 16px; overflow: hidden; }
+                table { width: 100%; border-collapse: collapse; }
+                th { background-color: #fce7f3; color: #831843; padding: 12px; text-align: left; font-size: 13px; font-weight: 700; }
+                td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+                p { margin: 6px 0; font-size: 14px; }
+                .text-right { text-align: right; }
+                img { max-width: 60px; height: auto; }
+                
+                /* Hide buttons inside print view */
+                button { display: none !important; }
+                
+                @media print {
+                    body { padding: 0; }
+                    .table-wrapper { border: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #ec4899; margin:0;">ADC Gadgets</h1>
+                <p style="text-transform: uppercase; font-size: 14px; color: #64748b; letter-spacing: 2px;">Statement of Account</p>
+            </div>
+            ${ledgerContent}
+            
+            <div style="text-align: center; margin-top: 50px; font-size: 12px; color: #94a3b8;">
+                This is a system-generated statement.
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Give images a moment to load before triggering print
+    setTimeout(() => {
+        printWindow.print();
+        // We do not auto-close so the user can save as PDF
+    }, 500);
+};
+
 </script>
 <script src="js/admin-auth.js"></script>
 
