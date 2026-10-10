@@ -29,11 +29,25 @@ const pool = new Pool({
 app.get('/', (req, res) => res.send('ADC Gadgets Server is running!'));
 
 // ─── IMAGE UPLOAD ──────────────────────────────────────────────────────────────
-app.post('/api/upload-image', upload.single('image'), (req, res) => {
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const base64Data = req.file.buffer.toString('base64');
-  const url = `data:${req.file.mimetype};base64,${base64Data}`;
-  res.json({ filename: req.file.originalname, url });
+  try {
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `devices/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage.from('uploads').upload(fileName, req.file.buffer, {
+      contentType: req.file.mimetype,
+      upsert: false
+    });
+    
+    if (error) throw error;
+    const { data: publicUrlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+    
+    res.json({ filename: req.file.originalname, url: publicUrlData.publicUrl });
+  } catch(err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ error: 'Failed to upload to Supabase' });
+  }
 });
 
 // ─── AUTH: Login, OTP, Reset Password ──────────────────────────────────────────
@@ -1198,9 +1212,20 @@ app.post('/api/profiles/:id/upload-id', idUpload.single('idImage'), async (req, 
   const { id } = req.params;
   const { id_type } = req.body;
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const base64Data = req.file.buffer.toString('base64');
-  const idUrl = `data:${req.file.mimetype};base64,${base64Data}`;
+  
   try {
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `ids/${id}-${Date.now()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage.from('uploads').upload(fileName, req.file.buffer, {
+      contentType: req.file.mimetype,
+      upsert: true
+    });
+    
+    if (error) throw error;
+    const { data: publicUrlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+    const idUrl = publicUrlData.publicUrl;
+
     const result = await pool.query(
       `UPDATE profiles SET id_url = $1, id_type = COALESCE($2, id_type) WHERE id = $3 RETURNING id, id_url, id_type`,
       [idUrl, id_type || null, id]
