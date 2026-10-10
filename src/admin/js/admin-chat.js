@@ -3,6 +3,7 @@
 (async function() {
     let currentUserId = null;
     let pollInterval = null;
+    let conversationMap = new Map();
 
     const listEl = document.getElementById('admin-chat-list');
     const emptyEl = document.getElementById('admin-chat-empty');
@@ -26,7 +27,8 @@
                 return;
             }
 
-            const map = new Map();
+            conversationMap.clear();
+            const map = conversationMap;
             let totalUnread = 0;
 
             data.forEach(msg => {
@@ -110,7 +112,19 @@
         currentUserId = c.user_id;
         emptyEl.style.display = 'none';
         
+        // Show header and input
+        document.getElementById('chat-header-container').style.display = 'flex';
+        document.getElementById('admin-chat-messages').style.display = 'flex';
+        document.getElementById('chat-input-container').style.display = 'block';
+
         headerName.textContent = c.full_name;
+        const gradients = { blue: "linear-gradient(135deg, #3b82f6, #1d4ed8)", pink: "linear-gradient(135deg, #FF4191, #d9266e)", emerald: "linear-gradient(135deg, #10b981, #047857)", amber: "linear-gradient(135deg, #f59e0b, #b45309)", purple: "linear-gradient(135deg, #8b5cf6, #5b21b6)" };
+        if(headerInitial) { 
+            headerInitial.textContent = c.full_name.charAt(0).toUpperCase(); 
+            headerInitial.style.background = gradients[c.avatar_color] || gradients.blue; 
+            headerInitial.style.color = "#fff"; 
+            headerInitial.style.border = "none";
+        }
         
         // Add click listener to header to show full profile/loan info
         const headerInfo = document.getElementById('admin-chat-user-info');
@@ -170,8 +184,8 @@
             if (headerName.textContent) userInitial = headerName.textContent.charAt(0).toUpperCase();
             
             // Get color from map
-            if (currentUserId && map.has(currentUserId)) {
-                const acolor = map.get(currentUserId).avatar_color;
+            if (currentUserId && conversationMap.has(currentUserId)) {
+                const acolor = conversationMap.get(currentUserId).avatar_color;
                 const gradients = { blue: "linear-gradient(135deg, #3b82f6, #1d4ed8)", pink: "linear-gradient(135deg, #FF4191, #d9266e)", emerald: "linear-gradient(135deg, #10b981, #047857)", amber: "linear-gradient(135deg, #f59e0b, #b45309)", purple: "linear-gradient(135deg, #8b5cf6, #5b21b6)" };
                 bgStyle = `background: ${gradients[acolor] || gradients.blue}; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2);`;
             }
