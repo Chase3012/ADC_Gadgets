@@ -11,7 +11,7 @@
     const inputEl = document.getElementById('admin-chat-input');
     const sendBtn = document.getElementById('admin-chat-send');
     const resolveBtn = document.getElementById('chat-resolve-btn');
-    const badgeEl = document.getElementById('nav-chat-badge');
+    const badgeEl = document.getElementById('global-chat-badge') || document.getElementById('nav-chat-badge');
     const headerName = document.getElementById('chat-header-name');
     const clearBtn = document.getElementById('admin-chat-clear');
     const headerInitial = document.getElementById('chat-header-initial');
@@ -33,6 +33,9 @@
 
             data.forEach(msg => {
                 if (!map.has(msg.user_id)) {
+                    const unreadCount = (msg.unread_count !== undefined && msg.unread_count !== null)
+                        ? parseInt(msg.unread_count, 10)
+                        : (msg.sender === 'user' && !msg.is_read ? 1 : 0);
                     map.set(msg.user_id, {
                         user_id: msg.user_id,
                         full_name: msg.profile_full_name || 'Unknown User',
@@ -41,18 +44,18 @@
                         avatar_color: msg.profile_avatar_color || 'blue',
                         last_message: msg.message,
                         last_time: msg.created_at,
-                        unread: 0
+                        unread: unreadCount
                     });
-                }
-                if (msg.sender === 'user' && !msg.is_read) {
-                    map.get(msg.user_id).unread++;
-                    totalUnread++;
+                    totalUnread += unreadCount;
                 }
             });
 
             updateBadge(totalUnread);
 
             const convos = Array.from(map.values());
+            // Sort conversations with most recent activity first
+            convos.sort((a, b) => new Date(b.last_time) - new Date(a.last_time));
+
             const searchInput = document.getElementById('chat-search-input');
             const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
@@ -122,9 +125,11 @@
         emptyEl.style.display = 'none';
         
         // Show header and input
-        document.getElementById('chat-header-container').style.display = 'flex';
-        document.getElementById('admin-chat-messages').style.display = 'flex';
-        document.getElementById('chat-input-container').style.display = 'block';
+        const headerContainer = document.getElementById('chat-header-container');
+        if (headerContainer) headerContainer.style.display = 'flex';
+        if (messagesEl) messagesEl.style.display = 'flex';
+        const inputContainer = document.getElementById('chat-input-container');
+        if (inputContainer) inputContainer.style.display = 'block';
 
         headerName.textContent = c.full_name;
         const gradients = { blue: "linear-gradient(135deg, #3b82f6, #1d4ed8)", pink: "linear-gradient(135deg, #FF4191, #d9266e)", emerald: "linear-gradient(135deg, #10b981, #047857)", amber: "linear-gradient(135deg, #f59e0b, #b45309)", purple: "linear-gradient(135deg, #8b5cf6, #5b21b6)" };
@@ -137,10 +142,12 @@
         
         // Add click listener to header to show full profile/loan info
         const headerInfo = document.getElementById('admin-chat-user-info');
-        headerInfo.style.cursor = 'pointer';
-        headerInfo.onclick = () => {
-            window.location.href = `loan-ledger.html?open_user=${c.user_id}`;
-        };
+        if (headerInfo) {
+            headerInfo.style.cursor = 'pointer';
+            headerInfo.onclick = () => {
+                window.location.href = `loan-ledger.html?open_user=${c.user_id}`;
+            };
+        }
         
         inputEl.disabled = false;
         sendBtn.disabled = false;
@@ -252,8 +259,6 @@
             inputEl.value = '';
             inputEl.focus();
         });
-    }
-
     }
 
     const searchInputEl = document.getElementById('chat-search-input');

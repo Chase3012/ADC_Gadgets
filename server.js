@@ -1093,7 +1093,8 @@ app.get('/chats/conversations', async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT DISTINCT ON (c.user_id) c.user_id, c.message, c.created_at, c.is_read, c.sender,
-             p.full_name AS profile_full_name, p.email AS profile_email, p.active_loan_model AS profile_active_loan_model, p.avatar_color AS profile_avatar_color
+             p.full_name AS profile_full_name, p.email AS profile_email, p.active_loan_model AS profile_active_loan_model, p.avatar_color AS profile_avatar_color,
+             (SELECT COUNT(*) FROM chats uc WHERE uc.user_id = c.user_id AND uc.sender = 'user' AND uc.is_read = false)::int AS unread_count
       FROM chats c
       LEFT JOIN profiles p ON c.user_id::text = p.id::text
       ORDER BY c.user_id, c.created_at DESC

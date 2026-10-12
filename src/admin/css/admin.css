@@ -1356,6 +1356,16 @@ html {
   text-align: right;
 }
 
+/* Chat Message Rows & Modern Bubbles */
+.chat-msg-row { display: flex; gap: 12px; max-width: 85%; margin-bottom: 8px; }
+.chat-msg-row.sent { flex-direction: row-reverse; align-self: flex-end; }
+.chat-msg-row.received { align-self: flex-start; }
+.chat-bubble { padding: 14px 18px; border-radius: 20px; font-size: 14px; line-height: 1.5; font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.chat-msg-row.sent .chat-bubble { background: linear-gradient(135deg, #FF4191, #e3337f); color: #fff; border-bottom-right-radius: 4px; }
+.chat-msg-row.received .chat-bubble { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.chat-msg-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+.chat-msg-row.sent .chat-msg-time { text-align: right; }
+
 .chat-input-area {
   background: var(--surface);
   border-top: 1px solid var(--border);
