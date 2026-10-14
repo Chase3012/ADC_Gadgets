@@ -20,7 +20,16 @@ app.use(cookieParser());
 
 // Serve phone images and static assets
 const IMAGES_DIR = path.join(__dirname, 'images', 'phones');
+const MODELS_DIR = path.join(__dirname, 'models');
 app.use('/images/phones', express.static(IMAGES_DIR));
+app.use('/models', express.static(MODELS_DIR, {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.glb')) {
+            res.setHeader('Content-Type', 'model/gltf-binary');
+            res.setHeader('Access-Control-Allow-Origin', '*');
+        }
+    }
+}));
 app.use(express.static(__dirname));
 
 // Multer storage — save in memory for serverless environments
