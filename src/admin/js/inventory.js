@@ -208,6 +208,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ─── SPECS AUTO-POPULATION ──────────────────────────────────────────────────
+  function populateSpecsFields(modelName, appledb_id = null, dynamicSoc = null, existingSpecs = null) {
+    if (!window.getAppleSpecs) return;
+    const specs = window.getAppleSpecs(modelName, appledb_id, dynamicSoc, existingSpecs);
+    const d = document.getElementById('inv-spec-display');
+    const c = document.getElementById('inv-spec-camera');
+    const ch = document.getElementById('inv-spec-chip');
+    const b = document.getElementById('inv-spec-battery');
+    if (d) d.value = specs.display || '';
+    if (c) c.value = specs.camera || '';
+    if (ch) ch.value = specs.chip || '';
+    if (b) b.value = specs.battery || '';
+  }
+
+  // When admin changes device name manually, auto-calculate specs if available
+  const invNameEl = document.getElementById('inv-name');
+  if (invNameEl) {
+    invNameEl.addEventListener('change', () => {
+      const val = invNameEl.value.trim();
+      if (val) {
+        populateSpecsFields(val, document.getElementById('inv-appledb')?.value);
+      }
+    });
+  }
+
   /**
    * Called when an Apple device is selected from the search dropdown.
    * Auto-populates Device Name, AppleDB ID, Color Inventory, and Studio Render.
@@ -228,7 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedColors = (device.colors || []).map(c => c.name);
     renderSelectedChips();
 
-    // 3. Setup Studio Render & Swatches
+    // 3. Auto-populate specifications
+    populateSpecsFields(device.name, device.key, device.soc);
+
+    // 4. Setup Studio Render & Swatches
     setupStudioRender(device);
 
     // Ensure Studio tab is active
@@ -455,6 +483,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearSearchBtn) clearSearchBtn.style.display = 'none';
     if (searchDropdown) searchDropdown.style.display = 'none';
 
+    // Clear spec fields
+    const dEl = document.getElementById('inv-spec-display'); if (dEl) dEl.value = '';
+    const cEl = document.getElementById('inv-spec-camera'); if (cEl) cEl.value = '';
+    const chEl = document.getElementById('inv-spec-chip'); if (chEl) chEl.value = '';
+    const bEl = document.getElementById('inv-spec-battery'); if (bEl) bEl.value = '';
+
     resetAllImageInputs();
     
     inventoryModal.style.display = 'flex';
@@ -489,6 +523,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const specsObj = {
+      display: document.getElementById('inv-spec-display')?.value.trim() || '',
+      camera:  document.getElementById('inv-spec-camera')?.value.trim() || '',
+      chip:    document.getElementById('inv-spec-chip')?.value.trim() || '',
+      battery: document.getElementById('inv-spec-battery')?.value.trim() || ''
+    };
+
     const deviceData = {
       name:       document.getElementById('inv-name').value.trim(),
       appledb_id: document.getElementById('inv-appledb').value.trim(),
@@ -498,6 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
       stock:      document.getElementById('inv-stock').value,
       status:     document.getElementById('inv-status').value,
       colors:     selectedColors,
+      specs:      specsObj,
     };
     
     const method = id ? 'PUT' : 'POST';
@@ -521,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ─── EDIT DEVICE ──────────────────────────────────────────────────────────────
-  window.editDevice = async (id, name, appledb_id, image, storage, srp, stock, status, colors) => {
+  window.editDevice = async (id, name, appledb_id, image, storage, srp, stock, status, colors, specs) => {
     try {
       document.getElementById('inv-id').value      = id || '';
       document.getElementById('inv-name').value    = name || '';
@@ -538,6 +580,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Colors
       selectedColors = Array.isArray(colors) ? [...colors] : (colors ? String(colors).split(',').map(s=>s.trim()).filter(Boolean) : []);
       renderSelectedChips();
+
+      // Populate specs (stored or auto-generated)
+      populateSpecsFields(name, appledb_id, null, specs);
 
       // Check if image is from AppleDB CDN
       const isAppleDbUrl = image && image.includes('img.appledb.dev');
@@ -668,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         tr.querySelector('.edit-btn').addEventListener('click', () => {
-          window.editDevice(d.id, d.name, d.appledb_id, d.image, d.storage, d.srp, d.stock, d.status, d.colors || []);
+          window.editDevice(d.id, d.name, d.appledb_id, d.image, d.storage, d.srp, d.stock, d.status, d.colors || [], d.specs);
         });
 
         tr.querySelector('.delete-btn').addEventListener('click', () => {

@@ -19,6 +19,7 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
         const res = await fetch('/api/devices');
         if (!res.ok) throw new Error("Failed to fetch devices from database");
         const dbDevices = await res.json();
+        window._loadedDevices = dbDevices;
         
         // Fetch SOC from appledb if appledb_id is present
         const fetchPromises = dbDevices.map(device => {
@@ -64,8 +65,9 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
             
             const imgPath = device.image && device.image.includes('/') ? device.image : `../../images/phones/${device.image}`;
 
+            const specsAttr = device.specs ? JSON.stringify(device.specs).replace(/"/g, '&quot;') : '';
             const cardHTML = `
-                <a href="devices.html" class="p-card scroll-reveal" data-soc="${soc}" data-original-price="₱${formattedSrp}" style="${cardStyle}">
+                <a href="devices.html" class="p-card scroll-reveal" data-device-id="${device.id}" data-appledb-id="${device.appledb_id || ''}" data-soc="${soc}" data-specs="${specsAttr}" data-original-price="₱${formattedSrp}" style="${cardStyle}">
                     <span class="p-badge" style="z-index: 10; ${badgeStyle}">${badgeText}</span>
                     <div class="p-img-wrap">
                         <img src="${imgPath}" alt="${device.name}" class="p-img">
@@ -127,22 +129,6 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
     }
 };
 
-// Global spec data for the modals
-window.specsData = {
-    "iPhone 16": { display: "6.9-inch display with ProMotion up to 120Hz.", camera: "48MP main camera with advanced ultra-wide.", chip: "A18 Pro chip. Built for next-gen processing.", battery: "Up to 33 hours video playback." },
-    "iPhone 15": { display: "6.1-inch display with ProMotion.", camera: "48MP main camera and optical zoom.", chip: "A16 Bionic Chip.", battery: "Up to 31 hours video playback." },
-    "iPhone 14": { display: "6.1-inch Super Retina XDR.", camera: "Advanced dual-camera system.", chip: "A15 Bionic chip.", battery: "Up to 26 hours video playback." },
-    "iPhone 13": { display: "6.1-inch Super Retina XDR.", camera: "Dual 12MP camera system.", chip: "A15 Bionic chip.", battery: "Up to 19 hours video playback." },
-    "iPhone 12": { display: "6.1-inch Super Retina XDR.", camera: "Dual 12MP camera system.", chip: "A14 Bionic chip.", battery: "Up to 17 hours video playback." },
-    "iPhone 11": { display: "6.1-inch Liquid Retina HD.", camera: "Dual 12MP Ultra Wide and Wide.", chip: "A13 Bionic chip.", battery: "Up to 17 hours video playback." },
-    "iPhone SE": { display: "4.7-inch Retina HD.", camera: "Single 12MP camera.", chip: "A13 Bionic chip.", battery: "Up to 13 hours video playback." },
-    "iPhone XR": { display: "6.1-inch Liquid Retina HD.", camera: "Single 12MP camera.", chip: "A12 Bionic chip.", battery: "Up to 16 hours video playback." },
-    "iPhone XS": { display: "5.8-inch Super Retina HD.", camera: "Dual 12MP camera system.", chip: "A12 Bionic chip.", battery: "Up to 14 hours video playback." },
-    "iPhone X": { display: "5.8-inch Super Retina HD.", camera: "Dual 12MP cameras.", chip: "A11 Bionic chip.", battery: "Up to 13 hours video playback." },
-    "iPhone 8": { display: "4.7-inch Retina HD.", camera: "Single 12MP camera.", chip: "A11 Bionic chip.", battery: "Up to 13 hours video playback." },
-    "iPhone 7": { display: "4.7-inch Retina HD.", camera: "Single 12MP camera.", chip: "A10 Fusion chip.", battery: "Up to 13 hours video playback." }
-};
-
 // Ensure modal event delegation
 document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', (e) => {
@@ -152,8 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const pmOverlay = document.getElementById('pm-overlay');
             if (!pmOverlay) return; // In case page doesn't have modal
 
-            const titleText = card.querySelector('.p-title').textContent;
-            
+            const titleText = card.querySelector('.p-title').textContent.trim();
+            const dynamicSoc = card.getAttribute('data-soc');
+            const appledbId = card.getAttribute('data-appledb-id');
+
+            let deviceSpecs = null;
+            try {
+                const raw = card.getAttribute('data-specs');
+                if (raw) deviceSpecs = JSON.parse(raw);
+            } catch(e) {}
+
+            if (!deviceSpecs && window._loadedDevices) {
+                const found = window._loadedDevices.find(d => d.name === titleText || d.id === card.getAttribute('data-device-id'));
+                if (found && found.specs) deviceSpecs = found.specs;
+            }
+
+            // Resolve authentic specifications through AppleSpecsEngine
+            const specs = window.getAppleSpecs 
+                ? window.getAppleSpecs(titleText, appledbId, dynamicSoc, deviceSpecs)
+                : {
+                    display: "Super Retina XDR OLED display with incredible clarity and color.",
+                    camera: "Advanced camera system with 4K recording and Smart HDR.",
+                    chip: `${dynamicSoc || 'Apple'} Chip. High-performance processing.`,
+                    battery: "All-day battery life."
+                };
+
             const mTitle = document.getElementById('m-title');
             const mPrice = document.getElementById('m-price');
             const mImg = document.getElementById('m-img');
@@ -181,31 +190,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 mOriginalPrice.textContent = `SRP: ${ogPrice}`;
             }
 
-            if (specsData[titleText]) {
-                if(mSpecDisplay) mSpecDisplay.textContent = specsData[titleText].display;
-                if(mSpecCamera) mSpecCamera.textContent = specsData[titleText].camera;
-
-                const dynamicSoc = card.getAttribute('data-soc');
-                let chipDesc = "Powerful performance and highly efficient.";
-                if (dynamicSoc) {
-                    if (dynamicSoc.includes('A19')) chipDesc = "Next-generation architecture built for advanced processing.";
-                    else if (dynamicSoc.includes('A18')) chipDesc = "Custom-built for incredible speed and next-level intelligence.";
-                    else if (dynamicSoc.includes('A17')) chipDesc = "A monumental leap in graphics performance.";
-                    else if (dynamicSoc.includes('A16')) chipDesc = "Proven performance with amazing efficiency.";
-                    else if (dynamicSoc.includes('A15')) chipDesc = "Delivers fast performance and powers advanced features.";
-                    else if (dynamicSoc.includes('A14')) chipDesc = "Great power and battery life balance.";
-                }
-                
-                if(mSpecChip) mSpecChip.textContent = `${dynamicSoc} Chip. ${chipDesc}`;
-                if(mSpecBattery) mSpecBattery.textContent = specsData[titleText].battery;
-            } else {
-                // Fallback for unknown models
-                if(mSpecDisplay) mSpecDisplay.textContent = "High-quality Retina display.";
-                if(mSpecCamera) mSpecCamera.textContent = "Advanced camera system.";
-                const dynamicSoc = card.getAttribute('data-soc');
-                if(mSpecChip) mSpecChip.textContent = `${dynamicSoc || 'Apple'} Chip. Powerful and efficient.`;
-                if(mSpecBattery) mSpecBattery.textContent = "All-day battery life.";
-            }
+            if(mSpecDisplay) mSpecDisplay.textContent = specs.display;
+            if(mSpecCamera) mSpecCamera.textContent = specs.camera;
+            if(mSpecChip) mSpecChip.textContent = specs.chip;
+            if(mSpecBattery) mSpecBattery.textContent = specs.battery;
 
             // Setup Loan button link with dynamic params
             const btnApplyLoan = document.getElementById('btn-apply-loan');

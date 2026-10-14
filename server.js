@@ -539,15 +539,16 @@ app.get('/api/devices', async (req, res) => {
 });
 
 app.post('/api/devices', async (req, res) => {
-  const { name, appledb_id, image, storage, srp, stock, status, colors } = req.body;
+  const { name, appledb_id, image, storage, srp, stock, status, colors, specs } = req.body;
   const monthly = Math.ceil(srp / 24);
   // colors should be an array; coerce just in case it arrives as a comma-string
   const colorsArr = Array.isArray(colors) ? colors : (colors ? String(colors).split(',').map(c => c.trim()).filter(Boolean) : []);
+  const specsObj = specs && typeof specs === 'object' ? JSON.stringify(specs) : (specs || null);
   try {
     const result = await pool.query(
-      `INSERT INTO devices (name, appledb_id, image, storage, srp, monthly, stock, status, colors)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [name, appledb_id, image, storage, srp, monthly, stock, status || 'available', colorsArr]
+      `INSERT INTO devices (name, appledb_id, image, storage, srp, monthly, stock, status, colors, specs)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [name, appledb_id, image, storage, srp, monthly, stock, status || 'available', colorsArr, specsObj]
     );
     const insertedDevice = result.rows[0];
 
@@ -573,18 +574,19 @@ app.post('/api/devices', async (req, res) => {
 
 app.put('/api/devices/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, appledb_id, image, storage, srp, stock, status, colors } = req.body;
+  const { name, appledb_id, image, storage, srp, stock, status, colors, specs } = req.body;
   const monthly = Math.ceil(srp / 24);
   const colorsArr = Array.isArray(colors) ? colors : (colors ? String(colors).split(',').map(c => c.trim()).filter(Boolean) : []);
+  const specsObj = specs && typeof specs === 'object' ? JSON.stringify(specs) : (specs || null);
   try {
     const oldDeviceRes = await pool.query('SELECT status, stock FROM devices WHERE id = $1', [id]);
     const oldStatus = oldDeviceRes.rows.length > 0 ? oldDeviceRes.rows[0].status : null;
     const oldStock  = oldDeviceRes.rows.length > 0 ? parseInt(oldDeviceRes.rows[0].stock, 10) : 0;
 
     const result = await pool.query(
-      `UPDATE devices SET name = $1, appledb_id = $2, image = $3, storage = $4, srp = $5, monthly = $6, stock = $7, status = $8, colors = $9
-       WHERE id = $10 RETURNING *`,
-      [name, appledb_id, image, storage, srp, monthly, stock, status || 'available', colorsArr, id]
+      `UPDATE devices SET name = $1, appledb_id = $2, image = $3, storage = $4, srp = $5, monthly = $6, stock = $7, status = $8, colors = $9, specs = $10
+       WHERE id = $11 RETURNING *`,
+      [name, appledb_id, image, storage, srp, monthly, stock, status || 'available', colorsArr, specsObj, id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Device not found' });
 

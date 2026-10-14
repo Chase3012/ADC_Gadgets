@@ -441,6 +441,45 @@ setInterval(loadStats, 30000);
             </div>
           </div>
 
+          <!-- Product Specifications (Modal Preview) -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:11.5px; font-weight:700; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="sliders" style="width:14px; height:14px; color:#ec4899;"></i> Product Specifications (Storefront Modal)
+              </span>
+              <span style="font-size:10px; color:var(--text-muted);">Auto-filled by Apple Engine</span>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div>
+                <label style="font-size:10.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+                  <i data-lucide="scaling" style="width:12px; height:12px;"></i> Display
+                </label>
+                <input type="text" id="inv-spec-display" class="form-input" placeholder="e.g. 6.3-inch Super Retina XDR OLED with ProMotion up to 120Hz" style="width:100%; padding:8px 10px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+              </div>
+              <div>
+                <label style="font-size:10.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+                  <i data-lucide="camera" style="width:12px; height:12px;"></i> Camera
+                </label>
+                <input type="text" id="inv-spec-camera" class="form-input" placeholder="e.g. 48MP Fusion + 48MP Ultra Wide + 5x Telephoto with 4K 120fps Dolby Vision" style="width:100%; padding:8px 10px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                  <label style="font-size:10.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+                    <i data-lucide="cpu" style="width:12px; height:12px;"></i> Processor / Chip
+                  </label>
+                  <input type="text" id="inv-spec-chip" class="form-input" placeholder="e.g. A18 Pro chip with 6-core GPU" style="width:100%; padding:8px 10px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+                </div>
+                <div>
+                  <label style="font-size:10.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+                    <i data-lucide="battery-full" style="width:12px; height:12px;"></i> Battery
+                  </label>
+                  <input type="text" id="inv-spec-battery" class="form-input" placeholder="e.g. Up to 27 hours video playback" style="width:100%; padding:8px 10px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Color Inventory Section -->
           <div>
             <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Device Available Colors</label>
@@ -458,6 +497,7 @@ setInterval(loadStats, 30000);
     </div>
 
 
+<script src="../../src/shared/js/apple-specs.js?v=1791820800000"></script>
 <script src="js/inventory.js?v=1791820800000"></script>
 </body>
 </html>
