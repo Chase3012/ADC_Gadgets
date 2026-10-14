@@ -9,6 +9,39 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
+// Resolves authentic side-by-side front-and-back Apple studio image
+window.getFrontBackDeviceImage = function(deviceName, originalImg) {
+    const name = (deviceName || '').trim().toLowerCase();
+
+    if (name.includes('18')) return '../../images/phones/Iphone_18.png';
+    if (name.includes('17') || name.includes('air')) return '../../images/phones/Iphone_17.png';
+    if (name.includes('16')) return '../../images/phones/Iphone_16.png';
+    if (name.includes('15')) return '../../images/phones/Iphone_15.png';
+    if (name.includes('14')) return '../../images/phones/Iphone_14.png';
+    if (name.includes('13')) return '../../images/phones/Iphone_13.png';
+    if (name.includes('12')) return '../../images/phones/Iphone_12.png';
+    if (name.includes('11')) return '../../images/phones/Iphone_11.png';
+    if (name.includes('se')) return '../../images/phones/Iphone_SE.png';
+    if (name.includes('xr')) return '../../images/phones/Iphone_XR.png';
+    if (name.includes('xs')) return '../../images/phones/Iphone_XS.png';
+    if (name.includes('x')) return '../../images/phones/Iphone_X.png';
+    if (name.includes('8')) return '../../images/phones/Iphone_8.png';
+    if (name.includes('7')) return '../../images/phones/Iphone_7.png';
+
+    // If originalImg is already a valid image in images/phones/
+    if (originalImg) {
+        if (originalImg.includes('/') && !originalImg.includes('img.appledb.dev')) {
+            return originalImg;
+        }
+        if (!originalImg.includes('img.appledb.dev')) {
+            return `../../images/phones/${originalImg}`;
+        }
+    }
+
+    // Default authentic modern iPhone front & back
+    return '../../images/phones/Iphone_16.png';
+};
+
 window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false, statusFilter = 'available') {
     const grid = document.querySelector(gridSelector);
     if (!grid) return;
@@ -63,14 +96,15 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
             const cardStyle = isOutOfStock ? 'opacity: 0.65; filter: grayscale(80%); pointer-events: none;' : '';
             const btnText = isOutOfStock ? 'Sold Out' : 'View';
             
-            const imgPath = device.image && device.image.includes('/') ? device.image : `../../images/phones/${device.image}`;
+            // Universal authentic side-by-side front and back image for the card
+            const imgPath = window.getFrontBackDeviceImage(device.name, device.image);
 
             const specsAttr = device.specs ? JSON.stringify(device.specs).replace(/"/g, '&quot;') : '';
             const cardHTML = `
                 <a href="devices.html" class="p-card scroll-reveal" data-device-id="${device.id}" data-appledb-id="${device.appledb_id || ''}" data-soc="${soc}" data-specs="${specsAttr}" data-original-price="₱${formattedSrp}" style="${cardStyle}">
                     <span class="p-badge" style="z-index: 10; ${badgeStyle}">${badgeText}</span>
                     <div class="p-img-wrap">
-                        <img src="${imgPath}" alt="${device.name}" class="p-img">
+                        <img src="${imgPath}" alt="${device.name} Front & Back" class="p-img">
                     </div>
                     <div class="p-info">
                         <h3 class="p-title">${device.name}</h3>
@@ -173,7 +207,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if(mTitle) mTitle.textContent = titleText;
             if(mPrice) mPrice.textContent = card.querySelector('.p-price').textContent;
-            if(mImg) mImg.src = card.querySelector('.p-img').src;
+            
+            // Set authentic side-by-side front and back image in modal
+            const cardImg = card.querySelector('.p-img');
+            const frontBackImg = cardImg ? cardImg.src : window.getFrontBackDeviceImage(titleText);
+            if(mImg) {
+                mImg.src = frontBackImg;
+                mImg.alt = `${titleText} Front and Back View`;
+            }
 
             // Fetch original price from card data attribute
             if (mPrice) {
@@ -195,20 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(mSpecChip) mSpecChip.textContent = specs.chip;
             if(mSpecBattery) mSpecBattery.textContent = specs.battery;
 
-            // Setup 3D viewer on-demand
-            const cardImg = card.querySelector('.p-img');
-            const cardImgSrc = cardImg ? cardImg.src : '';
-            if (window.Apple3DViewer) {
-                window.Apple3DViewer.setupDevice(titleText, appledbId, cardImgSrc);
-            }
-
             // Setup Loan button link with dynamic params
             const btnApplyLoan = document.getElementById('btn-apply-loan');
             if (btnApplyLoan) {
                 const urlParams = new URLSearchParams();
                 urlParams.set('model', titleText);
                 urlParams.set('price', card.querySelector('.p-price').textContent.replace('₱', '').replace('/mo', '').trim());
-                urlParams.set('img', card.querySelector('.p-img').src);
+                urlParams.set('img', frontBackImg);
                 btnApplyLoan.href = `loan.html?${urlParams.toString()}`;
             }
 
@@ -231,9 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeModal() {
         if (!pmOverlay) return;
         pmOverlay.classList.remove('open');
-        if (window.Apple3DViewer) {
-            window.Apple3DViewer.onModalClose();
-        }
         setTimeout(() => {
             pmOverlay.style.display = 'none';
         }, 300); // match CSS transition duration
