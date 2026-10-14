@@ -483,14 +483,17 @@
       grid.innerHTML = '';
       // Only show 'available' devices
       const available = allDevices.filter(d => d.status === 'available');
-      available.forEach(d => {
-        const imgPath = d.image && d.image.includes('/') ? d.image : `../../images/phones/${d.image}`;
+        let imgPath = d.image || '../../images/phones/appledb/iphone_16.png';
+        if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
+          const clean = imgPath.replace(/^(\.\.\/)+/, '');
+          imgPath = `../../${clean}`;
+        }
         const card = document.createElement('div');
         card.className = 'phone-card';
         card.dataset.phone = d.name;
         card.dataset.deviceImg = imgPath;
         card.innerHTML = `
-          <img src="${imgPath}" alt="${d.name}" onerror="this.src='../../images/phones/Iphone_15.png'">
+          <img src="${imgPath}" alt="${d.name}" onerror="this.src='../../images/phones/appledb/iphone_16.png'">
           <div class="phone-name">${d.name}</div>
         `;
         grid.appendChild(card);

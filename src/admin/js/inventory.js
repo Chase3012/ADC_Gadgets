@@ -672,7 +672,11 @@ document.addEventListener('DOMContentLoaded', () => {
           ? `<span style="font-size:12px; color:var(--success); font-weight:600;">${d.stock} In Stock</span>` 
           : `<span style="font-size:12px; color:var(--danger); font-weight:600;">Out of Stock</span>`;
           
-        const imgPath = d.image && d.image.includes('/') ? d.image : `../../images/phones/${d.image}`;
+        let imgPath = d.image || '../../images/phones/appledb/iphone_16.png';
+        if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
+          const clean = imgPath.replace(/^(\.\.\/)+/, '');
+          imgPath = `../../${clean}`;
+        }
 
         // Color dots
         const colorDots = (d.colors && d.colors.length > 0)
@@ -683,14 +687,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('') + (d.colors.length > 5 ? `<span style="font-size:11px;color:var(--text-muted);">+${d.colors.length - 5}</span>` : '')
           : '<span style="font-size:11px;color:var(--text-muted);">—</span>';
 
-        const isStudioImg = d.image && d.image.includes('img.appledb.dev');
+        const isStudioImg = d.image && (d.image.includes('img.appledb.dev') || d.image.includes('appledb/'));
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
             <div style="display:flex; align-items:center; gap:12px;">
               <div style="width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; padding:2px; position:relative;">
-                <img src="${imgPath}" alt="${d.name}" style="max-width:100%; max-height:100%; object-fit:contain;" onerror="this.src='../../images/phones/Iphone_15.png'">
+                <img src="${imgPath}" alt="${d.name}" style="max-width:100%; max-height:100%; object-fit:contain;" onerror="this.src='../../images/phones/appledb/iphone_16.png'">
                 ${isStudioImg ? '<span title="Official AppleDB Studio Render" style="position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#ec4899;border:1px solid #18181b;"></span>' : ''}
               </div>
               <div>

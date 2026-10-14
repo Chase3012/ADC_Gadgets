@@ -9,38 +9,43 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
-// Resolves authentic side-by-side front-and-back Apple studio image
-window.getFrontBackDeviceImage = function(deviceName, originalImg) {
-    const name = (deviceName || '').trim().toLowerCase();
-
-    if (name.includes('18')) return '../../images/phones/Iphone_18.png';
-    if (name.includes('17') || name.includes('air')) return '../../images/phones/Iphone_17.png';
-    if (name.includes('16')) return '../../images/phones/Iphone_16.png';
-    if (name.includes('15')) return '../../images/phones/Iphone_15.png';
-    if (name.includes('14')) return '../../images/phones/Iphone_14.png';
-    if (name.includes('13')) return '../../images/phones/Iphone_13.png';
-    if (name.includes('12')) return '../../images/phones/Iphone_12.png';
-    if (name.includes('11')) return '../../images/phones/Iphone_11.png';
-    if (name.includes('se')) return '../../images/phones/Iphone_SE.png';
-    if (name.includes('xr')) return '../../images/phones/Iphone_XR.png';
-    if (name.includes('xs')) return '../../images/phones/Iphone_XS.png';
-    if (name.includes('x')) return '../../images/phones/Iphone_X.png';
-    if (name.includes('8')) return '../../images/phones/Iphone_8.png';
-    if (name.includes('7')) return '../../images/phones/Iphone_7.png';
-
-    // If originalImg is already a valid image in images/phones/
+// Resolves authentic Apple Database (AppleDB) studio image
+window.getAppleDBDeviceImage = function(deviceName, originalImg) {
+    // 1. If originalImg already specifies an appledb local file or full URL, return it with proper relative path
     if (originalImg) {
-        if (originalImg.includes('/') && !originalImg.includes('img.appledb.dev')) {
+        if (originalImg.startsWith('http://') || originalImg.startsWith('https://')) {
             return originalImg;
         }
-        if (!originalImg.includes('img.appledb.dev')) {
-            return `../../images/phones/${originalImg}`;
+        if (originalImg.includes('appledb/')) {
+            const basename = originalImg.split('/').pop();
+            return `../../images/phones/appledb/${basename}`;
         }
     }
 
-    // Default authentic modern iPhone front & back
-    return '../../images/phones/Iphone_16.png';
+    const name = (deviceName || '').trim().toLowerCase();
+
+    // Map each model to its authentic AppleDB studio image
+    if (name.includes('18')) return '../../images/phones/appledb/iphone_18_pro.png';
+    if (name.includes('air')) return '../../images/phones/appledb/iphone_air.png';
+    if (name.includes('17')) return '../../images/phones/appledb/iphone_17.png';
+    if (name.includes('16')) return '../../images/phones/appledb/iphone_16.png';
+    if (name.includes('15')) return '../../images/phones/appledb/iphone_15.png';
+    if (name.includes('14')) return '../../images/phones/appledb/iphone_14.png';
+    if (name.includes('13')) return '../../images/phones/appledb/iphone_13.png';
+    if (name.includes('12')) return '../../images/phones/appledb/iphone_12.png';
+    if (name.includes('se')) return '../../images/phones/appledb/iphone_se.png';
+    if (name.includes('xr')) return '../../images/phones/appledb/iphone_xr.png';
+    if (name.includes('xs')) return '../../images/phones/appledb/iphone_xs.png';
+    if (name.includes('x')) return '../../images/phones/appledb/iphone_x.png';
+    if (name.includes('8')) return '../../images/phones/appledb/iphone_8.png';
+    if (name.includes('7')) return '../../images/phones/appledb/iphone_7.png';
+    if (name.includes('11')) return '../../images/phones/appledb/iphone_11.png';
+
+    // Default to iPhone 16 Ultramarine
+    return '../../images/phones/appledb/iphone_16.png';
 };
+// Backwards compatibility alias
+window.getFrontBackDeviceImage = window.getAppleDBDeviceImage;
 
 window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false, statusFilter = 'available') {
     const grid = document.querySelector(gridSelector);
@@ -96,15 +101,15 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
             const cardStyle = isOutOfStock ? 'opacity: 0.65; filter: grayscale(80%); pointer-events: none;' : '';
             const btnText = isOutOfStock ? 'Sold Out' : 'View';
             
-            // Universal authentic side-by-side front and back image for the card
-            const imgPath = window.getFrontBackDeviceImage(device.name, device.image);
+            // Official Apple Database Studio Render
+            const imgPath = window.getAppleDBDeviceImage(device.name, device.image);
 
             const specsAttr = device.specs ? JSON.stringify(device.specs).replace(/"/g, '&quot;') : '';
             const cardHTML = `
                 <a href="devices.html" class="p-card scroll-reveal" data-device-id="${device.id}" data-appledb-id="${device.appledb_id || ''}" data-soc="${soc}" data-specs="${specsAttr}" data-original-price="₱${formattedSrp}" style="${cardStyle}">
                     <span class="p-badge" style="z-index: 10; ${badgeStyle}">${badgeText}</span>
                     <div class="p-img-wrap">
-                        <img src="${imgPath}" alt="${device.name} Front & Back" class="p-img">
+                        <img src="${imgPath}" alt="${device.name} Official Studio Render" class="p-img" loading="lazy">
                     </div>
                     <div class="p-info">
                         <h3 class="p-title">${device.name}</h3>
@@ -208,12 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(mTitle) mTitle.textContent = titleText;
             if(mPrice) mPrice.textContent = card.querySelector('.p-price').textContent;
             
-            // Set authentic side-by-side front and back image in modal
+            // Set authentic Apple Database studio image in modal
             const cardImg = card.querySelector('.p-img');
-            const frontBackImg = cardImg ? cardImg.src : window.getFrontBackDeviceImage(titleText);
+            const studioImg = cardImg ? cardImg.src : window.getAppleDBDeviceImage(titleText);
             if(mImg) {
-                mImg.src = frontBackImg;
-                mImg.alt = `${titleText} Front and Back View`;
+                mImg.src = studioImg;
+                mImg.alt = `${titleText} Official Apple Studio View`;
             }
 
             // Fetch original price from card data attribute
@@ -242,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const urlParams = new URLSearchParams();
                 urlParams.set('model', titleText);
                 urlParams.set('price', card.querySelector('.p-price').textContent.replace('₱', '').replace('/mo', '').trim());
-                urlParams.set('img', frontBackImg);
+                urlParams.set('img', studioImg);
                 btnApplyLoan.href = `loan.html?${urlParams.toString()}`;
             }
 
