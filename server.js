@@ -461,6 +461,72 @@ app.get('/api/announcements/latest', async (req, res) => {
   }
 });
 
+// ─── APPLEDB INTEGRATION ────────────────────────────────────────────────────────
+let appleDbDevicesCache = null;
+let appleDbLastFetched = 0;
+const APPLEDB_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const TARGET_APPLE_TYPES = ['iPhone', 'iPad', 'iPad mini', 'iPad Air', 'iPad Pro', 'Apple Watch', 'MacBook Air', 'MacBook Pro', 'AirPods', 'Mac mini', 'iMac'];
+
+async function getAppleDbDevices() {
+  const now = Date.now();
+  if (appleDbDevicesCache && (now - appleDbLastFetched < APPLEDB_CACHE_TTL)) {
+    return appleDbDevicesCache;
+  }
+  try {
+    const response = await fetch('https://api.appledb.dev/device/main.json');
+    if (!response.ok) throw new Error('Failed to fetch from AppleDB');
+    const all = await response.json();
+    
+    // Filter to popular consumer Apple device types
+    const filtered = all.filter(d => TARGET_APPLE_TYPES.includes(d.type));
+    
+    // Map to clean, lightweight payload
+    appleDbDevicesCache = filtered.map(d => {
+      const colors = (d.colors || []).map(c => {
+        const hexStr = c.hex ? String(c.hex).trim() : '';
+        return {
+          name: c.name || 'Default',
+          hex: hexStr ? (hexStr.startsWith('#') ? hexStr : `#${hexStr}`) : '#94a3b8',
+          key: c.key || c.name || ''
+        };
+      });
+      
+      const imgKey = d.imageKey || d.key;
+      const defaultColor = colors.length > 0 ? (colors[0].key || colors[0].name) : '';
+      const defaultImageUrl = defaultColor 
+        ? `https://img.appledb.dev/device@256/${imgKey}/${encodeURIComponent(defaultColor)}.png`
+        : '';
+        
+      return {
+        name: d.name,
+        key: d.key,
+        imageKey: imgKey,
+        type: d.type,
+        soc: d.soc || 'Apple',
+        released: Array.isArray(d.released) ? d.released[0] : (d.released || ''),
+        colors,
+        defaultImageUrl
+      };
+    });
+    
+    appleDbLastFetched = now;
+    return appleDbDevicesCache;
+  } catch (err) {
+    console.error('AppleDB fetch error:', err.message);
+    return appleDbDevicesCache || [];
+  }
+}
+
+app.get('/api/appledb/devices', async (req, res) => {
+  try {
+    const devices = await getAppleDbDevices();
+    res.json(devices);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch AppleDB devices' });
+  }
+});
+
 // ─── DEVICES ───────────────────────────────────────────────────────────────────
 app.get('/api/devices', async (req, res) => {
   try {

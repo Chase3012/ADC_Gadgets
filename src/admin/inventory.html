@@ -310,77 +310,154 @@ setInterval(loadStats, 30000);
 
 
     <!-- INVENTORY MODAL -->
-    <div id="inventory-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center;">
-      <div style="background:var(--surface); padding:32px; border-radius:16px; width:500px; max-width:90%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid var(--border);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <h3 id="inventory-modal-title" style="margin:0; font-size:20px; font-weight:800; color:var(--text-main);">Add Device</h3>
-            <button type="button" id="close-inventory-modal-x" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+    <div id="inventory-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; justify-content:center; align-items:center;">
+      <div style="background:var(--surface); padding:28px; border-radius:18px; width:640px; max-width:92%; max-height:90vh; overflow-y:auto; box-shadow:0 25px 60px -15px rgba(0,0,0,0.7), 0 0 30px rgba(236,72,153,0.12); border:1px solid rgba(255,255,255,0.08);">
+        
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(236,72,153,0.15); display:flex; align-items:center; justify-content:center; color:#ec4899; box-shadow:0 2px 10px rgba(236,72,153,0.2);">
+              <i data-lucide="smartphone" style="width:20px; height:20px;"></i>
+            </div>
+            <div>
+              <h3 id="inventory-modal-title" style="margin:0; font-size:19px; font-weight:800; color:var(--text-main); letter-spacing:-0.02em;">Add Device</h3>
+              <p style="margin:2px 0 0; font-size:12px; color:var(--text-muted);">Manage gadget catalog & official Apple database sync</p>
+            </div>
+          </div>
+          <button type="button" id="close-inventory-modal-x" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); padding:4px 8px; border-radius:6px; line-height:1;">&times;</button>
         </div>
         
-        <form id="inventory-form" style="display:flex; flex-direction:column; gap:16px;">
+        <form id="inventory-form" style="display:flex; flex-direction:column; gap:18px;">
           <input type="hidden" id="inv-id">
-          
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-              <div>
-                <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Device Name</label>
-                <input type="text" id="inv-name" class="form-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface);" required>
-              </div>
-              <div>
-                <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Storage (e.g. 256GB)</label>
-                <input type="text" id="inv-storage" class="form-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface);">
-              </div>
-          </div>
 
-          <div>
-            <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Device Image</label>
-            <input type="hidden" id="inv-img">
-            <!-- Drop Zone -->
-            <div id="inv-img-dropzone" style="border:2px dashed var(--border); border-radius:10px; padding:20px 12px; text-align:center; cursor:pointer; background:var(--surface); transition:all .2s; position:relative;">
-              <div id="inv-img-placeholder">
-                <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:6px;"></i>
-                <p style="margin:0;font-size:13px;color:var(--text-muted);">Drag & drop or <span style="color:var(--primary);font-weight:600;">click to browse</span></p>
-                <p style="margin:4px 0 0;font-size:11px;color:#aaa;">PNG, JPG, WEBP · auto-cropped to square</p>
-              </div>
-              <img id="inv-img-preview" src="" alt="preview" style="display:none;max-height:100px;max-width:100%;object-fit:contain;border-radius:8px;">
-              <input type="file" id="inv-img-file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+          <!-- ─── APPLE DATABASE AUTO-PULL SECTION ─── -->
+          <div class="appledb-section">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span class="appledb-badge">
+                <i data-lucide="sparkles" style="width:13px; height:13px;"></i> Pull from Apple Database
+              </span>
+              <span id="appledb-status-indicator" style="font-size:10px; padding:2px 8px; border-radius:10px; background:rgba(34,197,94,0.15); color:#22c55e; font-weight:700;">● Online Catalog</span>
+            </div>
+            <p style="margin:4px 0 0; font-size:11.5px; color:var(--text-muted);">Search any iPhone, iPad, Apple Watch, or Mac to auto-fill official specs and studio renders.</p>
+            
+            <div class="appledb-search-wrap">
+              <i data-lucide="search" class="appledb-search-icon"></i>
+              <input type="text" id="appledb-search-input" class="appledb-search-input" placeholder="Type model (e.g. iPhone 16 Pro, iPad Air, Series 10)..." autocomplete="off">
+              <button type="button" id="appledb-clear-search" class="appledb-clear-btn" style="display:none;" title="Clear search">&times;</button>
+              
+              <div id="appledb-search-dropdown" class="appledb-dropdown"></div>
+            </div>
+            
+            <div class="appledb-filters">
+              <button type="button" class="appledb-filter-pill active" data-type="all">All</button>
+              <button type="button" class="appledb-filter-pill" data-type="iPhone">iPhone</button>
+              <button type="button" class="appledb-filter-pill" data-type="iPad">iPad</button>
+              <button type="button" class="appledb-filter-pill" data-type="Apple Watch">Watch</button>
+              <button type="button" class="appledb-filter-pill" data-type="MacBook">Mac</button>
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-              <div>
-                <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">SRP (₱)</label>
-                <input type="number" id="inv-srp" class="form-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface);" required>
+          <!-- ─── DEVICE IMAGE SECTION ─── -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="font-size:12px; font-weight:700; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Product Image</label>
+              
+              <!-- Tab switch between Studio photo and custom upload -->
+              <div class="appledb-img-toggle-tabs">
+                <button type="button" id="tab-img-studio" class="appledb-img-tab active">✨ Studio Render</button>
+                <button type="button" id="tab-img-custom" class="appledb-img-tab">📁 Custom Upload</button>
               </div>
-              <div>
-                <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Stock Qty</label>
-                <input type="number" id="inv-stock" class="form-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface);" required>
+            </div>
+            
+            <input type="hidden" id="inv-img">
+
+            <!-- Studio Render Box -->
+            <div id="appledb-studio-container">
+              <div class="appledb-render-box">
+                <div id="inv-img-empty-state" style="padding:14px 0; color:var(--text-muted); text-align:center;">
+                  <i data-lucide="image" style="width:32px; height:32px; opacity:0.4; margin-bottom:6px; display:inline-block;"></i>
+                  <p style="margin:0; font-size:12px;">Type an Apple model above to auto-load official transparent studio photo</p>
+                </div>
+                
+                <img id="inv-img-preview" src="" alt="preview" class="appledb-render-img" style="display:none;">
+
+                <!-- Color Swatches Bar -->
+                <div id="appledb-swatches-wrap" class="appledb-swatches-wrap" style="display:none;">
+                  <span class="appledb-swatches-label">Select Picture Color Variant</span>
+                  <div id="appledb-swatches-list" class="appledb-swatches-list"></div>
+                  <div id="appledb-color-selected-name" style="font-size:11.5px; font-weight:600; color:#ec4899; margin-top:2px;"></div>
+                </div>
               </div>
+            </div>
+
+            <!-- Custom Drag & Drop Dropzone (Hidden by default, shown when user clicks Custom Upload) -->
+            <div id="inv-custom-upload-container" style="display:none;">
+              <div id="inv-img-dropzone" style="border:2px dashed var(--border); border-radius:10px; padding:20px 12px; text-align:center; cursor:pointer; background:var(--bg); transition:all .2s; position:relative;">
+                <div id="inv-img-placeholder">
+                  <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:6px;"></i>
+                  <p style="margin:0;font-size:13px;color:var(--text-muted);">Drag & drop or <span style="color:var(--primary);font-weight:600;">click to browse</span></p>
+                  <p style="margin:4px 0 0;font-size:11px;color:var(--text-muted);">PNG, JPG, WEBP · auto-cropped to square</p>
+                </div>
+                <img id="inv-img-custom-preview" src="" alt="custom preview" style="display:none;max-height:100px;max-width:100%;object-fit:contain;border-radius:8px;margin:0 auto;">
+                <input type="file" id="inv-img-file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── DEVICE DETAILS ─── -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+            <div>
+              <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Device Name</label>
+              <input type="text" id="inv-name" class="form-input" placeholder="e.g. iPhone 16 Pro" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);" required>
+            </div>
+            <div>
+              <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Storage (e.g. 256GB)</label>
+              <input type="text" id="inv-storage" class="form-input" placeholder="e.g. 256GB" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+            <div>
+              <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">SRP (₱)</label>
+              <input type="number" id="inv-srp" class="form-input" placeholder="54990" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);" required>
+            </div>
+            <div>
+              <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Stock Qty</label>
+              <input type="number" id="inv-stock" class="form-input" placeholder="10" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);" required>
+            </div>
           </div>
           
-          <div>
-            <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">AppleDB ID (Internal)</label>
-            <input type="text" id="inv-appledb" class="form-input" placeholder="e.g. iPhone17,3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface);">
-          </div>
-          
-          <div>
-            <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Status</label>
-            <select id="inv-status" class="form-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface);">
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:14px;">
+            <div>
+              <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">AppleDB ID</label>
+              <input type="text" id="inv-appledb" class="form-input" placeholder="e.g. iPhone17,1" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+            </div>
+            <div>
+              <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Status</label>
+              <select id="inv-status" class="form-input" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
                 <option value="available">Available Now</option>
                 <option value="upcoming">Upcoming</option>
-            </select>
+              </select>
+            </div>
           </div>
 
+          <!-- Color Inventory Section -->
+          <div>
+            <label style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Device Available Colors</label>
+            <div id="inv-selected-colors-display" style="display:flex; flex-wrap:wrap; gap:6px; min-height:28px; align-items:center; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px;">
+              <span style="font-size:12px;color:var(--text-muted);">No colors selected yet (auto-populated when choosing Apple model)</span>
+            </div>
+          </div>
 
-
-          <div style="display:flex; gap:12px; margin-top:24px;">
-            <button type="button" id="close-inventory-modal" class="btn-secondary" style="flex:1; padding:12px; font-weight:600; border-radius:8px;">Cancel</button>
-            <button type="submit" class="btn-primary" style="flex:1; padding:12px; font-weight:600; border-radius:8px; background:var(--primary); color:#fff; border:none;">Save Changes</button>
+          <div style="display:flex; gap:12px; margin-top:10px;">
+            <button type="button" id="close-inventory-modal" class="btn-secondary" style="flex:1; padding:12px; font-weight:600; border-radius:10px;">Cancel</button>
+            <button type="submit" class="btn-primary" style="flex:1; padding:12px; font-weight:700; border-radius:10px; background:var(--primary); color:#fff; border:none; box-shadow:0 4px 15px rgba(236,72,153,0.3);">Save Device</button>
           </div>
         </form>
       </div>
     </div>
 
 
-<script src="js/inventory.js"></script>
+<script src="js/inventory.js?v=1791820800000"></script>
 </body>
 </html>
