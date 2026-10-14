@@ -195,6 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(mSpecChip) mSpecChip.textContent = specs.chip;
             if(mSpecBattery) mSpecBattery.textContent = specs.battery;
 
+            // Setup 3D viewer on-demand
+            const cardImg = card.querySelector('.p-img');
+            const cardImgSrc = cardImg ? cardImg.src : '';
+            if (window.Apple3DViewer) {
+                window.Apple3DViewer.setupDevice(titleText, appledbId, cardImgSrc);
+            }
+
             // Setup Loan button link with dynamic params
             const btnApplyLoan = document.getElementById('btn-apply-loan');
             if (btnApplyLoan) {
@@ -203,6 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 urlParams.set('price', card.querySelector('.p-price').textContent.replace('₱', '').replace('/mo', '').trim());
                 urlParams.set('img', card.querySelector('.p-img').src);
                 btnApplyLoan.href = `loan.html?${urlParams.toString()}`;
+            }
+
+            // Refresh Lucide icons for modal controls
+            if (window.lucide) {
+                window.lucide.createIcons();
             }
 
             // Show Modal
@@ -216,12 +228,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close modal logic
     const pmClose = document.getElementById('pm-close');
     const pmOverlay = document.getElementById('pm-overlay');
+    function closeModal() {
+        if (!pmOverlay) return;
+        pmOverlay.classList.remove('open');
+        if (window.Apple3DViewer) {
+            window.Apple3DViewer.onModalClose();
+        }
+        setTimeout(() => {
+            pmOverlay.style.display = 'none';
+        }, 300); // match CSS transition duration
+    }
+
     if (pmClose && pmOverlay) {
-        pmClose.addEventListener('click', () => {
-            pmOverlay.classList.remove('open');
-            setTimeout(() => {
-                pmOverlay.style.display = 'none';
-            }, 300); // match CSS transition duration
+        pmClose.addEventListener('click', closeModal);
+        pmOverlay.addEventListener('click', (e) => {
+            if (e.target === pmOverlay) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && pmOverlay.classList.contains('open')) {
+                closeModal();
+            }
         });
     }
 });

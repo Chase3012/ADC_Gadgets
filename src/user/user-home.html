@@ -256,10 +256,64 @@
                 <i data-lucide="x"></i>
             </button>
             <div class="pm-left">
-
-                <div class="pm-img-wrap">
-                    <img id="m-img" src="../../images/phones/Iphone_16.png" alt="Phone">
+                <!-- 2D / 3D Mode Toggle -->
+                <div class="pm-mode-toggle" id="pm-mode-toggle">
+                    <button type="button" class="pm-toggle-btn active" id="btn-toggle-2d" data-mode="2d">
+                        <i data-lucide="image"></i>
+                        <span>Photo</span>
+                    </button>
+                    <button type="button" class="pm-toggle-btn" id="btn-toggle-3d" data-mode="3d">
+                        <i data-lucide="box"></i>
+                        <span>3D View</span>
+                        <span class="badge-3d-glow">360°</span>
+                    </button>
                 </div>
+
+                <!-- Media Stage -->
+                <div class="pm-media-stage" id="pm-media-stage">
+                    <div class="pm-img-wrap" id="pm-img-container">
+                        <img id="m-img" src="../../images/phones/Iphone_16.png" alt="Phone">
+                    </div>
+
+                    <div class="pm-3d-wrap" id="pm-3d-container" style="display: none;">
+                        <div class="pm-3d-loading" id="pm-3d-loading">
+                            <div class="pm-3d-spinner"></div>
+                            <span>Loading 3D Experience...</span>
+                        </div>
+                        <model-viewer
+                            id="m-model-viewer"
+                            alt="Interactive 3D Apple iPhone Model"
+                            auto-rotate
+                            auto-rotate-delay="1000"
+                            rotation-per-second="25deg"
+                            camera-controls
+                            touch-action="pan-y"
+                            shadow-intensity="1.5"
+                            shadow-softness="0.8"
+                            exposure="1.05"
+                            camera-orbit="0deg 75deg 105%"
+                            min-camera-orbit="auto auto 70%"
+                            max-camera-orbit="auto auto 150%"
+                            interaction-prompt="auto"
+                            interaction-prompt-threshold="1500"
+                            style="width: 100%; height: 100%; outline: none;"
+                        >
+                            <div class="pm-3d-hint" slot="interaction-prompt">
+                                <i data-lucide="rotate-3d"></i>
+                                <span>Drag to rotate • Pinch to zoom</span>
+                            </div>
+                        </model-viewer>
+                        <div class="pm-3d-controls">
+                            <button type="button" class="pm-3d-ctrl-btn" id="btn-reset-3d" title="Reset Camera">
+                                <i data-lucide="rotate-ccw"></i> Reset
+                            </button>
+                            <button type="button" class="pm-3d-ctrl-btn" id="btn-toggle-rotate" title="Pause or Resume Spin">
+                                <i data-lucide="pause"></i> Pause
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="pm-finishes">
                     <p class="pm-f-title"
                         style="font-style: italic; color: var(--g500); text-align: center; max-width: 250px; line-height: 1.4;">
@@ -418,6 +472,7 @@
     </script>
 
     <script src="../../src/shared/js/apple-specs.js?v=1791820800000"></script>
+    <script src="../../src/shared/js/apple-3d-viewer.js?v=1791820800000"></script>
     <script src="js/appledb.js?v=1791820800000"></script>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
