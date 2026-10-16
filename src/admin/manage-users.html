@@ -272,9 +272,8 @@
 
     // --- Manage Users Logic ---
     async function loadUsers() {
-      if (!supabaseClient) return;
       const tbody = document.getElementById('users-tbody');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
       
       let data;
       try {
@@ -282,12 +281,17 @@
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         data = await response.json();
       } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
         return;
       }
       
+      const subtitle = document.querySelector('.page-subtitle');
+      if (subtitle) {
+        subtitle.textContent = `${(data && data.length) ? data.length : 0} BORROWERS`;
+      }
+      
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users found.</td></tr>';
         return;
       }
       
@@ -482,7 +486,8 @@
       if (!grid) return;
       grid.innerHTML = '';
       // Only show 'available' devices
-      const available = allDevices.filter(d => d.status === 'available');
+      const available = allDevices.filter(d => !d.status || d.status.toLowerCase() === 'available');
+      available.forEach(d => {
         let imgPath = d.image || '../../images/phones/appledb/iphone_16.png';
         if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
           const clean = imgPath.replace(/^(\.\.\/)+/, '');
@@ -738,7 +743,7 @@
       
       if (!nuLoanInput.value) { 
         aErrMsg.textContent = 'Please select a loan model.';
-        aError.classList.add('open');
+        aError.classList.add('active');
         return; 
       }
 
@@ -837,8 +842,6 @@
 
     });
   </script>
-
-    </script>
 
     
 <script src="js/admin-auth.js"></script>
