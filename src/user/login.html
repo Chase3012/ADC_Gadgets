@@ -1575,7 +1575,10 @@
         const response = await fetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailVal })
+          body: JSON.stringify({ 
+            email: emailVal,
+            origin: window.location.origin
+          })
         });
 
         const data = await response.json();

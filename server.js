@@ -22,6 +22,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -367,6 +368,14 @@ app.post('/reset-password', async (req, res) => {
   }
 });
 
+app.get('/reset-password', (req, res) => {
+  const token = req.query.token;
+  if (token) {
+    return res.redirect(`/src/user/reset-password.html?token=${encodeURIComponent(token)}`);
+  }
+  res.sendFile(path.join(__dirname, 'src', 'user', 'reset-password.html'));
+});
+
 // ─── FORGOT & RESET PASSWORD (EMAIL TOKEN FLOW) ──────────────────────────────
 app.post('/api/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
@@ -391,8 +400,34 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       [resetToken, expiresAt.toISOString(), user.id]
     );
 
-    // Build the reset password URL
-    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    // Build the reset password URL dynamically and reliably (supporting Vercel & custom domains)
+    let origin = (req.body && req.body.origin && typeof req.body.origin === 'string') 
+      ? req.body.origin.replace(/\/+$/, '') 
+      : null;
+
+    if (!origin) {
+      if (req.headers.origin) {
+        origin = req.headers.origin.replace(/\/+$/, '');
+      } else if (req.headers.referer) {
+        try {
+          origin = new URL(req.headers.referer).origin;
+        } catch (e) {}
+      } else if (req.headers['x-forwarded-host']) {
+        const proto = req.headers['x-forwarded-proto'] || 'https';
+        origin = `${proto}://${req.headers['x-forwarded-host']}`;
+      } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        origin = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+      } else if (process.env.VERCEL_URL) {
+        origin = `https://${process.env.VERCEL_URL}`;
+      } else if (process.env.APP_URL) {
+        origin = process.env.APP_URL.replace(/\/+$/, '');
+      } else {
+        const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+        const host = req.get('host') || 'localhost:3000';
+        origin = `${proto}://${host}`;
+      }
+    }
+
     const resetUrl = `${origin}/src/user/reset-password.html?token=${resetToken}`;
 
     try {
