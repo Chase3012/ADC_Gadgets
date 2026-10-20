@@ -61,7 +61,7 @@
       </div>
       <div class="header-right" style="display:flex; align-items:center; gap:16px;">
         <div style="position:relative;">
-          <input type="text" id="user-search-input" placeholder="Search loans, customers..." style="color: var(--text-main); background: var(--surface); padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:220px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+          <input type="text" id="user-search-input" placeholder="Search customers by name, email..." style="color: var(--text-main); background: var(--surface); padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:250px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
         </div>
         
         
@@ -102,7 +102,7 @@
         <div id="panel-loan-details" class="dash-panel" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <button class="btn-secondary" id="back-to-users-btn" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;"><i data-lucide="arrow-left" style="width: 16px;"></i> Back to Users</button>
-                <button id="issue-new-loan-ledger-btn" style="padding: 10px 20px; font-size: 14px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.3);"><i data-lucide="plus" style="width:16px; margin-right:6px;"></i> Issue New Loan</button>
+                <button id="issue-new-loan-ledger-btn" style="display: none; align-items: center; gap: 6px; padding: 10px 22px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.25) !important; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(236,72,153,0.45) !important;"><i data-lucide="plus" style="width:16px; height:16px;"></i> Issue New Loan</button>
             </div>
             
             <div class="card" id="ledger-content" style="min-height: 400px; padding: 32px;">
@@ -203,6 +203,71 @@
     </div>
   </div>
 
+  <!-- ISSUE NEW LOAN MODAL -->
+  <div class="modal-overlay" id="issue-new-loan-modal">
+    <div class="modal" style="max-width: 520px;">
+      <div class="modal-head">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; margin: 0;">Issue New Loan</h2>
+          <p id="inl-customer-name" style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Customer: —</p>
+        </div>
+        <button type="button" class="modal-close" id="close-issue-loan-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="issue-new-loan-form" class="form-grid">
+          <div class="form-group full">
+            <label>Loan Model <span style="color:var(--danger);">*</span></label>
+            <button type="button" id="inl-open-phone-selector-btn" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; color: var(--text-main); background: var(--surface); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;">
+              <span id="inl-selected-phone-text" style="color: var(--text-muted);">Select model...</span>
+              <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+            </button>
+            <input type="hidden" id="inl-loan-model" required>
+            <input type="hidden" id="inl-loan-img">
+          </div>
+
+          <div class="form-group full">
+            <label>Payment Term (Duration) <span style="color:var(--danger);">*</span></label>
+            <select id="inl-term" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; color: var(--text-main); background: var(--surface);">
+              <option value="24" selected>24 Months</option>
+              <option value="12">12 Months</option>
+              <option value="6">6 Months</option>
+              <option value="3">3 Months</option>
+            </select>
+          </div>
+
+          <div class="form-group full" id="inl-loan-preview" style="display:none; background: rgba(236, 72, 153, 0.08); border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 10px; padding: 14px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <div style="font-weight:700; font-size: 15px; color:#f472b6;" id="inl-preview-device-name">iPhone 16</div>
+                <div style="color:var(--text-muted); font-size: 12px; margin-top:2px;" id="inl-preview-device-srp">SRP: ₱54,990.00</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:11px; text-transform: uppercase; letter-spacing:0.05em; color:var(--text-muted);">Calculated Monthly:</div>
+                <div style="font-weight:800; color:#f472b6; font-size:17px; margin-top:2px;" id="inl-preview-monthly">₱2,474.55 / mo</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- UNIT COLOR SELECTOR -->
+          <div class="form-group full" id="inl-color-group" style="display:none;">
+            <label style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:8px; display:block;">
+              Unit Color <span style="color:var(--danger);">*</span>
+            </label>
+            <div id="inl-color-swatches" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+              <!-- Injected by JS -->
+            </div>
+            <input type="hidden" id="inl-device-color" required>
+            <p id="inl-color-hint" style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">Select the color unit for this loan.</p>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-cancel" id="cancel-issue-loan-btn">Cancel</button>
+        <button type="submit" class="btn-submit" id="submit-issue-loan-btn" form="issue-new-loan-form" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(236,72,153,0.45);"><i data-lucide="check" style="width:16px;"></i> Issue Loan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PHONE SELECTOR MODAL -->
   <div class="ps-overlay" id="phone-selector-modal">
     <div class="ps-modal">
@@ -271,37 +336,23 @@
     // Supabase Auth Integration
 
     // --- Manage Users Logic ---
-    async function loadUsers() {
+    let allLoadedUsers = [];
+
+    function renderUsersTable(users) {
       const tbody = document.getElementById('users-tbody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
-      
-      let data;
-      try {
-        const response = await fetch('/profiles?role=user');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        data = await response.json();
-      } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
-        return;
-      }
-      
-      const subtitle = document.querySelector('.page-subtitle');
-      if (subtitle) {
-        subtitle.textContent = `${(data && data.length) ? data.length : 0} BORROWERS`;
-      }
-      
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users found.</td></tr>';
-        return;
-      }
-      
       tbody.innerHTML = '';
-      data.forEach(user => {
+      
+      if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No customers found matching your search.</td></tr>';
+        return;
+      }
+      
+      users.forEach(user => {
         const name = user.full_name || user.name || 'No Name';
         const email = user.email || 'No Email';
-        const date = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'â€”';
-        const mobile = user.mobile || user.phone || 'â€”';
-        const address = user.address || user.home_address || 'â€”';
+        const date = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '—';
+        const mobile = user.mobile || user.phone || '—';
+        const address = user.address || user.home_address || '—';
         const status = user.status || 'Active';
         
         let statusClass = 'success';
@@ -325,8 +376,57 @@
         tbody.appendChild(tr);
       });
       
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
       attachViewLoanListeners();
+    }
+
+    // Search input listener
+    const userSearchInput = document.getElementById('user-search-input');
+    if (userSearchInput) {
+      userSearchInput.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (!q) {
+          renderUsersTable(allLoadedUsers);
+          return;
+        }
+        const filtered = allLoadedUsers.filter(u => {
+          const name = (u.full_name || u.name || '').toLowerCase();
+          const email = (u.email || '').toLowerCase();
+          const mobile = (u.mobile || u.phone || '').toLowerCase();
+          const address = (u.address || u.home_address || '').toLowerCase();
+          const status = (u.status || '').toLowerCase();
+          const accountId = u.id ? parseInt(u.id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '';
+          return name.includes(q) || email.includes(q) || mobile.includes(q) || address.includes(q) || status.includes(q) || accountId.includes(q);
+        });
+        renderUsersTable(filtered);
+      });
+    }
+
+    async function loadUsers() {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
+      
+      let data;
+      try {
+        const response = await fetch('/profiles?role=user');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        data = await response.json();
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger)">Error: ${error.message}</td></tr>`;
+        return;
+      }
+      
+      allLoadedUsers = data || [];
+      const subtitle = document.querySelector('.page-subtitle');
+      if (subtitle) {
+        subtitle.textContent = `${allLoadedUsers.length} BORROWERS`;
+      }
+      
+      if (userSearchInput && userSearchInput.value.trim()) {
+        userSearchInput.dispatchEvent(new Event('input'));
+      } else {
+        renderUsersTable(allLoadedUsers);
+      }
     }
     
     // --- Admin Loan Viewer Logic ---
@@ -358,7 +458,7 @@
       }
       
       if (!data || data.length === 0) {
-        issueBtn.style.display = 'inline-block';
+        issueBtn.style.display = 'inline-flex';
         ledgerContent.innerHTML = `
             <div style="text-align:center; padding: 60px; color:var(--text-muted);">
                 <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
@@ -384,10 +484,11 @@
       const l = ledgerData.loan;
       const payments = ledgerData.payments || [];
       
-      if (l.status === 'active') {
+      const hasActiveLoan = data.some(item => (item.status || '').toLowerCase() === 'active');
+      if (hasActiveLoan) {
           issueBtn.style.display = 'none';
       } else {
-          issueBtn.style.display = 'inline-block';
+          issueBtn.style.display = 'inline-flex';
       }
       
       const accountId = l.user_id ? parseInt(l.user_id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
@@ -564,8 +665,51 @@
     });
     if(closePsBtn) closePsBtn.addEventListener('click', () => psModal.classList.remove('active'));
     
+    // Issue New Loan Modal Trigger
+    const inlModal = document.getElementById('issue-new-loan-modal');
+    const closeInlBtn = document.getElementById('close-issue-loan-modal-btn');
+    const cancelInlBtn = document.getElementById('cancel-issue-loan-btn');
+    const closeInlModal = () => inlModal?.classList.remove('active');
+
+    if (closeInlBtn) closeInlBtn.addEventListener('click', closeInlModal);
+    if (cancelInlBtn) cancelInlBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeInlModal();
+    });
+
     document.getElementById('issue-new-loan-ledger-btn')?.addEventListener('click', () => {
       if (!lastViewedUserId) return;
+      if (!inlModal) return;
+
+      const u = allLoadedUsers.find(usr => usr.id === lastViewedUserId);
+      const cName = u ? (u.full_name || u.name || 'Customer') : 'Customer';
+      const accountId = lastViewedUserId.replace(/-/g, '').substring(0, 8);
+      const cLabel = document.getElementById('inl-customer-name');
+      if (cLabel) cLabel.textContent = `Customer: ${cName} (Ref: ${accountId})`;
+
+      const inlForm = document.getElementById('issue-new-loan-form');
+      if (inlForm) inlForm.reset();
+
+      const inlPhoneText = document.getElementById('inl-selected-phone-text');
+      if (inlPhoneText) {
+        inlPhoneText.textContent = 'Select model...';
+        inlPhoneText.style.color = 'var(--text-muted)';
+      }
+      if (document.getElementById('inl-loan-model')) document.getElementById('inl-loan-model').value = '';
+      if (document.getElementById('inl-loan-img')) document.getElementById('inl-loan-img').value = '';
+      if (document.getElementById('inl-term')) document.getElementById('inl-term').value = '24';
+      if (document.getElementById('inl-loan-preview')) document.getElementById('inl-loan-preview').style.display = 'none';
+      if (document.getElementById('inl-color-group')) document.getElementById('inl-color-group').style.display = 'none';
+      if (document.getElementById('inl-device-color')) document.getElementById('inl-device-color').value = '';
+      const swatchContainer = document.getElementById('inl-color-swatches');
+      if (swatchContainer) swatchContainer.innerHTML = '';
+
+      inlModal.classList.add('active');
+      lucide.createIcons();
+    });
+
+    // Open Phone Selector from Issue New Loan modal
+    document.getElementById('inl-open-phone-selector-btn')?.addEventListener('click', () => {
       phoneSelectionMode = 'loan';
       psModal.classList.add('active');
     });
@@ -586,49 +730,17 @@
           updateLoanPreview();
           renderUserColorSwatches(phone);
         } else if (phoneSelectionMode === 'loan') {
-          // Issue new loan API call
-          const doIssue = async () => {
-            const aLoading = document.getElementById('apple-loading-overlay');
-            const aSuccess = document.getElementById('apple-success-modal');
-            const aError = document.getElementById('apple-error-modal');
-            const aErrMsg = document.getElementById('apple-error-msg');
-            
-            aLoading.querySelector('h3').textContent = 'Issuing Loan...';
-            aLoading.classList.add('active');
-            
-            try {
-              const res = await fetch('/loans', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  user_id: lastViewedUserId,
-                  device_name: phone,
-                  device_image: imgSrc
-                })
-              });
-              if (!res.ok) throw new Error('Failed to issue loan');
-              
-              aLoading.classList.remove('active');
-              aSuccess.querySelector('h2').textContent = 'Loan Issued';
-              aSuccess.querySelector('p').textContent = 'The new loan has been successfully added to the user.';
-              aSuccess.classList.add('active');
-              
-              loadUserLoanDetails(lastViewedUserId);
-              loadUsers();
-            } catch (err) {
-              console.error(err);
-              aLoading.classList.remove('active');
-              aErrMsg.textContent = err.message;
-              aError.querySelector('h2').textContent = 'Issue Failed';
-              aError.classList.add('active');
-            }
-          };
-
-          if (window.showCustomConfirm) {
-            window.showCustomConfirm(`Are you sure you want to issue a new ${phone} loan to this user?`, doIssue, 'Issue Loan');
-          } else if (confirm(`Are you sure you want to issue a new ${phone} loan to this user?`)) {
-            doIssue();
+          const inlModel = document.getElementById('inl-loan-model');
+          const inlPhoneText = document.getElementById('inl-selected-phone-text');
+          const inlImg = document.getElementById('inl-loan-img');
+          if (inlModel) inlModel.value = phone;
+          if (inlPhoneText) {
+            inlPhoneText.textContent = phone;
+            inlPhoneText.style.color = 'var(--text-main)';
           }
+          if (inlImg) inlImg.value = imgSrc;
+          updateIssueLoanPreview();
+          renderIssueLoanColorSwatches(phone);
         }
       });
     }
@@ -721,15 +833,187 @@
         btn.addEventListener('click', () => {
           swatchContainer.querySelectorAll('button').forEach(b => {
             b.style.border = '2px solid var(--border)';
-            b.style.background = '#fff';
+            b.style.background = 'var(--surface)';
             b.style.color = 'var(--text-main)';
           });
           btn.style.border = '2px solid #ec4899';
-          btn.style.background = '#fdf2f8';
-          btn.style.color = '#db2777';
+          btn.style.background = 'rgba(236, 72, 153, 0.15)';
+          btn.style.color = '#f472b6';
           colorHidden.value = colorName;
         });
         swatchContainer.appendChild(btn);
+      });
+    }
+
+    function updateIssueLoanPreview() {
+      const modelInput = document.getElementById('inl-loan-model');
+      const model = modelInput ? modelInput.value : '';
+      const termSelect = document.getElementById('inl-term');
+      const term = termSelect ? parseInt(termSelect.value) || 24 : 24;
+      const previewBox = document.getElementById('inl-loan-preview');
+      if (!model) {
+        if (previewBox) previewBox.style.display = 'none';
+        return;
+      }
+      const dev = allDevices.find(d => d.name.toLowerCase() === model.toLowerCase());
+      const srp = dev ? parseFloat(dev.srp) : 49990;
+      const monthly = (term === 24 && dev && dev.monthly)
+        ? parseFloat(dev.monthly)
+        : Math.round((srp / term) * 100) / 100;
+
+      const pName = document.getElementById('inl-preview-device-name');
+      const pSrp = document.getElementById('inl-preview-device-srp');
+      const pMonthly = document.getElementById('inl-preview-monthly');
+      if (pName) pName.textContent = model;
+      if (pSrp) pSrp.textContent = `SRP: ₱${srp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      if (pMonthly) pMonthly.textContent = `₱${monthly.toLocaleString(undefined, {minimumFractionDigits: 2})} / mo (${term} mos)`;
+      if (previewBox) previewBox.style.display = 'block';
+    }
+    document.getElementById('inl-term')?.addEventListener('change', updateIssueLoanPreview);
+
+    function renderIssueLoanColorSwatches(phoneName) {
+      const colorGroup = document.getElementById('inl-color-group');
+      const swatchContainer = document.getElementById('inl-color-swatches');
+      const colorHidden = document.getElementById('inl-device-color');
+      if (!colorGroup || !swatchContainer || !colorHidden) return;
+
+      colorHidden.value = '';
+      swatchContainer.innerHTML = '';
+
+      // Match model name to APPLE_MODEL_COLORS keys (longest match first)
+      let matchedColors = null;
+      const nameNorm = phoneName.trim().toLowerCase();
+      const sortedKeys = Object.keys(APPLE_MODEL_COLORS).sort((a, b) => b.length - a.length);
+      for (const modelKey of sortedKeys) {
+        if (nameNorm.includes(modelKey.toLowerCase())) {
+          matchedColors = APPLE_MODEL_COLORS[modelKey];
+          break;
+        }
+      }
+
+      if (!matchedColors || Object.keys(matchedColors).length === 0) {
+        colorGroup.style.display = 'none';
+        return;
+      }
+
+      colorGroup.style.display = 'block';
+      Object.entries(matchedColors).forEach(([colorName, hex]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = colorName;
+        btn.dataset.colorName = colorName;
+        btn.style.cssText = `
+          display:flex; align-items:center; gap:7px; padding:6px 12px; border-radius:20px;
+          border:2px solid var(--border); background:var(--surface); cursor:pointer; font-size:12px;
+          font-weight:600; color:var(--text-main); transition:all .15s;
+        `;
+        btn.innerHTML = `<span style="width:16px;height:16px;border-radius:50%;background:${hex};border:1px solid rgba(0,0,0,.2);flex-shrink:0;"></span>${colorName}`;
+        btn.addEventListener('click', () => {
+          swatchContainer.querySelectorAll('button').forEach(b => {
+            b.style.border = '2px solid var(--border)';
+            b.style.background = 'var(--surface)';
+            b.style.color = 'var(--text-main)';
+          });
+          btn.style.border = '2px solid #ec4899';
+          btn.style.background = 'rgba(236, 72, 153, 0.15)';
+          btn.style.color = '#f472b6';
+          colorHidden.value = colorName;
+        });
+        swatchContainer.appendChild(btn);
+      });
+    }
+
+    // Issue New Loan Form Submission
+    const inlFormEl = document.getElementById('issue-new-loan-form');
+    if (inlFormEl) {
+      inlFormEl.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const aLoading = document.getElementById('apple-loading-overlay');
+        const aSuccess = document.getElementById('apple-success-modal');
+        const aError = document.getElementById('apple-error-modal');
+        const aErrMsg = document.getElementById('apple-error-msg');
+        const loadingTitle = aLoading?.querySelector('h3');
+        const succTitle = aSuccess?.querySelector('h2');
+        const succDesc = aSuccess?.querySelector('p');
+
+        if (!lastViewedUserId) {
+          if (aErrMsg) aErrMsg.textContent = 'No customer selected to issue loan to.';
+          aError?.classList.add('active');
+          return;
+        }
+
+        const model = document.getElementById('inl-loan-model')?.value;
+        if (!model) {
+          if (aErrMsg) aErrMsg.textContent = 'Please select a loan model.';
+          aError?.classList.add('active');
+          return;
+        }
+
+        const colorGroup = document.getElementById('inl-color-group');
+        const deviceColorInput = document.getElementById('inl-device-color');
+        if (colorGroup && colorGroup.style.display !== 'none') {
+          if (!deviceColorInput || !deviceColorInput.value) {
+            if (aErrMsg) aErrMsg.textContent = 'Please select a color for the loan unit.';
+            aError?.classList.add('active');
+            return;
+          }
+        }
+
+        const term = parseInt(document.getElementById('inl-term')?.value) || 24;
+        const dev = allDevices.find(d => d.name.toLowerCase() === model.toLowerCase());
+        const srp = dev ? parseFloat(dev.srp) : 49990;
+        const monthly = (term === 24 && dev && dev.monthly)
+          ? parseFloat(dev.monthly)
+          : Math.round((srp / term) * 100) / 100;
+        let img = document.getElementById('inl-loan-img')?.value || (dev ? dev.image : '');
+
+        const submitBtnInl = document.getElementById('submit-issue-loan-btn');
+        if (submitBtnInl) submitBtnInl.disabled = true;
+
+        if (loadingTitle) loadingTitle.textContent = 'Issuing Loan...';
+        aLoading?.classList.add('active');
+
+        try {
+          const res = await fetch('/loans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: lastViewedUserId,
+              device_name: model,
+              device_color: deviceColorInput?.value || null,
+              device_image: img,
+              total_amount: srp,
+              monthly_payment: monthly,
+              term_months: term,
+              status: 'active'
+            })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to issue new loan');
+          }
+
+          aLoading?.classList.remove('active');
+          closeInlModal();
+
+          if (succTitle) succTitle.textContent = 'Loan Issued';
+          if (succDesc) succDesc.textContent = `A new loan for ${model} (${term} mos) has been successfully issued.`;
+          aSuccess?.classList.add('active');
+
+          if (lastViewedUserId) {
+            await loadUserLoanDetails(lastViewedUserId);
+          }
+          loadUsers();
+        } catch (err) {
+          console.error(err);
+          aLoading?.classList.remove('active');
+          if (aErrMsg) aErrMsg.textContent = err.message || 'An error occurred while issuing the loan.';
+          aError?.classList.add('active');
+        } finally {
+          if (submitBtnInl) submitBtnInl.disabled = false;
+        }
       });
     }
 
@@ -761,6 +1045,10 @@
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i data-lucide="loader" class="spin" style="width:16px; animation: spin 1s linear infinite;"></i> Creating...';
       
+      const loadingTitle = aLoading?.querySelector('h3');
+      const succTitle = aSuccess?.querySelector('h2');
+      const succDesc = aSuccess?.querySelector('p');
+      if (loadingTitle) loadingTitle.textContent = 'Creating Account...';
       aLoading.classList.add('active');
       
       try {
@@ -793,6 +1081,8 @@
 
         aLoading.classList.remove('active');
         closeModal();
+        if (succTitle) succTitle.textContent = 'Account Created';
+        if (succDesc) succDesc.textContent = 'The user has been successfully added to the system.';
         aSuccess.classList.add('active');
         loadUsers();
 

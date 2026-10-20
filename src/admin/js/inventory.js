@@ -654,78 +654,127 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ─── RENDER DEVICES TABLE ─────────────────────────────────────────────────────
+  let allLoadedDevices = [];
+
+  function renderDevicesTable(devices) {
+    tbody.innerHTML = '';
+    if (!devices || devices.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No devices found matching your search.</td></tr>';
+      return;
+    }
+
+    devices.forEach(d => {
+      const stockBadge = d.stock > 0 
+        ? `<span style="font-size:12px; color:var(--success); font-weight:600;">${d.stock} In Stock</span>` 
+        : `<span style="font-size:12px; color:var(--danger); font-weight:600;">Out of Stock</span>`;
+        
+      let imgPath = d.image || '../../images/phones/appledb/iphone_16.png';
+      if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
+        const clean = imgPath.replace(/^(\.\.\/)+/, '');
+        imgPath = `../../${clean}`;
+      }
+
+      // Color dots
+      const colorDots = (d.colors && d.colors.length > 0)
+        ? d.colors.slice(0, 5).map(c => {
+            const preset = PRESET_COLORS.find(p => p.name.toLowerCase() === c.toLowerCase());
+            const hex = preset ? preset.hex : '#94a3b8';
+            return `<span title="${c}" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:${hex};border:1px solid rgba(255,255,255,0.25);margin-right:3px;"></span>`;
+          }).join('') + (d.colors.length > 5 ? `<span style="font-size:11px;color:var(--text-muted);">+${d.colors.length - 5}</span>` : '')
+        : '<span style="font-size:11px;color:var(--text-muted);">—</span>';
+
+      const isStudioImg = d.image && (d.image.includes('img.appledb.dev') || d.image.includes('appledb/'));
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; padding:2px; position:relative;">
+              <img src="${imgPath}" alt="${d.name}" style="max-width:100%; max-height:100%; object-fit:contain;" onerror="this.src='../../images/phones/appledb/iphone_16.png'">
+              ${isStudioImg ? '<span title="Official AppleDB Studio Render" style="position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#ec4899;border:1px solid #18181b;"></span>' : ''}
+            </div>
+            <div>
+              <span style="font-weight:700; color:var(--text-main); display:block;">${d.name}</span>
+              ${d.appledb_id ? `<span style="font-size:10px; color:var(--text-muted); font-family:monospace;">${d.appledb_id}</span>` : ''}
+            </div>
+          </div>
+        </td>
+        <td style="color:var(--text-muted); font-weight:500;">${d.storage || '-'}</td>
+        <td style="font-weight:700; color:var(--text-main);">₱${Number(d.srp).toLocaleString()}</td>
+        <td><div style="display:flex;align-items:center;gap:2px;">${colorDots}</div></td>
+        <td>${stockBadge}</td>
+        <td>${d.status === 'upcoming' ? '<span style="color:#eab308;font-weight:700;background:rgba(234,179,8,0.12);padding:3px 8px;border-radius:12px;font-size:11px;">Upcoming</span>' : '<span style="color:#22c55e;font-weight:700;background:rgba(34,197,94,0.12);padding:3px 8px;border-radius:12px;font-size:11px;">Available</span>'}</td>
+        <td>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary edit-btn" style="padding:5px 10px; font-size:12px; border-radius:6px;">Edit</button>
+            <button class="btn-secondary delete-btn" style="padding:5px 10px; font-size:12px; color:#ef4444; border-color:rgba(239,68,68,0.3); border-radius:6px;">Delete</button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.edit-btn').addEventListener('click', () => {
+        window.editDevice(d.id, d.name, d.appledb_id, d.image, d.storage, d.srp, d.stock, d.status, d.colors || [], d.specs);
+      });
+
+      tr.querySelector('.delete-btn').addEventListener('click', () => {
+        window.deleteDevice(d.id);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ─── SEARCH BAR INVENTORY FILTER ──────────────────────────────────────────────
+  const inventorySearch = document.getElementById('inventory-search-input');
+  if (inventorySearch) {
+    inventorySearch.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderDevicesTable(allLoadedDevices);
+        return;
+      }
+      const filtered = allLoadedDevices.filter(d => {
+        const name = (d.name || '').toLowerCase();
+        const appledb = (d.appledb_id || '').toLowerCase();
+        const storage = (d.storage || '').toLowerCase();
+        const srp = String(d.srp || '');
+        const status = (d.status || '').toLowerCase();
+        const colors = (d.colors || []).join(' ').toLowerCase();
+        return name.includes(q) || appledb.includes(q) || storage.includes(q) || srp.includes(q) || status.includes(q) || colors.includes(q);
+      });
+      renderDevicesTable(filtered);
+    });
+  }
+
   // ─── LOAD DEVICES TABLE ───────────────────────────────────────────────────────
   async function loadDevices() {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">Loading devices...</td></tr>';
     try {
       const res = await fetch('/api/devices');
-      const devices = await res.json();
+      allLoadedDevices = await res.json();
       
-      tbody.innerHTML = '';
-      if (!devices || devices.length === 0) {
+      if (!allLoadedDevices || allLoadedDevices.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No devices found in inventory. Click "+ Add New Device" above.</td></tr>';
         return;
       }
 
-      devices.forEach(d => {
-        const stockBadge = d.stock > 0 
-          ? `<span style="font-size:12px; color:var(--success); font-weight:600;">${d.stock} In Stock</span>` 
-          : `<span style="font-size:12px; color:var(--danger); font-weight:600;">Out of Stock</span>`;
-          
-        let imgPath = d.image || '../../images/phones/appledb/iphone_16.png';
-        if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
-          const clean = imgPath.replace(/^(\.\.\/)+/, '');
-          imgPath = `../../${clean}`;
-        }
-
-        // Color dots
-        const colorDots = (d.colors && d.colors.length > 0)
-          ? d.colors.slice(0, 5).map(c => {
-              const preset = PRESET_COLORS.find(p => p.name.toLowerCase() === c.toLowerCase());
-              const hex = preset ? preset.hex : '#94a3b8';
-              return `<span title="${c}" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:${hex};border:1px solid rgba(255,255,255,0.25);margin-right:3px;"></span>`;
-            }).join('') + (d.colors.length > 5 ? `<span style="font-size:11px;color:var(--text-muted);">+${d.colors.length - 5}</span>` : '')
-          : '<span style="font-size:11px;color:var(--text-muted);">—</span>';
-
-        const isStudioImg = d.image && (d.image.includes('img.appledb.dev') || d.image.includes('appledb/'));
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div style="width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; padding:2px; position:relative;">
-                <img src="${imgPath}" alt="${d.name}" style="max-width:100%; max-height:100%; object-fit:contain;" onerror="this.src='../../images/phones/appledb/iphone_16.png'">
-                ${isStudioImg ? '<span title="Official AppleDB Studio Render" style="position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#ec4899;border:1px solid #18181b;"></span>' : ''}
-              </div>
-              <div>
-                <span style="font-weight:700; color:var(--text-main); display:block;">${d.name}</span>
-                ${d.appledb_id ? `<span style="font-size:10px; color:var(--text-muted); font-family:monospace;">${d.appledb_id}</span>` : ''}
-              </div>
-            </div>
-          </td>
-          <td style="color:var(--text-muted); font-weight:500;">${d.storage || '-'}</td>
-          <td style="font-weight:700; color:var(--text-main);">₱${Number(d.srp).toLocaleString()}</td>
-          <td><div style="display:flex;align-items:center;gap:2px;">${colorDots}</div></td>
-          <td>${stockBadge}</td>
-          <td>${d.status === 'upcoming' ? '<span style="color:#eab308;font-weight:700;background:rgba(234,179,8,0.12);padding:3px 8px;border-radius:12px;font-size:11px;">Upcoming</span>' : '<span style="color:#22c55e;font-weight:700;background:rgba(34,197,94,0.12);padding:3px 8px;border-radius:12px;font-size:11px;">Available</span>'}</td>
-          <td>
-            <div style="display:flex; gap:8px;">
-              <button class="btn-secondary edit-btn" style="padding:5px 10px; font-size:12px; border-radius:6px;">Edit</button>
-              <button class="btn-secondary delete-btn" style="padding:5px 10px; font-size:12px; color:#ef4444; border-color:rgba(239,68,68,0.3); border-radius:6px;">Delete</button>
-            </div>
-          </td>
-        `;
-
-        tr.querySelector('.edit-btn').addEventListener('click', () => {
-          window.editDevice(d.id, d.name, d.appledb_id, d.image, d.storage, d.srp, d.stock, d.status, d.colors || [], d.specs);
+      // If search bar has active filter, apply it
+      if (inventorySearch && inventorySearch.value.trim()) {
+        const q = inventorySearch.value.toLowerCase().trim();
+        const filtered = allLoadedDevices.filter(d => {
+          const name = (d.name || '').toLowerCase();
+          const appledb = (d.appledb_id || '').toLowerCase();
+          const storage = (d.storage || '').toLowerCase();
+          const srp = String(d.srp || '');
+          const status = (d.status || '').toLowerCase();
+          const colors = (d.colors || []).join(' ').toLowerCase();
+          return name.includes(q) || appledb.includes(q) || storage.includes(q) || srp.includes(q) || status.includes(q) || colors.includes(q);
         });
-
-        tr.querySelector('.delete-btn').addEventListener('click', () => {
-          window.deleteDevice(d.id);
-        });
-
-        tbody.appendChild(tr);
-      });
+        renderDevicesTable(filtered);
+      } else {
+        renderDevicesTable(allLoadedDevices);
+      }
     } catch (err) {
       console.error('Error loading devices:', err);
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:30px;">Failed to load inventory.</td></tr>`;

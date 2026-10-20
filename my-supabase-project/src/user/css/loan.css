@@ -136,3 +136,66 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* ━━━ PREVIOUS LOANS & ACCORDION ━━━ */
+.prev-loans-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.prev-loans-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.prev-loan-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.prev-loan-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.prev-loan-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    gap: 16px;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+.prev-loan-toggle:hover {
+    background: #f1f5f9;
+}
+
+.prev-loan-details {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    animation: fadeIn 0.25s ease;
+}
+
+.prev-loan-details.open {
+    display: block;
+}
+
+.prev-chevron {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prev-chevron.open {
+    transform: rotate(180deg);
+}

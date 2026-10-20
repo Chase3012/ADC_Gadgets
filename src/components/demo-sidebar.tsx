@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { ShoppingBag, UserCog, CreditCard, HelpCircle, LogOut } from "lucide-react";
+import { ShoppingBag, UserCog, CreditCard, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -26,13 +26,6 @@ export function SidebarDemo() {
       href: "/src/user/loan.html",
       icon: (
         <CreditCard className="text-white h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "Support",
-      href: "/src/user/support.html",
-      icon: (
-        <HelpCircle className="text-white h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

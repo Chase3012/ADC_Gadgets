@@ -115,15 +115,14 @@
   <main class="main">
     <header class="header">
       <div class="header-left">
-        <p class="page-subtitle">GOOD MORNING, MARCO</p>
+        <p class="page-subtitle">GOOD MORNING, ADMIN</p>
         <h1 class="page-title">Loan Overview</h1>
       </div>
       <div class="header-right" style="display:flex; align-items:center; gap:16px;">
         <div style="position:relative;">
-          <input type="text" placeholder="Search loans, customers..." style="color: var(--text-main); background: var(--surface); padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:220px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+          <i data-lucide="search" style="position:absolute; left:12px; top:11px; width:15px; height:15px; color:var(--text-muted); pointer-events:none;"></i>
+          <input type="text" id="dashboard-search-input" placeholder="Search overview loans, payments..." style="color: var(--text-main); background: var(--surface); padding:10px 16px 10px 36px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:240px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
         </div>
-        
-        
         <div style="width:36px; height:36px; background:#0F172A; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">AD</div>
       </div>
     </header>
@@ -323,7 +322,7 @@
               <div class="chat-search-bar">
                 <div style="position:relative; flex:1;">
                   <i data-lucide="search" style="position:absolute; left:12px; top:10px; width:16px; height:16px; color:var(--text-muted);"></i>
-                  <input type="text" id="chat-search-input" placeholder="Search..." style="padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; color: var(--text-main); background: var(--surface); width:220px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+                  <input type="text" id="chat-search-input" placeholder="Search conversations..." style="padding:10px 16px 10px 36px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; color: var(--text-main); background: var(--surface); width:220px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
                 </div>
                 <i data-lucide="edit-3" class="icon-action"></i>
                 <i data-lucide="filter" class="icon-action"></i>
@@ -434,45 +433,79 @@ async function loadStats() {
     if (!res.ok) throw new Error('Failed');
     const d = await res.json();
 
-    // Analytics KPIs
-    
-    document.getElementById('kpi-srp').textContent     = peso(d.totalSrp);
+    // Safe element updater helpers
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const setWidth = (id, val) => { const el = document.getElementById(id); if (el) el.style.width = val; };
+
+    setTxt('kpi-srp', peso(d.totalSrp || 0));
     
     // Collection Progress
     const totalActive = d.activeLoans || 1; // avoid div by zero
-    document.getElementById('prog-on-time-label').textContent = d.onTime;
-    document.getElementById('prog-on-time-bar').style.width = ((d.onTime / totalActive) * 100) + '%';
+    setTxt('prog-on-time-label', d.onTime ?? 0);
+    setWidth('prog-on-time-bar', (((d.onTime || 0) / totalActive) * 100) + '%');
     
-    document.getElementById('prog-due-soon-label').textContent = d.dueSoon;
-    document.getElementById('prog-due-soon-bar').style.width = ((d.dueSoon / totalActive) * 100) + '%';
+    setTxt('prog-due-soon-label', d.dueSoon ?? 0);
+    setWidth('prog-due-soon-bar', (((d.dueSoon || 0) / totalActive) * 100) + '%');
     
-    document.getElementById('prog-late-label').textContent = d.late;
-    document.getElementById('prog-late-bar').style.width = ((d.late / totalActive) * 100) + '%';
+    setTxt('prog-late-label', d.late ?? 0);
+    setWidth('prog-late-bar', (((d.late || 0) / totalActive) * 100) + '%');
 
-    document.getElementById('kpi-balance').textContent  = peso(d.totalRemainingBalance);
-    document.getElementById('kpi-unread').textContent    = d.unreadMessages;
-    document.getElementById('kpi-monthly').textContent  = peso(d.monthlyCollections);
+    setTxt('kpi-balance', peso(d.totalRemainingBalance || 0));
+    setTxt('kpi-unread', d.unreadMessages ?? 0);
+    setTxt('kpi-monthly', peso(d.monthlyCollections || 0));
 
-    document.getElementById('stat-active').textContent    = d.activeLoans + ' loans';
-    document.getElementById('stat-completed').textContent = d.completedLoans + ' loans';
+    setTxt('stat-active', (d.activeLoans || 0) + ' loans');
+    setTxt('stat-completed', (d.completedLoans || 0) + ' loans');
 
-    const totalLoans = d.activeLoans + d.completedLoans;
-    const rate = totalLoans > 0 ? Math.round((d.completedLoans / totalLoans) * 100) : 0;
-    document.getElementById('stat-rate').textContent = rate + '%';
+    const totalLoans = (d.activeLoans || 0) + (d.completedLoans || 0);
+    const rate = totalLoans > 0 ? Math.round(((d.completedLoans || 0) / totalLoans) * 100) : 0;
+    setTxt('stat-rate', rate + '%');
 
-    const collected = d.totalSrp - d.totalRemainingBalance;
+    const collected = (d.totalSrp || 0) - (d.totalRemainingBalance || 0);
     const progPct   = d.totalSrp > 0 ? Math.round((collected / d.totalSrp) * 100) : 0;
-    document.getElementById('prog-label').textContent = progPct + '%';
-    document.getElementById('prog-fill').style.width  = progPct + '%';
-    document.getElementById('prog-sub').textContent   = pesoFull(collected) + ' collected of ' + pesoFull(d.totalSrp);
+    setTxt('prog-label', progPct + '%');
+    setWidth('prog-fill', progPct + '%');
+    setTxt('prog-sub', pesoFull(collected) + ' collected of ' + pesoFull(d.totalSrp || 0));
 
-    // Recent Loans
-    const list = document.getElementById('recent-loans-list');
-    if (!d.recentLoans || d.recentLoans.length === 0) {
-      list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px 0;">No loan records found.</p>';
+    // Cache and render lists with search capability
+    window.lastDashboardData = d;
+    const currentQuery = (document.getElementById('dashboard-search-input')?.value || '').trim().toLowerCase();
+    renderDashboardLists(d, currentQuery);
+
+    // Sales KPIs — use actual payments collected, not just SRP
+    const totalUnits = d.totalLoans || ((d.activeLoans || 0) + (d.completedLoans || 0));
+    setTxt('sales-kpi-srp', peso(d.totalPaymentsCollected || 0));
+    setTxt('sales-kpi-units', totalUnits);
+    setTxt('sales-kpi-avg', totalUnits > 0 ? peso((d.totalSrp || 0) / totalUnits) : '₱0');
+    setTxt('sales-kpi-monthly', peso(d.monthlyCollections || 0));
+
+  } catch (err) {
+    console.error('Dashboard load error:', err);
+    document.getElementById('kpi-srp').textContent = 'Error';
+  }
+}
+
+function renderDashboardLists(d, query = '') {
+  if (!d) return;
+
+  // 1. Recent Loans
+  const list = document.getElementById('recent-loans-list');
+  if (list) {
+    let recentLoans = d.recentLoans || [];
+    if (query) {
+      recentLoans = recentLoans.filter(l => {
+        const name = (l.full_name || l.email || '').toLowerCase();
+        const dev = (l.device_name || '').toLowerCase();
+        const col = (l.device_color || '').toLowerCase();
+        const st = (l.status || '').toLowerCase();
+        return name.includes(query) || dev.includes(query) || col.includes(query) || st.includes(query);
+      });
+    }
+
+    if (recentLoans.length === 0) {
+      list.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:20px 0;">${query ? 'No matching recent loans found.' : 'No loan records found.'}</p>`;
     } else {
-      list.innerHTML = d.recentLoans.map(l => {
-        // Better name fallback — never show "Unknown"
+      list.innerHTML = recentLoans.map(l => {
         const name = l.full_name 
           ? l.full_name 
           : l.email 
@@ -492,49 +525,60 @@ async function loadStats() {
         </div>`;
       }).join('');
     }
+  }
 
-    
-    // Populate Upcoming Payments using recentLoans for now
-    const upcomingList = document.getElementById('upcoming-payments-list');
-    if (upcomingList) {
-      if (!d.recentLoans || d.recentLoans.length === 0) {
-        upcomingList.innerHTML = '<div style="font-size:12px; color:var(--text-muted);">No upcoming payments</div>';
-      } else {
-        // Show up to 4 recent active loans as "upcoming payments" for demonstration
-        upcomingList.innerHTML = d.recentLoans.filter(l => l.status === 'active').slice(0, 4).map(l => {
-          const name = l.full_name || l.email?.split('@')[0] || 'User';
-          return `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-              <div style="display:flex; gap:12px; align-items:center;">
-                <div style="width:32px; height:32px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">${initials(name)}</div>
-                <div>
-                  <div style="font-size:13px; font-weight:600;">${name}</div>
-                  <div style="font-size:11px; color:var(--text-muted);">${l.device_name || 'Device'}${l.device_color ? ` - ${l.device_color}` : ''} · due soon</div>
-                </div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-size:13px; font-weight:700;">${pesoFull(l.monthly_payment)}</div>
-                <div style="font-size:11px; color:var(--text-muted);">This month</div>
+  // 2. Upcoming Payments
+  const upcomingList = document.getElementById('upcoming-payments-list');
+  if (upcomingList) {
+    let activeLoans = (d.recentLoans || []).filter(l => l.status === 'active');
+    if (query) {
+      activeLoans = activeLoans.filter(l => {
+        const name = (l.full_name || l.email || '').toLowerCase();
+        const dev = (l.device_name || '').toLowerCase();
+        return name.includes(query) || dev.includes(query);
+      });
+    }
+    if (activeLoans.length === 0) {
+      upcomingList.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px 0;">${query ? 'No matching upcoming payments' : 'No upcoming payments'}</div>`;
+    } else {
+      upcomingList.innerHTML = activeLoans.slice(0, 4).map(l => {
+        const name = l.full_name || l.email?.split('@')[0] || 'User';
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div style="width:32px; height:32px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">${initials(name)}</div>
+              <div>
+                <div style="font-size:13px; font-weight:600;">${name}</div>
+                <div style="font-size:11px; color:var(--text-muted);">${l.device_name || 'Device'}${l.device_color ? ` - ${l.device_color}` : ''} · due soon</div>
               </div>
             </div>
-          `;
-        }).join('');
-      }
+            <div style="text-align:right;">
+              <div style="font-size:13px; font-weight:700;">${pesoFull(l.monthly_payment)}</div>
+              <div style="font-size:11px; color:var(--text-muted);">This month</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
+  }
 
-    // Sales KPIs — use actual payments collected, not just SRP
-    const totalUnits = d.totalLoans || (d.activeLoans + d.completedLoans);
-    document.getElementById('sales-kpi-srp').textContent     = peso(d.totalPaymentsCollected || 0);
-    document.getElementById('sales-kpi-units').textContent   = totalUnits;
-    document.getElementById('sales-kpi-avg').textContent     = totalUnits > 0 ? peso(d.totalSrp / totalUnits) : '₱0';
-    document.getElementById('sales-kpi-monthly').textContent = peso(d.monthlyCollections);
-
-    // Sales Table (Transactions History)
-    const tbody = document.getElementById('sales-table-body');
-    if (!d.recentPayments || d.recentPayments.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-muted);">No transactions found.</td></tr>';
+  // 3. Sales Table (Transactions History)
+  const tbody = document.getElementById('sales-table-body');
+  if (tbody) {
+    let payments = d.recentPayments || [];
+    if (query) {
+      payments = payments.filter(p => {
+        const name = (p.full_name || p.email || '').toLowerCase();
+        const dev = (p.device_name || '').toLowerCase();
+        const col = (p.device_color || '').toLowerCase();
+        const method = (p.payment_method || '').toLowerCase();
+        return name.includes(query) || dev.includes(query) || col.includes(query) || method.includes(query);
+      });
+    }
+    if (payments.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-muted);">${query ? 'No matching transactions found.' : 'No transactions found.'}</td></tr>`;
     } else {
-      tbody.innerHTML = d.recentPayments.map(p => {
+      tbody.innerHTML = payments.map(p => {
         const name   = p.full_name 
           ? p.full_name 
           : p.email 
@@ -542,7 +586,6 @@ async function loadStats() {
             : 'User #' + (p.user_id ? p.user_id.substring(0, 6) : '????');
         const email  = p.email || '';
         const dateStr = new Date(p.payment_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        
         const methodStr = p.payment_method ? `<div style="font-size:11px;color:var(--text-muted);font-weight:500;">via ${p.payment_method}</div>` : '';
         return `<tr style="border-bottom:1px solid var(--border);">
           <td style="padding:14px 8px;font-size:12px;color:var(--text-muted);">${dateStr}</td>
@@ -553,11 +596,17 @@ async function loadStats() {
         </tr>`;
       }).join('');
     }
-
-  } catch (err) {
-    console.error('Dashboard load error:', err);
-    document.getElementById('kpi-srp').textContent = 'Error';
   }
+}
+
+const dashSearchInput = document.getElementById('dashboard-search-input');
+if (dashSearchInput) {
+  dashSearchInput.addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    if (window.lastDashboardData) {
+      renderDashboardLists(window.lastDashboardData, q);
+    }
+  });
 }
 
 loadStats();

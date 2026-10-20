@@ -61,8 +61,8 @@
         </div>
         <div class="header-right" style="display:flex; align-items:center; gap:16px;">
           <div style="position:relative;">
-            <i data-lucide="search" style="position:absolute; left:12px; top:10px; width:16px; height:16px; color:var(--text-muted);"></i>
-            <input type="text" placeholder="Search loans, customers..." style="color: var(--text-main); background: var(--surface); padding:10px 16px 10px 36px; border-radius:20px; border:none; font-size:13px; outline:none; width:220px; background:var(--surface); box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <i data-lucide="search" style="position:absolute; left:12px; top:10px; width:16px; height:16px; color:var(--text-muted); pointer-events:none;"></i>
+            <input type="text" id="reports-search-input" placeholder="Search report metrics, series..." style="color: var(--text-main); background: var(--surface); padding:10px 16px 10px 36px; border-radius:20px; border:none; font-size:13px; outline:none; width:250px; background:var(--surface); box-shadow:0 1px 2px rgba(0,0,0,0.05);">
           </div>
           
           
@@ -217,102 +217,126 @@
           // 4. Closed out
           document.getElementById('rep-closed').textContent = `${stats.completedLoans} loans`;
 
-          // 5. Portfolio mix
-          const deviceCounts = {};
-          let totalPortfolio = 0;
-          loans.forEach(l => {
-              const name = l.device_name || 'Other';
-              let group = 'Other';
-              if(name.toLowerCase().includes('iphone 15')) group = 'iPhone 15 series';
-              else if(name.toLowerCase().includes('iphone 16')) group = 'iPhone 16 series';
-              else if(name.toLowerCase().includes('iphone 14')) group = 'iPhone 14 series';
-              else if(name.toLowerCase().includes('iphone')) group = 'iPhone 13 & older';
-              
-              deviceCounts[group] = (deviceCounts[group] || 0) + 1;
-              totalPortfolio++;
-          });
-          
-          const mixContainer = document.getElementById('portfolio-mix-container');
-          mixContainer.innerHTML = '';
-          
-          const sortedMix = Object.keys(deviceCounts).sort((a,b) => deviceCounts[b] - deviceCounts[a]);
-          
-          sortedMix.forEach(group => {
-              const count = deviceCounts[group];
-              const pct = Math.round((count / totalPortfolio) * 100);
-              
-              mixContainer.innerHTML += `
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                  <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:var(--text-main);">
-                    <span>${group}</span>
-                    <span style="color:var(--text-muted); font-weight:500;">${pct}%</span>
-                  </div>
-                  <div style="height:6px; background:var(--border); border-radius:4px; overflow:hidden;">
-                    <div style="height:100%; width:${pct}%; background:#6366f1; border-radius:4px;"></div>
-                  </div>
-                </div>
-              `;
-          });
-          if(sortedMix.length === 0) {
-              mixContainer.innerHTML = '<div style="color:var(--text-muted); font-size:13px;">No active loans to analyze.</div>';
-          }
-
-          // 6. Collections Chart
-          const chartContainer = document.getElementById('collections-chart');
-          chartContainer.innerHTML = '';
-          
-          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          const today = new Date();
-          
-          const last6Months = [];
-          for(let i = 5; i >= 0; i--) {
-              let m = today.getMonth() - i;
-              let y = today.getFullYear();
-              if (m < 0) {
-                  m += 12;
-                  y -= 1;
-              }
-              last6Months.push({
-                  month: m,
-                  year: y,
-                  label: monthNames[m],
-                  total: 0
-              });
-          }
-          
-          if(stats.recentPayments) {
-              stats.recentPayments.forEach(p => {
-                  const d = new Date(p.payment_date);
-                  const m = d.getMonth();
-                  const y = d.getFullYear();
-                  const target = last6Months.find(x => x.month === m && x.year === y);
-                  if(target) {
-                      target.total += parseFloat(p.amount_paid);
-                  }
-              });
-          }
-          
-          let maxTotal = Math.max(...last6Months.map(m => m.total));
-          if(maxTotal === 0) maxTotal = 100000;
-          
-          last6Months.forEach((data) => {
-              const heightPct = Math.max((data.total / maxTotal) * 100, 5);
-              const formattedTotal = data.total > 0 ? (data.total / 1000).toFixed(1) + 'k' : '0k';
-              
-              chartContainer.innerHTML += `
-                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:12px; height:100%;">
-                  <div style="font-size:11px; font-weight:600; color:var(--text-muted); opacity:${data.total > 0 ? 1 : 0.5}">${formattedTotal}</div>
-                  <div style="width:100%; max-width:100px; height:100%; background:transparent; display:flex; align-items:flex-end; border-radius:6px;">
-                    <div style="width:100%; height:${heightPct}%; background:#6366f1; border-radius:6px; transition:height 0.5s ease;"></div>
-                  </div>
-                  <div style="font-size:12px; font-weight:600; color:var(--text-muted);">${data.label}</div>
-                </div>
-              `;
-          });
+          // Store cached data and render views
+          window.lastReportsLoans = loans;
+          window.lastReportsStats = stats;
+          const currentQuery = (document.getElementById('reports-search-input')?.value || '').trim().toLowerCase();
+          renderReportsViews(loans, stats, currentQuery);
 
         } catch(e) {
           console.error('Error loading reports data', e);
         }
+      }
+
+      function renderReportsViews(loans, stats, query = '') {
+        // 5. Portfolio mix
+        const deviceCounts = {};
+        let totalPortfolio = 0;
+        loans.forEach(l => {
+            const name = l.device_name || 'Other';
+            let group = 'Other';
+            if(name.toLowerCase().includes('iphone 15')) group = 'iPhone 15 series';
+            else if(name.toLowerCase().includes('iphone 16')) group = 'iPhone 16 series';
+            else if(name.toLowerCase().includes('iphone 14')) group = 'iPhone 14 series';
+            else if(name.toLowerCase().includes('iphone')) group = 'iPhone 13 & older';
+            
+            deviceCounts[group] = (deviceCounts[group] || 0) + 1;
+            totalPortfolio++;
+        });
+        
+        const mixContainer = document.getElementById('portfolio-mix-container');
+        mixContainer.innerHTML = '';
+        
+        let sortedMix = Object.keys(deviceCounts).sort((a,b) => deviceCounts[b] - deviceCounts[a]);
+        if (query) {
+          sortedMix = sortedMix.filter(group => group.toLowerCase().includes(query));
+        }
+        
+        sortedMix.forEach(group => {
+            const count = deviceCounts[group];
+            const pct = Math.round((count / totalPortfolio) * 100);
+            
+            mixContainer.innerHTML += `
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:var(--text-main);">
+                  <span>${group}</span>
+                  <span style="color:var(--text-muted); font-weight:500;">${pct}%</span>
+                </div>
+                <div style="height:6px; background:var(--border); border-radius:4px; overflow:hidden;">
+                  <div style="height:100%; width:${pct}%; background:#6366f1; border-radius:4px;"></div>
+                </div>
+              </div>
+            `;
+        });
+        if(sortedMix.length === 0) {
+            mixContainer.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:12px;">${query ? 'No matching device series found.' : 'No active loans to analyze.'}</div>`;
+        }
+
+        // 6. Collections Chart
+        const chartContainer = document.getElementById('collections-chart');
+        chartContainer.innerHTML = '';
+        
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const today = new Date();
+        
+        const last6Months = [];
+        for(let i = 5; i >= 0; i--) {
+            let m = today.getMonth() - i;
+            let y = today.getFullYear();
+            if (m < 0) {
+                m += 12;
+                y -= 1;
+            }
+            last6Months.push({
+                month: m,
+                year: y,
+                label: monthNames[m],
+                total: 0
+            });
+        }
+        
+        if(stats.recentPayments) {
+            stats.recentPayments.forEach(p => {
+                const d = new Date(p.payment_date);
+                const m = d.getMonth();
+                const y = d.getFullYear();
+                const target = last6Months.find(x => x.month === m && x.year === y);
+                if(target) {
+                    target.total += parseFloat(p.amount_paid);
+                }
+            });
+        }
+        
+        let maxTotal = Math.max(...last6Months.map(m => m.total));
+        if(maxTotal === 0) maxTotal = 100000;
+        
+        last6Months.forEach((data) => {
+            const isMatch = !query || data.label.toLowerCase().includes(query);
+            const heightPct = Math.max((data.total / maxTotal) * 100, 5);
+            const formattedTotal = data.total > 0 ? (data.total / 1000).toFixed(1) + 'k' : '0k';
+            const barBg = (!query || isMatch) ? '#6366f1' : 'rgba(99, 102, 241, 0.2)';
+            const opacity = (!query || isMatch) ? (data.total > 0 ? 1 : 0.5) : 0.25;
+            
+            chartContainer.innerHTML += `
+              <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:12px; height:100%; transition: opacity 0.2s;">
+                <div style="font-size:11px; font-weight:600; color:var(--text-muted); opacity:${opacity}">${formattedTotal}</div>
+                <div style="width:100%; max-width:100px; height:100%; background:transparent; display:flex; align-items:flex-end; border-radius:6px;">
+                  <div style="width:100%; height:${heightPct}%; background:${barBg}; border-radius:6px; transition:height 0.5s ease;"></div>
+                </div>
+                <div style="font-size:12px; font-weight:600; color:${isMatch && query ? 'var(--pink)' : 'var(--text-muted)'};">${data.label}</div>
+              </div>
+            `;
+        });
+      }
+
+      const repSearch = document.getElementById('reports-search-input');
+      if (repSearch) {
+        repSearch.addEventListener('input', (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          if (window.lastReportsLoans && window.lastReportsStats) {
+            renderReportsViews(window.lastReportsLoans, window.lastReportsStats, q);
+          }
+        });
       }
       
       document.addEventListener('DOMContentLoaded', () => {
@@ -321,3 +345,4 @@
       });
     </script>
 </body>
+</html>

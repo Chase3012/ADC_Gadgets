@@ -1,8 +1,18 @@
 require('dotenv').config();
+
+// Global resilience handlers to prevent TLS socket / undici assertion crashes in Node 24
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION PREVENTED CRASH]:', err.message || err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[UNHANDLED REJECTION PREVENTED CRASH]:', reason);
+});
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const multer = require('multer');
 const { Pool } = require('@neondatabase/serverless');
 const { createClient } = require('@supabase/supabase-js');
@@ -30,6 +40,13 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_zFS0vR4esBQf@ep-lucky-waterfall-b36agqcv.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
 });
+
+// Ensure reset token and otp expiration columns exist in profiles table
+pool.query(`
+  ALTER TABLE profiles ALTER COLUMN otp_expires_at TYPE timestamp with time zone;
+  ALTER TABLE profiles ADD COLUMN IF NOT EXISTS reset_token text;
+  ALTER TABLE profiles ADD COLUMN IF NOT EXISTS reset_token_expires_at timestamp with time zone;
+`).catch(err => console.error('Reset token column check notice:', err.message));
 
 // Supabase client instance (with graceful fallback)
 const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_KEY)
@@ -148,6 +165,75 @@ const getOtpTemplate = (otp) => `
 </html>
 `;
 
+const getResetPasswordEmailTemplate = (resetUrl, recipientName = 'Customer') => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your ADC Gadgets Password</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #09090b; margin: 0; padding: 40px 16px; color: #f4f4f5;">
+    <div style="max-width: 540px; margin: 0 auto; background-color: #121217; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+        
+        <!-- Header -->
+        <div style="padding: 32px 32px 24px 32px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,65,145,0.12) 0%, rgba(255,65,145,0) 100%);">
+            <span style="display: inline-block; padding: 6px 14px; background: rgba(255,65,145,0.15); border: 1px solid rgba(255,65,145,0.3); border-radius: 9999px; color: #FF4191; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">ADC Security</span>
+            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Password Reset Request</h1>
+        </div>
+
+        <!-- Body Content -->
+        <div style="padding: 32px;">
+            <p style="font-size: 15px; line-height: 1.6; color: #e4e4e7; margin: 0 0 20px 0;">
+                Hello <strong>${recipientName}</strong>,
+            </p>
+            <p style="font-size: 15px; line-height: 1.6; color: #a1a1aa; margin: 0 0 28px 0;">
+                We received a request to reset your password for your <strong>ADC Gadgets</strong> account. Click the button below to choose a new password:
+            </p>
+
+            <!-- Reset Button CTA -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" target="_blank" style="display: inline-block; background-color: #FF4191; background-image: linear-gradient(135deg, #FF4191 0%, #E90074 100%); color: #ffffff; text-decoration: none; padding: 16px 36px; border-radius: 12px; font-weight: 700; font-size: 15px; letter-spacing: 0.3px; box-shadow: 0 8px 24px rgba(255, 65, 145, 0.35);">
+                    Reset Password
+                </a>
+            </div>
+
+            <!-- Security Warning Box -->
+            <div style="background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px 18px; margin: 28px 0;">
+                <p style="margin: 0 0 6px 0; color: #fca5a5; font-size: 13px; font-weight: 700; letter-spacing: 0.2px;">
+                    ⚠️ Security Notice & Warning
+                </p>
+                <p style="margin: 0; color: #d4d4d8; font-size: 13px; line-height: 1.55;">
+                    If you did <strong>not</strong> request this password reset, you can safely ignore this email. Your current password will remain completely secure. Never share or forward this link to anyone. This link will automatically expire in <strong>15 minutes</strong> for your protection.
+                </p>
+            </div>
+
+            <!-- Link Fallback -->
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px; margin-top: 24px;">
+                <p style="color: #71717a; font-size: 12px; line-height: 1.6; margin: 0 0 8px 0;">
+                    Button not working? Copy and paste this URL into your browser:
+                </p>
+                <p style="color: #FF4191; font-size: 12px; word-break: break-all; margin: 0;">
+                    <a href="${resetUrl}" style="color: #FF4191; text-decoration: underline;">${resetUrl}</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 20px 32px; background-color: #0b0b0f; border-top: 1px solid rgba(255, 255, 255, 0.06); text-align: center;">
+            <p style="color: #71717a; font-size: 12px; margin: 0 0 4px 0;">
+                &copy; 2026 ADC Gadgets. All rights reserved.
+            </p>
+            <p style="color: #52525b; font-size: 11px; margin: 0;">
+                Automated security transmission · Please do not reply to this email
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
+`;
+
 // Memory store removed for serverless compatibility
 
 app.post('/login', async (req, res) => {
@@ -182,8 +268,7 @@ app.post('/login', async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    await pool.query('UPDATE profiles SET otp_code = $1, otp_expires_at = $2 WHERE id = $3', [otp, expiresAt, user.id]);
+    await pool.query("UPDATE profiles SET otp_code = $1, otp_expires_at = NOW() + INTERVAL '10 minutes' WHERE id = $2", [otp, user.id]);
 
     try {
       const info = await transporter.sendMail({
@@ -213,8 +298,7 @@ app.post('/resend-otp', async (req, res) => {
 
     const user = result.rows[0];
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    await pool.query('UPDATE profiles SET otp_code = $1, otp_expires_at = $2 WHERE id = $3', [otp, expiresAt, userId]);
+    await pool.query("UPDATE profiles SET otp_code = $1, otp_expires_at = NOW() + INTERVAL '10 minutes' WHERE id = $2", [otp, userId]);
 
     try {
       const info = await transporter.sendMail({
@@ -237,7 +321,7 @@ app.post('/resend-otp', async (req, res) => {
 app.post('/verify-otp', async (req, res) => {
   const { userId, otp } = req.body;
   try {
-    const result = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
+    const result = await pool.query('SELECT *, (otp_expires_at < NOW()) AS is_expired FROM profiles WHERE id = $1', [userId]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     
     const user = result.rows[0];
@@ -245,11 +329,8 @@ app.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ error: 'No OTP found for this user' });
     }
 
-    const now = new Date();
-    const expires = new Date(user.otp_expires_at);
-
-    if (now > expires) return res.status(400).json({ error: 'OTP expired' });
-    if (user.otp_code !== otp) return res.status(400).json({ error: 'Invalid OTP.' });
+    if (user.is_expired) return res.status(400).json({ error: 'OTP expired' });
+    if (String(user.otp_code).trim() !== String(otp).trim()) return res.status(400).json({ error: 'Invalid OTP.' });
 
     // Clear OTP after successful verification
     await pool.query('UPDATE profiles SET otp_code = NULL, otp_expires_at = NULL WHERE id = $1', [userId]);
@@ -283,6 +364,140 @@ app.post('/reset-password', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// ─── FORGOT & RESET PASSWORD (EMAIL TOKEN FLOW) ──────────────────────────────
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  try {
+    const userRes = await pool.query('SELECT * FROM profiles WHERE LOWER(email) = LOWER($1)', [email.trim()]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ error: 'No account found with this email address.' });
+    }
+
+    const user = userRes.rows[0];
+
+    // Generate cryptographically secure random token (64 hex characters)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await pool.query(
+      'UPDATE profiles SET reset_token = $1, reset_token_expires_at = $2 WHERE id = $3',
+      [resetToken, expiresAt.toISOString(), user.id]
+    );
+
+    // Build the reset password URL
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const resetUrl = `${origin}/src/user/reset-password.html?token=${resetToken}`;
+
+    try {
+      await transporter.sendMail({
+        from: `"ADC Gadgets Security" <${process.env.SMTP_FROM || 'no-reply@adcgadgets.com'}>`,
+        to: user.email,
+        subject: 'Reset Your ADC Gadgets Password',
+        html: getResetPasswordEmailTemplate(resetUrl, user.full_name || 'Customer')
+      });
+      console.log(`Password reset link sent to: ${user.email}`);
+    } catch (emailErr) {
+      console.error('Failed to send reset email:', emailErr.message);
+      return res.status(500).json({ error: 'Failed to dispatch reset email. Please try again later.' });
+    }
+
+    res.json({ success: true, message: 'Password reset link sent to your registered Gmail account.' });
+  } catch (err) {
+    console.error('Error in /api/auth/forgot-password:', err);
+    res.status(500).json({ error: 'Server error processing password reset request.' });
+  }
+});
+
+app.get('/api/auth/verify-reset-token', async (req, res) => {
+  const { token } = req.query;
+  if (!token || typeof token !== 'string') {
+    return res.status(400).json({ valid: false, error: 'Reset token is required.' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT id, email, full_name, reset_token_expires_at FROM profiles WHERE reset_token = $1',
+      [token.trim()]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ valid: false, error: 'This reset link is invalid or has already been used.' });
+    }
+
+    const user = result.rows[0];
+    const now = new Date();
+    const expires = new Date(user.reset_token_expires_at);
+
+    if (now > expires) {
+      return res.status(400).json({ valid: false, error: 'This password reset link has expired (links are valid for 15 minutes). Please request a new link.' });
+    }
+
+    // Mask email for display in UI: e.g. j***e@gmail.com
+    const parts = user.email.split('@');
+    const namePart = parts[0];
+    const masked = namePart.length > 2
+      ? namePart[0] + '*'.repeat(namePart.length - 2) + namePart.slice(-1) + '@' + parts[1]
+      : user.email;
+
+    res.json({
+      valid: true,
+      email: user.email,
+      maskedEmail: masked,
+      name: user.full_name || 'Customer'
+    });
+  } catch (err) {
+    console.error('Error verifying reset token:', err);
+    res.status(500).json({ valid: false, error: 'Server error validating reset link.' });
+  }
+});
+
+app.post('/api/auth/reset-password-with-token', async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || typeof token !== 'string') {
+    return res.status(400).json({ error: 'Invalid or missing reset token.' });
+  }
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+  }
+
+  try {
+    const userRes = await pool.query(
+      'SELECT id, email, reset_token_expires_at FROM profiles WHERE reset_token = $1',
+      [token.trim()]
+    );
+
+    if (userRes.rows.length === 0) {
+      return res.status(400).json({ error: 'This reset link is invalid or has already been used. Please request a new one.' });
+    }
+
+    const user = userRes.rows[0];
+    const now = new Date();
+    const expires = new Date(user.reset_token_expires_at);
+
+    if (now > expires) {
+      return res.status(400).json({ error: 'This reset link has expired. Please request a new one.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Invalidate reset token immediately upon use and update password
+    await pool.query(
+      'UPDATE profiles SET password = $1, reset_token = NULL, reset_token_expires_at = NULL, is_first_login = false WHERE id = $2',
+      [hashedPassword, user.id]
+    );
+
+    console.log(`Password reset successfully for ${user.email}`);
+    res.json({ success: true, message: 'Password has been successfully reset! You can now log in.' });
+  } catch (err) {
+    console.error('Error in /api/auth/reset-password-with-token:', err);
+    res.status(500).json({ error: 'Failed to reset password. Please try again.' });
   }
 });
 
@@ -661,7 +876,7 @@ app.get('/loans', async (req, res) => {
 });
 
 app.post('/loans', async (req, res) => {
-  const { user_id, device_name, device_image, total_amount, monthly_payment, term_months, next_payment_date, status } = req.body;
+  const { user_id, device_name, device_color, device_image, total_amount, monthly_payment, term_months, next_payment_date, status } = req.body;
   try {
     const term = parseInt(term_months) || 24;
     let srp = total_amount ? parseFloat(total_amount) : null;
@@ -685,9 +900,9 @@ app.post('/loans', async (req, res) => {
     const nextDate = next_payment_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
     const result = await pool.query(
-      `INSERT INTO loans (user_id, device_name, device_image, total_amount, remaining_balance, monthly_payment, term_months, next_payment_date, status)
-       VALUES ($1, $2, $3, $4, $4, $5, $6, $7, $8) RETURNING *`,
-      [user_id, device_name, img, srp, monthly, term, nextDate, status || 'active']
+      `INSERT INTO loans (user_id, device_name, device_color, device_image, total_amount, remaining_balance, monthly_payment, term_months, next_payment_date, status)
+       VALUES ($1, $2, $3, $4, $5, $5, $6, $7, $8, $9) RETURNING *`,
+      [user_id, device_name, device_color || null, img, srp, monthly, term, nextDate, status || 'active']
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

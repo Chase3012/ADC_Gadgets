@@ -91,8 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (window.showToast) window.showToast('Payment was cancelled.', 'error');
         }
 
-
-
         try {
             const res = await fetch('/loans?user_id=' + user.id + '&all=true');
             if (!res.ok) throw new Error('Failed to fetch loans');
@@ -102,7 +100,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loanContainer.innerHTML = `
                     <div style="text-align:center; padding: 60px; color:var(--text-muted);">
                         <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px;"></i>
-                        <p>You have no active loans.</p>
+                        <p style="font-size:16px; font-weight:500;">You have no active loans.</p>
+                        <a href="devices.html" style="display:inline-flex; align-items:center; gap:8px; margin-top:16px; padding:10px 20px; background:var(--pink); color:#fff; border-radius:8px; font-weight:600; font-size:14px; text-decoration:none; box-shadow:0 4px 12px rgba(255,65,145,0.3);">
+                            <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i> Browse Devices
+                        </a>
                     </div>
                 `;
                 lucide.createIcons();
@@ -111,34 +112,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             loanContainer.innerHTML = '';
 
-            loans.forEach(loan => {
+            const activeLoans = loans.filter(l => l.status !== 'completed' && parseFloat(l.remaining_balance) >= 1);
+            const completedLoans = loans.filter(l => l.status === 'completed' || parseFloat(l.remaining_balance) < 1);
+
+            // Case 1: No active loans, but has completed loans
+            if (activeLoans.length === 0 && completedLoans.length > 0) {
+                const completeContainer = document.createElement('div');
+                completeContainer.className = 'loan-item';
+                completeContainer.style.borderBottom = 'none';
+                completeContainer.innerHTML = `
+                    <div style="text-align:center; padding:36px 20px; background:#f8fafc; border-radius:16px; border:1px solid #e2e8f0; margin-bottom:32px;">
+                        <div style="width:52px; height:52px; border-radius:50%; background:rgba(34,197,94,0.1); color:#16a34a; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+                            <i data-lucide="check-circle-2" style="width:28px; height:28px;"></i>
+                        </div>
+                        <h3 style="font-size:20px; font-weight:700; color:var(--text-main); margin-bottom:6px;">All Loans Completed</h3>
+                        <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">You have no active payments due. All your device installment contracts are fully settled.</p>
+                        <a href="devices.html" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:var(--pink); color:#fff; border-radius:8px; font-weight:600; font-size:14px; text-decoration:none; box-shadow:0 4px 12px rgba(255,65,145,0.3);">
+                            <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i> Browse New Devices
+                        </a>
+                    </div>
+                    ${buildPreviousLoansMarkup(completedLoans)}
+                `;
+                loanContainer.appendChild(completeContainer);
+                bindPreviousLoanToggles(completeContainer);
+                lucide.createIcons();
+                return;
+            }
+
+            // Case 2: User has active loans
+            activeLoans.forEach(loan => {
                 const progress = ((loan.total_amount - loan.remaining_balance) / loan.total_amount) * 100;
                 const nextDate = new Date(loan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const totalMonths    = loan.term_months ? parseInt(loan.term_months) : Math.ceil(loan.total_amount / loan.monthly_payment);
+                const totalMonths     = loan.term_months ? parseInt(loan.term_months) : Math.ceil(loan.total_amount / loan.monthly_payment);
                 const monthsRemaining = Math.ceil(loan.remaining_balance / loan.monthly_payment);
-                const monthsPaid     = Math.max(0, totalMonths - monthsRemaining);
-                const imgPath = loan.device_image.includes('/') ? loan.device_image : `/images/phones/${loan.device_image}`;
+                const monthsPaid      = Math.max(0, totalMonths - monthsRemaining);
+                const imgPath = loan.device_image && loan.device_image.includes('/') ? loan.device_image : `/images/phones/${loan.device_image || 'default.png'}`;
 
                 const item = document.createElement('div');
                 item.className = 'loan-item';
-                const isCompleted = loan.status === 'completed' || parseFloat(loan.remaining_balance) < 1;
-                const statusBadge = isCompleted
-                    ? `<div class="loan-status" style="color:#22c55e;"><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i> Loan Fully Paid</div>`
-                    : `<div class="loan-status"><i data-lucide="check-circle" style="width:14px;height:14px;"></i> Active Loan</div>`;
                 item.innerHTML = `
                     <div class="loan-header">
                         <img src="${imgPath}" alt="${loan.device_name}" class="loan-img">
                         <div style="flex:1;">
                             <div class="loan-title">${loan.device_name}${loan.device_color ? ` - ${loan.device_color}` : ''}</div>
-                            ${statusBadge}
-                        </div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                            <button onclick="window.printUserStatement('${loan.id}')" style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; color:var(--text-main); cursor:pointer; transition:background 0.2s;">
-                                <i data-lucide="printer" style="width:14px; height:14px;"></i> PDF / Print
-                            </button>
-                            <button id="btn-email-user-${loan.id}" onclick="window.emailUserStatement('${loan.id}')" style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; font-weight:600; color:#2563eb; cursor:pointer; transition:background 0.2s;">
-                                <i data-lucide="mail" style="width:14px; height:14px;"></i> Email Statement
-                            </button>
+                            <div class="loan-status"><i data-lucide="check-circle" style="width:14px;height:14px;"></i> Active Loan</div>
                         </div>
                     </div>
 
@@ -161,16 +178,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>
                         <div style="margin-top:24px; text-align:center;">
-                            ${!isCompleted ? `<button class="btn-primary pay-btn" data-loan="${loan.id}"
+                            <button class="btn-primary pay-btn" data-loan="${loan.id}"
                                 style="display:inline-block; width:100%; max-width:300px; padding:14px;
                                 background:linear-gradient(135deg, var(--pink), #ff6eaa); color:white;
                                 border:none; cursor:pointer; font-family:inherit; font-weight:600;
                                 border-radius:8px; font-size:15px; box-shadow:0 4px 12px rgba(255,65,145,0.3);
                                 transition:transform 0.2s ease;">
                                 Pay Now
-                            </button>` : `<div style="padding:14px; background:rgba(34,197,94,0.08); border-radius:8px; border:1px solid rgba(34,197,94,0.2); color:#16a34a; font-weight:600; font-size:14px;">
-                                ✅ This loan has been fully paid. Thank you!
-                            </div>`}
+                            </button>
                         </div>
                     </div>
 
@@ -213,24 +228,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
 
                     <div class="loan-tab-content" id="history-${loan.id}">
+                        <div style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; margin-bottom:12px;">
+                            Payments for this Loan
+                        </div>
                         <div class="loan-history-container" id="history-container-${loan.id}">
                             <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
                                 <i data-lucide="loader-2" class="spin" style="width:24px;height:24px;"></i>
                                 <p style="font-size:14px; margin-top:12px;">Loading history...</p>
                             </div>
                         </div>
+
+                        ${completedLoans.length > 0 ? buildPreviousLoansMarkup(completedLoans) : ''}
                     </div>
                 `;
                 loanContainer.appendChild(item);
 
-                // Load payment history asynchronously
+                // Load payment history asynchronously for this active loan
                 fetch(`/loans/${loan.id}/payments`)
                     .then(r => r.json())
                     .then(payments => {
                         const hc = document.getElementById(`history-container-${loan.id}`);
                         if (!hc) return;
-                        if (payments.length === 0) {
-                            hc.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--text-muted); font-size:14px;">No payments recorded yet.</div>';
+                        if (!payments || payments.length === 0) {
+                            hc.innerHTML = '<div style="text-align:center; padding:32px 20px; color:var(--text-muted); font-size:14px;">No payments recorded yet for this loan.</div>';
                             return;
                         }
                         let html = '<div class="history-list" style="display:flex; flex-direction:column; gap:12px;">';
@@ -261,7 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     })
                     .catch(() => {
                         const hc = document.getElementById(`history-container-${loan.id}`);
-                        if (hc) hc.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--danger); font-size:14px;">Failed to load history.</div>';
+                        if (hc) hc.innerHTML = '<div style="text-align:center; padding:32px 20px; color:var(--danger); font-size:14px;">Failed to load history.</div>';
                     });
 
                 // Tab switching
@@ -274,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 });
 
-                // Pay Now — directly redirects to PayMongo (GCash & Maya only)
+                // Pay Now
                 const payBtnEl = item.querySelector('.pay-btn');
                 if (payBtnEl) payBtnEl.addEventListener('click', async (e) => {
                     const payBtn = e.currentTarget;
@@ -320,163 +340,181 @@ document.addEventListener('DOMContentLoaded', async () => {
                         payBtn.style.opacity = '1';
                     }
                 });
+
+                // Bind previous loans toggles inside this item if any
+                bindPreviousLoanToggles(item);
             });
 
             lucide.createIcons();
 
         } catch (err) {
             console.error('Error fetching loans:', err);
-            loanContainer.innerHTML = '<p style="color:var(--text-muted);">Failed to load loans.</p>';
+            loanContainer.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:40px;">Failed to load loans.</p>';
         }
+    }
+
+    // ── Helper: Build Previous Loans Markup ─────────────────────────────────────────
+    function buildPreviousLoansMarkup(completedLoans) {
+        if (!completedLoans || completedLoans.length === 0) return '';
+
+        let html = `
+            <div class="prev-loans-section">
+                <div class="prev-loans-header">
+                    <h4 style="font-size:15px; font-weight:700; color:var(--text-main); margin:0; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="history" style="width:18px; height:18px; color:var(--pink);"></i>
+                        Previous Loans
+                    </h4>
+                    <span style="font-size:12px; color:var(--text-muted); font-weight:500;">
+                        ${completedLoans.length} completed ${completedLoans.length === 1 ? 'loan' : 'loans'}
+                    </span>
+                </div>
+                <div class="prev-loans-list" style="display:flex; flex-direction:column; gap:12px;">
+        `;
+
+        completedLoans.forEach(cLoan => {
+            const cImg = cLoan.device_image && cLoan.device_image.includes('/')
+                ? cLoan.device_image
+                : `/images/phones/${cLoan.device_image || 'default.png'}`;
+            const cTotal = Number(cLoan.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 });
+            const cMonthly = Number(cLoan.monthly_payment).toLocaleString(undefined, { minimumFractionDigits: 2 });
+            const cTerm = cLoan.term_months || Math.ceil(cLoan.total_amount / cLoan.monthly_payment) || 24;
+
+            html += `
+                <div class="prev-loan-card" id="prev-loan-card-${cLoan.id}">
+                    <div class="prev-loan-toggle" data-loan-id="${cLoan.id}">
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <img src="${cImg}" alt="${cLoan.device_name}" style="width:44px; height:44px; object-fit:contain; border-radius:8px; background:#fff; padding:2px; border:1px solid #e2e8f0;">
+                            <div>
+                                <div style="font-size:15px; font-weight:600; color:var(--text-main);">
+                                    ${cLoan.device_name}${cLoan.device_color ? ' - ' + cLoan.device_color : ''}
+                                </div>
+                                <div style="display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; color:#16a34a; margin-top:2px;">
+                                    <i data-lucide="check-circle-2" style="width:13px; height:13px;"></i> Fully Paid
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <div style="text-align:right;">
+                                <div style="font-size:14px; font-weight:700; color:var(--text-main);">₱${cTotal}</div>
+                                <div style="font-size:12px; color:var(--text-muted);">${cTerm} Months Term</div>
+                            </div>
+                            <div style="color:var(--text-muted); display:flex; align-items:center;">
+                                <i data-lucide="chevron-down" class="prev-chevron" id="chevron-${cLoan.id}" style="width:20px; height:20px;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prev-loan-details" id="details-prev-${cLoan.id}">
+                        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:10px; color:#166534; font-size:13px; font-weight:600;">
+                            <i data-lucide="shield-check" style="width:18px; height:18px; flex-shrink:0;"></i>
+                            <span>All installments for this device are complete and fully settled.</span>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:16px; margin-bottom:20px; padding:16px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div>
+                                <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Total Contract</div>
+                                <div style="font-size:15px; font-weight:700; color:var(--text-main); margin-top:2px;">₱${cTotal}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Monthly Payment</div>
+                                <div style="font-size:15px; font-weight:700; color:var(--text-main); margin-top:2px;">₱${cMonthly}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Term Length</div>
+                                <div style="font-size:15px; font-weight:700; color:var(--text-main); margin-top:2px;">${cTerm} Months</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Remaining Balance</div>
+                                <div style="font-size:15px; font-weight:700; color:#16a34a; margin-top:2px;">₱0.00</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; margin-bottom:10px;">
+                                Payment Ledger (${cLoan.device_name})
+                            </div>
+                            <div class="prev-loan-payments-container" id="prev-payments-${cLoan.id}">
+                                <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px;">
+                                    <i data-lucide="loader-2" class="spin" style="width:16px; height:16px;"></i> Loading payments...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // ── Helper: Bind Previous Loan Accordion Toggles ─────────────────────────────
+    function bindPreviousLoanToggles(container) {
+        container.querySelectorAll('.prev-loan-toggle').forEach(toggle => {
+            toggle.addEventListener('click', async () => {
+                const loanId = toggle.dataset.loanId;
+                const detailsEl = container.querySelector(`#details-prev-${loanId}`);
+                const chevronEl = container.querySelector(`#chevron-${loanId}`);
+                if (!detailsEl) return;
+
+                const isOpen = detailsEl.classList.contains('open');
+                if (isOpen) {
+                    detailsEl.classList.remove('open');
+                    if (chevronEl) chevronEl.classList.remove('open');
+                } else {
+                    detailsEl.classList.add('open');
+                    if (chevronEl) chevronEl.classList.add('open');
+
+                    // Load payments for this completed loan if not loaded
+                    const paymentsContainer = container.querySelector(`#prev-payments-${loanId}`);
+                    if (paymentsContainer && !paymentsContainer.dataset.loaded) {
+                        try {
+                            const res = await fetch(`/loans/${loanId}/payments`);
+                            const payments = await res.json();
+                            paymentsContainer.dataset.loaded = 'true';
+                            if (!payments || payments.length === 0) {
+                                paymentsContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px;">No recorded transactions found.</div>';
+                                return;
+                            }
+                            let pHtml = '<div style="display:flex; flex-direction:column; gap:8px;">';
+                            payments.forEach(p => {
+                                const date = new Date(p.payment_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+                                pHtml += `
+                                    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <div style="width:28px; height:28px; border-radius:50%; background:rgba(34,197,94,0.1); color:#16a34a; display:flex; align-items:center; justify-content:center;">
+                                                <i data-lucide="check" style="width:14px; height:14px;"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight:600; color:var(--text-main); font-size:13px;">
+                                                    Payment <span style="font-weight:400; color:var(--text-muted); margin-left:4px;">via ${p.payment_method === 'cash' ? 'Cash (Admin)' : (p.payment_method || 'GCash / Maya')}</span>
+                                                </div>
+                                                <div style="color:var(--text-muted); font-size:12px;">${date}</div>
+                                            </div>
+                                        </div>
+                                        <div style="font-weight:700; color:var(--text-main); font-size:14px;">
+                                            ₱${parseFloat(p.amount_paid).toLocaleString(undefined, {minimumFractionDigits:2})}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            pHtml += '</div>';
+                            paymentsContainer.innerHTML = pHtml;
+                            lucide.createIcons({ root: paymentsContainer });
+                        } catch (err) {
+                            console.error('Error loading previous payments:', err);
+                            paymentsContainer.innerHTML = '<div style="color:var(--danger); font-size:13px; text-align:center;">Failed to load payment history.</div>';
+                        }
+                    }
+                }
+            });
+        });
     }
 
     // Init
     loadLoans();
 });
-
-// ─── Print / PDF Statement Logic ──────────────────────────────────────────────
-window.printUserStatement = async function(loanId) {
-    try {
-        const res = await fetch(`/loans/${loanId}/ledger`);
-        if (!res.ok) throw new Error('Failed to fetch ledger details');
-        const data = await res.json();
-        const l = data.loan;
-        const payments = data.payments || [];
-
-        let currentBalance = parseFloat(l.total_amount);
-        let rowsHtml = `
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">${new Date(l.created_at).toLocaleDateString()}</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; font-weight:bold;">Loan Issued</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right;">-</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:bold;">₱${currentBalance.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-            </tr>
-        `;
-
-        for (const p of payments) {
-            currentBalance -= parseFloat(p.amount_paid);
-            rowsHtml += `
-                <tr>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">${new Date(p.payment_date).toLocaleDateString()}</td>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">Payment Received (${p.payment_method})</td>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right; color:#16a34a; font-weight:bold;">-₱${parseFloat(p.amount_paid).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:right;">₱${Math.max(0, currentBalance).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                </tr>
-            `;
-        }
-
-        const printWindow = window.open('', '_blank', 'width=800,height=900');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Statement of Account - ${l.device_name}</title>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-                <style>
-                    body { font-family: 'Inter', -apple-system, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; }
-                    .header { text-align: center; border-bottom: 2px solid #FF4191; padding-bottom: 20px; margin-bottom: 24px; }
-                    .title { color: #FF4191; font-size: 28px; font-weight: 800; margin: 0; }
-                    .subtitle { font-size: 13px; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-                    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-                    .info-box { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
-                    .info-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 6px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
-                    th { background: #fce7f3; color: #831843; padding: 10px 12px; text-align: left; font-weight: 700; }
-                    .summary { margin-top: 24px; padding: 20px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; text-align: center; }
-                    .footer { text-align: center; margin-top: 40px; font-size: 11px; color: #94a3b8; }
-                    @media print { body { padding: 15px; } }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1 class="title">ADC Gadgets</h1>
-                    <div class="subtitle">Official Statement of Account</div>
-                </div>
-                <div class="info-grid">
-                    <div class="info-box">
-                        <div class="info-label">Customer Information</div>
-                        <div style="font-weight:700; font-size:15px;">${l.full_name || 'Customer'}</div>
-                        <div style="font-size:13px; color:#64748b; margin-top:4px;">${l.email || ''}</div>
-                        <div style="font-size:13px; color:#64748b;">${l.mobile || ''}</div>
-                    </div>
-                    <div class="info-box">
-                        <div class="info-label">Contract Overview</div>
-                        <div style="font-weight:700; font-size:15px;">${l.device_name}${l.device_color ? ' - ' + l.device_color : ''}</div>
-                        <div style="font-size:13px; color:#64748b; margin-top:4px;">Total SRP: ₱${parseFloat(l.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}</div>
-                        <div style="font-size:13px; color:#64748b;">Monthly Amortization: ₱${parseFloat(l.monthly_payment).toLocaleString('en-US', {minimumFractionDigits:2})}</div>
-                        <div style="font-size:13px; font-weight:600; color:${l.status === 'completed' ? '#16a34a' : '#FF4191'}; margin-top:2px;">Status: ${l.status.toUpperCase()}</div>
-                    </div>
-                </div>
-
-                <div style="font-size:14px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">Transaction Ledger</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th style="text-align:right;">Amount Paid</th>
-                            <th style="text-align:right;">Running Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rowsHtml}
-                    </tbody>
-                </table>
-
-                <div class="summary">
-                    <div style="font-size:18px; font-weight:800; color:#1e293b;">
-                        Remaining Balance: <span style="color:#FF4191;">₱${parseFloat(l.remaining_balance).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
-                    </div>
-                    ${l.status !== 'completed' ? `<div style="font-size:13px; color:#64748b; margin-top:6px;">Next Payment Due: ${new Date(l.next_payment_date).toLocaleDateString()}</div>` : `<div style="font-size:13px; color:#16a34a; font-weight:700; margin-top:6px;">All obligations for this device are complete. Thank you!</div>`}
-                </div>
-
-                <div class="footer">
-                    Generated from ADC Gadgets Online Portal &bull; System Verified &bull; ${new Date().toLocaleDateString()}
-                </div>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            printWindow.print();
-        }, 500);
-    } catch(err) {
-        console.error(err);
-        if (window.showToast) window.showToast('Unable to prepare statement for printing.', 'error');
-    }
-};
-
-// ─── Email Statement Logic ───────────────────────────────────────────────────
-window.emailUserStatement = async function(loanId) {
-    const btn = document.getElementById(`btn-email-user-${loanId}`);
-    const origHtml = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px; height:14px;"></i> Sending...';
-        btn.disabled = true;
-        lucide.createIcons();
-    }
-
-    try {
-        const res = await fetch('/api/user/email-statement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ loan_id: loanId })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            if (window.showToast) window.showToast('Statement of account sent to your email!', 'success');
-        } else {
-            if (window.showToast) window.showToast(data.error || 'Failed to send email statement.', 'error');
-        }
-    } catch(err) {
-        console.error(err);
-        if (window.showToast) window.showToast('Network error while requesting statement.', 'error');
-    } finally {
-        if (btn) {
-            btn.innerHTML = origHtml;
-            btn.disabled = false;
-            lucide.createIcons();
-        }
-    }
-};

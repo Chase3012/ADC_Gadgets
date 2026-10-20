@@ -987,9 +987,6 @@
         <img src="../../images/logo.jpg" alt="" class="logo-img">
         <span class="logo-name">ADC Gadgets</span>
       </a>
-      <nav class="hdr-nav" aria-label="Main">
-        <a href="#">Support</a>
-      </nav>
     </header>
 
     <!-- â”â”â” MAIN â”â”â” -->
@@ -1122,7 +1119,7 @@
             <!-- Remember / Forgot -->
             <div class="form-row">
               <label class="rem"><input type="checkbox" id="remCheck"> Remember me</label>
-              <a href="#" class="forgot">Forgot password?</a>
+              <a href="#" class="forgot" id="forgotPasswordLink">Forgot password?</a>
             </div>
 
             <!-- Submit -->
@@ -1165,6 +1162,56 @@
               <span class="spin"></span>
             </button>
           </form>
+
+          <!-- Forgot Password Form (Hidden by default) -->
+          <form id="forgotPasswordForm" novalidate style="display: none;">
+            <p style="font-size:14px; color:var(--g400); margin-bottom:20px; line-height:1.5;">
+              Enter your registered Gmail or email address and we'll send you a secure link to reset your password.
+            </p>
+            <div class="fg">
+              <div class="iw">
+                <input id="forgotEmail" type="email" placeholder=" " required autocomplete="email">
+                <label for="forgotEmail" class="il">Email address</label>
+                <svg class="ii" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </svg>
+              </div>
+            </div>
+            <button type="submit" class="btn-go" id="forgotSubmitBtn">
+              <span class="btn-txt" id="forgotBtnText">Send Reset Link</span>
+              <span class="spin"></span>
+            </button>
+            <div style="text-align:center; margin-top:20px;">
+              <a href="#" class="forgot" id="backToLoginFromForgot">Back to Sign in</a>
+            </div>
+          </form>
+
+          <!-- Forgot Password Confirmation (Hidden by default) -->
+          <div id="forgotPasswordSuccess" style="display: none; text-align: center; padding: 10px 0;">
+            <div style="width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 50%; background: rgba(255,65,145,0.12); border: 1px solid rgba(255,65,145,0.3); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 24px rgba(255,65,145,0.2);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FF4191" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h9"/>
+                <polyline points="22,7 12,13 2,7"/>
+                <polyline points="16,19 19,22 24,17"/>
+              </svg>
+            </div>
+            <h3 style="font-size: 19px; font-weight: 700; color: var(--white); margin-bottom: 10px; letter-spacing: -0.3px;">Reset Link Dispatched</h3>
+            <p style="font-size: 13.5px; color: var(--g400); line-height: 1.6; margin-bottom: 22px;">
+              A password reset link with security instructions has been sent to: <br><strong id="sentToEmail" style="color: var(--white); word-break: break-all;"></strong>
+            </p>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 14px; text-align: left; margin-bottom: 24px;">
+              <p style="font-size: 12px; color: var(--g400); margin: 0; line-height: 1.5;">
+                <span style="color: var(--pink); font-weight: 600;">Important:</span> Click the button inside the email to choose a new password. The link expires in 15 minutes. Check your Spam folder if you don't see it shortly.
+              </p>
+            </div>
+            <button type="button" class="btn-go" id="backToLoginFromSuccess" style="margin-bottom: 12px;">
+              <span class="btn-txt">Return to Sign in</span>
+            </button>
+            <div style="text-align: center;">
+              <a href="#" class="forgot" id="resendResetLinkBtn" style="font-size: 12.5px;">Didn't get the email? Try again</a>
+            </div>
+          </div>
 
           <!-- Error -->
           <div id="globalError" class="err"></div>
@@ -1437,6 +1484,123 @@
       } catch (err) {
         resetBtn.classList.remove('loading'); resetBtn.disabled = false;
         showErr('Network error occurred.');
+      }
+    });
+
+    // ─── Forgot Password Flow ───
+    var forgotLink = document.getElementById('forgotPasswordLink');
+    var forgotForm = document.getElementById('forgotPasswordForm');
+    var forgotEmailInput = document.getElementById('forgotEmail');
+    var forgotSubmitBtn = document.getElementById('forgotSubmitBtn');
+    var forgotBtnText = document.getElementById('forgotBtnText');
+    var forgotSuccess = document.getElementById('forgotPasswordSuccess');
+    var sentToEmail = document.getElementById('sentToEmail');
+    var backToLoginFromForgot = document.getElementById('backToLoginFromForgot');
+    var backToLoginFromSuccess = document.getElementById('backToLoginFromSuccess');
+    var resendResetLinkBtn = document.getElementById('resendResetLinkBtn');
+    var formTitle = document.querySelector('.f-title');
+    var formSub = document.querySelector('.f-sub');
+
+    function switchToForgotPassword() {
+      clearErr();
+      form.style.display = 'none';
+      otpForm.style.display = 'none';
+      resetForm.style.display = 'none';
+      forgotSuccess.style.display = 'none';
+      forgotForm.style.display = 'block';
+
+      if (emailInput.value.trim()) {
+        forgotEmailInput.value = emailInput.value.trim();
+      }
+
+      formTitle.textContent = 'Reset Password';
+      formSub.textContent = 'We will email you a secure reset link';
+      forgotEmailInput.focus();
+    }
+
+    function switchToLogin() {
+      clearErr();
+      forgotForm.style.display = 'none';
+      forgotSuccess.style.display = 'none';
+      otpForm.style.display = 'none';
+      resetForm.style.display = 'none';
+      form.style.display = 'block';
+
+      formTitle.textContent = 'User Login';
+      formSub.textContent = 'Sign in to your ADC Gadgets Account';
+    }
+
+    if (forgotLink) {
+      forgotLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchToForgotPassword();
+      });
+    }
+
+    if (backToLoginFromForgot) {
+      backToLoginFromForgot.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchToLogin();
+      });
+    }
+
+    if (backToLoginFromSuccess) {
+      backToLoginFromSuccess.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchToLogin();
+      });
+    }
+
+    if (resendResetLinkBtn) {
+      resendResetLinkBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchToForgotPassword();
+      });
+    }
+
+    forgotForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (forgotSubmitBtn.disabled) return;
+      clearErr();
+
+      var emailVal = forgotEmailInput.value.trim();
+      var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailVal) return showErr('Please enter your email address.');
+      if (!re.test(emailVal)) return showErr('Please enter a valid email address.');
+
+      forgotSubmitBtn.classList.add('loading');
+      forgotSubmitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailVal })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          forgotSubmitBtn.classList.remove('loading');
+          forgotSubmitBtn.disabled = false;
+          showErr(data.error || 'Failed to send reset link. Please check the email entered.');
+          return;
+        }
+
+        forgotSubmitBtn.classList.remove('loading');
+        forgotSubmitBtn.disabled = false;
+
+        // Transition to success screen
+        forgotForm.style.display = 'none';
+        forgotSuccess.style.display = 'block';
+        sentToEmail.textContent = emailVal;
+        formTitle.textContent = 'Check Your Email';
+        formSub.textContent = 'Password reset instructions dispatched';
+      } catch (err) {
+        console.error('Forgot password error:', err);
+        forgotSubmitBtn.classList.remove('loading');
+        forgotSubmitBtn.disabled = false;
+        showErr('Network error. Please check your connection and try again.');
       }
     });
   </script>

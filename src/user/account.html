@@ -40,8 +40,6 @@
         <nav class="hdr-nav">
             <a href="user-home.html">Shop</a>
             <a href="devices.html">Devices</a>
-            <a href="support.html">Support</a>
-            <a href="account.html" style="color:var(--pink);font-weight:600;">Account</a>
         </nav>
     </header>
 
@@ -49,15 +47,13 @@
     <nav class="sub-nav">
         <a href="user-home.html">Featured</a>
         <a href="devices.html">Devices</a>
-        <a href="support.html">Setup &amp; Support</a>
-        <a href="account.html" class="active">Account</a>
     </nav>
 
         <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
     <div class="hero-wrap account-hero">
         <h1 class="support-title account-title"><span class="glow-pink">My ADC Account</span></h1>
         <h2 class="support-subtitle account-greeting">Hello, <span id="hero-first-name" style="color: var(--pink);">there</span>.</h2>
-        <p class="support-subtitle account-desc">Manage your profile, contact info, and security.</p>
+        <p class="support-subtitle account-desc">Manage your profile and personal information.</p>
     </div>
 
     <!-- ━━━ MAIN CONTENT ━━━ -->
@@ -100,11 +96,8 @@
                     <a href="#section-personal" class="side-nav-link active" id="snl-info">
                         <i data-lucide="user-circle" style="width:16px;height:16px;"></i> My Information
                     </a>
-                    <a href="#section-documents" class="side-nav-link" id="snl-docs">
-                        <i data-lucide="file-check" style="width:16px;height:16px;"></i> Documents
-                    </a>
-                    <a href="#section-security" class="side-nav-link" id="snl-sec">
-                        <i data-lucide="shield" style="width:16px;height:16px;"></i> Security
+                    <a href="#section-avatar" class="side-nav-link" id="snl-avatar">
+                        <i data-lucide="palette" style="width:16px;height:16px;"></i> Profile Avatar
                     </a>
                 </div>
             </div>
@@ -122,7 +115,7 @@
                         </div>
                         <div>
                             <div class="acc-section-title">Personal &amp; Contact Information</div>
-                            <div class="acc-section-desc">Managed by ADC Gadgets. Contact support to request changes.</div>
+                            <div class="acc-section-desc">Managed by ADC Gadgets. Contact admin to request changes.</div>
                         </div>
                     </div>
                     <span class="readonly-badge">
@@ -222,142 +215,7 @@
                 </div>
             </section>
 
-            <!-- Section: Documents Upload -->
-            <section class="acc-section" id="section-documents">
-                <div class="acc-section-header">
-                    <div class="acc-section-title-wrap">
-                        <div class="acc-section-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;">
-                            <i data-lucide="file-check" style="width:20px;height:20px;"></i>
-                        </div>
-                        <div>
-                            <div class="acc-section-title">Government ID</div>
-                            <div class="acc-section-desc">Upload a clear photo of your valid government-issued ID for account verification.</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="acc-section-body">
-                    <!-- Current ID Preview -->
-                    <div id="id-preview-wrap" style="margin-bottom:20px; display:none;">
-                        <label style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--g500); display:block; margin-bottom:10px;">Current ID on File</label>
-                        <img id="id-preview-img" src="" alt="Government ID" style="max-width:100%; max-height:220px; border-radius:10px; border:2px solid #e2e8f0; object-fit:contain;">
-                    </div>
 
-                    <!-- Upload Form -->
-                    <div style="display:flex; flex-direction:column; gap:16px;">
-                        <div class="form-group">
-                            <label for="id-type-select" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--g500); display:block; margin-bottom:8px;">ID Type</label>
-                            <select id="id-type-select" style="width:100%; border:1px solid #e2e8f0; border-radius:10px; padding:11px 14px; font-size:14px; font-family:inherit; outline:none; background:#fff; transition:border .2s;">
-                                <option value="Driver's License">Driver's License</option>
-                                <option value="Philippine Passport">Philippine Passport</option>
-                                <option value="SSS ID">SSS ID</option>
-                                <option value="GSIS ID">GSIS ID</option>
-                                <option value="PhilHealth ID">PhilHealth ID</option>
-                                <option value="Voter's ID">Voter's ID</option>
-                                <option value="National ID (PhilSys)">National ID (PhilSys)</option>
-                                <option value="PRC ID">PRC ID</option>
-                                <option value="Postal ID">Postal ID</option>
-                                <option value="TIN ID">TIN ID</option>
-                            </select>
-                        </div>
-
-                        <div id="id-drop-area" style="border:2px dashed #e2e8f0; border-radius:12px; padding:32px; text-align:center; cursor:pointer; transition:border .2s; background:#fafafa;" onclick="document.getElementById('id-file-input').click()">
-                            <i data-lucide="upload-cloud" style="width:36px;height:36px;color:#94a3b8;margin-bottom:10px;"></i>
-                            <p style="font-size:14px; font-weight:600; color:var(--text-main); margin-bottom:4px;">Click to upload your ID</p>
-                            <p style="font-size:12px; color:var(--g500);">JPG, PNG or PDF &bull; Max 10MB</p>
-                            <input type="file" id="id-file-input" accept="image/*,.pdf" style="display:none;">
-                        </div>
-
-                        <div id="id-file-chosen" style="display:none; align-items:center; gap:10px; padding:12px; background:#f0fdf4; border-radius:10px; border:1px solid #bbf7d0;">
-                            <i data-lucide="file-check" style="width:18px;height:18px;color:#22c55e;"></i>
-                            <span id="id-file-name" style="font-size:13px; font-weight:600; color:#166534;"></span>
-                        </div>
-
-                        <button id="id-upload-btn" style="display:flex; align-items:center; gap:8px; justify-content:center; padding:12px 24px; background:var(--pink); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s;" disabled>
-                            <i data-lucide="upload" style="width:16px;height:16px;"></i>
-                            <span id="id-upload-btn-text">Upload ID</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ── Section 2: Account Security (Editable) ── -->
-            <section class="acc-section" id="section-security">
-                <div class="acc-section-header">
-                    <div class="acc-section-title-wrap">
-                        <div class="acc-section-icon green">
-                            <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
-                        </div>
-                        <div>
-                            <div class="acc-section-title">Account Security</div>
-                            <div class="acc-section-desc">Update your password to keep your account secure.</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="acc-section-body">
-                    <form id="password-form" class="form-grid" novalidate>
-
-                        <div class="form-group">
-                            <label for="cur-pwd">Current Password</label>
-                            <div class="input-wrap">
-                                <i data-lucide="lock" class="input-icon"></i>
-                                <input type="password" id="cur-pwd" name="cur-pwd" placeholder="Enter your current password" autocomplete="current-password">
-                                <button type="button" class="eye-btn" data-target="cur-pwd" aria-label="Toggle visibility">
-                                    <i data-lucide="eye" style="width:16px;height:16px;"></i>
-                                </button>
-                            </div>
-                            <div class="form-error" id="err-cur-pwd">
-                                <i data-lucide="alert-circle" style="width:12px;height:12px;"></i>
-                                <span id="err-cur-pwd-text">This field is required.</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="new-pwd">New Password</label>
-                            <div class="input-wrap">
-                                <i data-lucide="key" class="input-icon"></i>
-                                <input type="password" id="new-pwd" name="new-pwd" placeholder="Create a new strong password" autocomplete="new-password">
-                                <button type="button" class="eye-btn" data-target="new-pwd" aria-label="Toggle visibility">
-                                    <i data-lucide="eye" style="width:16px;height:16px;"></i>
-                                </button>
-                            </div>
-                            <div class="password-strength" id="strength-wrap" style="display:none;">
-                                <div class="strength-bars">
-                                    <div class="strength-bar" id="sb1"></div>
-                                    <div class="strength-bar" id="sb2"></div>
-                                    <div class="strength-bar" id="sb3"></div>
-                                    <div class="strength-bar" id="sb4"></div>
-                                </div>
-                                <span class="strength-label" id="strength-label">Weak</span>
-                            </div>
-                            <div class="form-error" id="err-new-pwd">
-                                <i data-lucide="alert-circle" style="width:12px;height:12px;"></i>
-                                <span id="err-new-pwd-text">Password must be at least 8 characters.</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirm-pwd">Confirm New Password</label>
-                            <div class="input-wrap">
-                                <i data-lucide="key" class="input-icon"></i>
-                                <input type="password" id="confirm-pwd" name="confirm-pwd" placeholder="Re-enter your new password" autocomplete="new-password">
-                                <button type="button" class="eye-btn" data-target="confirm-pwd" aria-label="Toggle visibility">
-                                    <i data-lucide="eye" style="width:16px;height:16px;"></i>
-                                </button>
-                            </div>
-                            <div class="form-error" id="err-confirm-pwd">
-                                <i data-lucide="alert-circle" style="width:12px;height:12px;"></i>
-                                <span>Passwords do not match.</span>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-save" id="save-pwd-btn">
-                            <i data-lucide="save" style="width:16px;height:16px;"></i>
-                            <span id="save-btn-text">Update Password</span>
-                        </button>
-
-                    </form>
-                </div>
-            </section>
 
         </div><!-- end sections-col -->
     </div><!-- end account-main -->
@@ -399,12 +257,6 @@
                 <span class="sb-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
                 Loan
             </a>
-
-            <a href="support.html" class="sb-link" style="border-radius: 8px;">
-                <span class="sb-icon"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></span>
-                Support
-            </a>
-
         </nav>
 
         <!-- Profile Footer -->
@@ -429,7 +281,7 @@
     <!-- ━━━ TOAST ━━━ -->
     <div id="toast">
         <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
-        <span id="toast-msg">Password updated successfully!</span>
+        <span id="toast-msg">Profile updated successfully!</span>
     </div>
 
     <script>
@@ -482,47 +334,7 @@
         activateHashSection();
         window.addEventListener('hashchange', activateHashSection);
 
-        /* ── Password visibility toggle ── */
-        document.querySelectorAll('.eye-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const targetId = this.getAttribute('data-target');
-                const input = document.getElementById(targetId);
-                const icon = this.querySelector('i');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.setAttribute('data-lucide', 'eye-off');
-                } else {
-                    input.type = 'password';
-                    icon.setAttribute('data-lucide', 'eye');
-                }
-                lucide.createIcons();
-            });
-        });
 
-        /* ── Password strength meter ── */
-        const newPwdInput = document.getElementById('new-pwd');
-        const strengthWrap = document.getElementById('strength-wrap');
-        const strengthLabel = document.getElementById('strength-label');
-        const bars = [document.getElementById('sb1'), document.getElementById('sb2'), document.getElementById('sb3'), document.getElementById('sb4')];
-        const strengthColors = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e'];
-        const strengthTexts = ['Weak', 'Fair', 'Good', 'Strong'];
-
-        newPwdInput.addEventListener('input', function () {
-            const val = this.value;
-            if (!val) { strengthWrap.style.display = 'none'; return; }
-            strengthWrap.style.display = 'flex';
-            let score = 0;
-            if (val.length >= 8) score++;
-            if (/[A-Z]/.test(val)) score++;
-            if (/[0-9]/.test(val)) score++;
-            if (/[^A-Za-z0-9]/.test(val)) score++;
-            const clr = strengthColors[Math.max(0, score - 1)];
-            bars.forEach((b, i) => {
-                b.style.background = i < score ? clr : 'var(--g200)';
-            });
-            strengthLabel.textContent = strengthTexts[Math.max(0, score - 1)];
-            strengthLabel.style.color = clr;
-        });
 
                 /* ── Avatar upload ── */
         const avatarOptions = document.querySelectorAll('.avatar-option');
@@ -732,173 +544,21 @@
             const badge = document.getElementById('id-status-badge');
             const text = document.getElementById('id-status-text');
             const idTypeEl = document.getElementById('info-id-type');
-            const previewWrap = document.getElementById('id-preview-wrap');
-            const previewImg = document.getElementById('id-preview-img');
 
             if (idUrl) {
-                // ID on file
-                if (badge) { badge.style.background='rgba(34,197,94,0.1)'; badge.style.color='#22c55e'; }
-                if (text) text.textContent = 'On File';
+                // ID verified and on file (uploaded by Admin)
+                if (badge) { badge.style.background = 'rgba(34,197,94,0.1)'; badge.style.color = '#22c55e'; }
+                if (text) text.textContent = 'Verified on File';
                 if (idTypeEl) idTypeEl.textContent = idType || 'Government ID';
-                // Show preview if it's an image
-                if (previewWrap && previewImg && !idUrl.endsWith('.pdf')) {
-                    previewImg.src = '' + idUrl;
-                    previewWrap.style.display = 'block';
-                }
-                // Pre-select ID type in the upload form
-                const sel = document.getElementById('id-type-select');
-                if (sel && idType) { sel.value = idType; }
             } else {
-                if (badge) { badge.style.background='rgba(239,68,68,0.1)'; badge.style.color='#ef4444'; }
-                if (text) text.textContent = 'Missing';
-                if (idTypeEl) idTypeEl.textContent = 'Not yet uploaded';
+                if (badge) { badge.style.background = 'rgba(239,68,68,0.1)'; badge.style.color = '#ef4444'; }
+                if (text) text.textContent = 'Pending Admin Verification';
+                if (idTypeEl) idTypeEl.textContent = idType || 'Not yet uploaded';
             }
             lucide.createIcons();
         }
 
         loadProfile();
-
-        /* ── ID Upload Wiring ── */
-        const idFileInput = document.getElementById('id-file-input');
-        const idFileChosen = document.getElementById('id-file-chosen');
-        const idFileName = document.getElementById('id-file-name');
-        const idUploadBtn = document.getElementById('id-upload-btn');
-        const idUploadBtnText = document.getElementById('id-upload-btn-text');
-        const idDropArea = document.getElementById('id-drop-area');
-        let selectedIdFile = null;
-
-        if (idFileInput) {
-            idFileInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (!file) return;
-                selectedIdFile = file;
-                idFileName.textContent = file.name;
-                idFileChosen.style.display = 'flex';
-                idUploadBtn.disabled = false;
-                idDropArea.style.borderColor = 'var(--pink)';
-                lucide.createIcons();
-            });
-        }
-
-        if (idUploadBtn) {
-            idUploadBtn.addEventListener('click', async function() {
-                if (!selectedIdFile) return;
-                const storedUser = localStorage.getItem('customer_user');
-                if (!storedUser) return;
-                const session = JSON.parse(storedUser);
-                const idType = document.getElementById('id-type-select').value;
-
-                idUploadBtn.disabled = true;
-                idUploadBtnText.textContent = 'Uploading...';
-
-                const formData = new FormData();
-                formData.append('idImage', selectedIdFile);
-                formData.append('id_type', idType);
-
-                try {
-                    const res = await fetch('/api/profiles/' + session.id + '/upload-id', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                        showToast('ID uploaded successfully!', 'success');
-                        updateIdStatus(data.id_url, data.id_type);
-                        idFileChosen.style.display = 'none';
-                        idDropArea.style.borderColor = '#e2e8f0';
-                        selectedIdFile = null;
-                        idFileInput.value = '';
-                    } else {
-                        showToast(data.error || 'Upload failed.', 'error');
-                    }
-                } catch (err) {
-                    showToast('Failed to upload ID.', 'error');
-                }
-                idUploadBtn.disabled = false;
-                idUploadBtnText.textContent = 'Upload ID';
-                lucide.createIcons();
-            });
-        }
-
-        /* ── Password Change Form ── */
-        const pwdForm = document.getElementById('password-form');
-        const savePwdBtn = document.getElementById('save-pwd-btn');
-        const saveBtnText = document.getElementById('save-btn-text');
-
-        function showFieldError(id, show, msg) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (show) { el.classList.add('show'); if (msg) el.querySelector('span') && (el.querySelector('span').textContent = msg); }
-            else { el.classList.remove('show'); }
-        }
-
-        pwdForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const curPwd = document.getElementById('cur-pwd').value.trim();
-            const newPwd = document.getElementById('new-pwd').value;
-            const confirmPwd = document.getElementById('confirm-pwd').value;
-
-            // Reset errors
-            ['err-cur-pwd', 'err-new-pwd', 'err-confirm-pwd'].forEach(id => showFieldError(id, false));
-
-            let valid = true;
-
-            if (!curPwd) {
-                showFieldError('err-cur-pwd', true, 'Current password is required.');
-                valid = false;
-            }
-            if (!newPwd || newPwd.length < 8) {
-                showFieldError('err-new-pwd', true, 'New password must be at least 8 characters.');
-                valid = false;
-            }
-            if (newPwd !== confirmPwd) {
-                showFieldError('err-confirm-pwd', true);
-                valid = false;
-            }
-            if (!valid) return;
-
-            // Loading state
-            savePwdBtn.classList.add('loading');
-            saveBtnText.textContent = 'Updating…';
-
-            const storedUser = localStorage.getItem('customer_user');
-            if (!storedUser) { window.location.href = '/src/user/login.html'; return; }
-            let session = JSON.parse(storedUser);
-
-            try {
-                const res = await fetch('/profiles/' + session.id + '/password', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ curPwd, newPwd })
-                });
-
-                if (res.ok) {
-                    savePwdBtn.classList.remove('loading');
-                    savePwdBtn.classList.add('success-state');
-                    saveBtnText.textContent = 'Password Updated ✓';
-                    showToast('Password updated successfully!', 'success');
-                    pwdForm.reset();
-                    document.getElementById('strength-wrap').style.display = 'none';
-                    setTimeout(() => {
-                        savePwdBtn.classList.remove('success-state');
-                        saveBtnText.textContent = 'Update Password';
-                        lucide.createIcons();
-                    }, 2500);
-                } else {
-                    const data = await res.json();
-                    savePwdBtn.classList.remove('loading');
-                    saveBtnText.textContent = 'Update Password';
-                    showFieldError('err-cur-pwd', true, data.error || 'Update failed.');
-                    showToast(data.error || 'Update failed.', 'error');
-                    lucide.createIcons();
-                }
-            } catch (err) {
-                savePwdBtn.classList.remove('loading');
-                saveBtnText.textContent = 'Update Password';
-                showToast('Failed to update password.', 'error');
-            }
-        });
 
         /* ── Logout ── */
         document.getElementById('sb-logout').addEventListener('click', async function(e) {

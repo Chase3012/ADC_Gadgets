@@ -121,7 +121,7 @@
       </div>
       <div class="header-right" style="display:flex; align-items:center; gap:16px;">
         <div style="position:relative;">
-          <input type="text" placeholder="Search loans, customers..." style="color: var(--text-main); background: var(--surface); padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:220px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+          <input type="text" id="loan-search-input" placeholder="Search loans by customer, device..." style="color: var(--text-main); background: var(--surface); padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:250px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
         </div>
         
         
@@ -172,7 +172,6 @@
       <div id="panel-loan-details" class="dash-panel" style="display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
               <button class="btn-secondary" id="back-to-loans-btn" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; background:var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;"><i data-lucide="arrow-left" style="width: 16px;"></i> Back to Active Loans</button>
-              <button id="issue-new-loan-ledger-btn" style="display:none; padding: 10px 20px; font-size: 14px; font-weight: 600; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236,72,153,0.3);"><i data-lucide="plus" style="width:16px; margin-right:6px;"></i> Issue New Loan</button>
           </div>
           
           <div class="card" id="ledger-content" style="min-height: 400px; padding: 32px;">
@@ -276,25 +275,38 @@ function renderKPIs(loans) {
   document.getElementById('ledger-past-due').textContent = '0 loans'; // Placeholder for actual late logic
 }
 
+let currentLoanFilter = 'all';
+let currentLoanSearch = '';
+
 function renderList(filter) {
+  if (filter !== undefined) currentLoanFilter = filter;
   let filtered = allLoans;
   
-  if (filter === 'due-soon') {
+  if (currentLoanFilter === 'due-soon') {
       // Mock logic for due soon
       filtered = allLoans.filter(l => l.status === 'active'); 
-  } else if (filter === 'late') {
+  } else if (currentLoanFilter === 'late') {
       // Mock logic for late
       filtered = allLoans.filter(l => false); 
-  } else if (filter === 'closed') {
+  } else if (currentLoanFilter === 'closed') {
       filtered = allLoans.filter(l => l.status === 'completed' || l.status === 'closed');
   } else {
       // 'all' includes active
       filtered = allLoans.filter(l => l.status === 'active');
   }
 
+  if (currentLoanSearch) {
+    filtered = filtered.filter(l => {
+      const name = (l.full_name || '').toLowerCase();
+      const device = (l.device_name || l.device_model || '').toLowerCase();
+      const id = String(l.id || '').toLowerCase();
+      return name.includes(currentLoanSearch) || device.includes(currentLoanSearch) || id.includes(currentLoanSearch);
+    });
+  }
+
   const list = document.getElementById('contracts-list');
   if (filtered.length === 0) {
-    list.innerHTML = '<div style="padding:40px 0; text-align:center; color:var(--text-muted);">No contracts found.</div>';
+    list.innerHTML = '<div style="padding:40px 0; text-align:center; color:var(--text-muted);">No contracts found matching your search.</div>';
     return;
   }
 
@@ -379,6 +391,14 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
+// Search input listener
+const loanSearchInput = document.getElementById('loan-search-input');
+if (loanSearchInput) {
+  loanSearchInput.addEventListener('input', (e) => {
+    currentLoanSearch = e.target.value.toLowerCase().trim();
+    renderList(currentLoanFilter);
+  });
+}
 
 // --- Admin Loan Viewer Logic ---
 let lastViewedUserId = null;
@@ -431,15 +451,12 @@ async function loadUserLoanDetails(userId) {
     fetchError = err;
     }
     
-    const issueBtn = document.getElementById('issue-new-loan-ledger-btn');
-    
     if (fetchError) {
     ledgerContent.innerHTML = `<p style="color:var(--danger); text-align:center;">Error fetching loan: ${fetchError.message}</p>`;
     return;
     }
     
     if (!data || data.length === 0) {
-    issueBtn.style.display = 'inline-block';
     ledgerContent.innerHTML = `
         <div style="text-align:center; padding: 60px; color:var(--text-muted);">
             <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px; color:#cbd5e1;"></i>
@@ -464,12 +481,6 @@ async function loadUserLoanDetails(userId) {
     
     const l = ledgerData.loan;
     const payments = ledgerData.payments || [];
-    
-    if (l.status === 'active') {
-        issueBtn.style.display = 'none';
-    } else {
-        issueBtn.style.display = 'inline-block';
-    }
     
     const accountId = l.user_id ? parseInt(l.user_id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
     const progress = ((l.total_amount - l.remaining_balance) / l.total_amount) * 100;

@@ -20,7 +20,7 @@ function initUserPortalAuth() {
         if (sbUserEmail) sbUserEmail.textContent = 'Please log in';
         
         // If they are on account.html (which requires auth) or user-home.html, bounce them
-        if (window.location.pathname.includes('account.html') || window.location.pathname.includes('user-home.html') || window.location.pathname.includes('devices.html') || window.location.pathname.includes('loan.html') || window.location.pathname.includes('support.html')) {
+        if (window.location.pathname.includes('account.html') || window.location.pathname.includes('user-home.html') || window.location.pathname.includes('devices.html') || window.location.pathname.includes('loan.html')) {
             window.location.replace('/src/user/login.html');
         }
     } else {
