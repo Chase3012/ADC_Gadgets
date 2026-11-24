@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Icons -->
@@ -36,18 +36,14 @@
             </a>
         </div>
         <nav class="hdr-nav">
-            <a href="user-home.html" style="color:var(--pink);font-weight:600;">Shop</a>
+            <a href="user-home.html" class="active">Shop</a>
             <a href="devices.html">Devices</a>
+            <a href="loan.html">My Loans</a>
+            <a href="account.html">Account</a>
         </nav>
     </header>
 
-    <!-- 📱 SUB-NAV 📱 -->
-    <nav class="sub-nav">
-        <a href="user-home.html" class="active">Featured</a>
-        <a href="devices.html">Devices</a>
-    </nav>
-
-    <!-- 🌟 HERO 🌟 -->
+    <!-- ━━━ HERO ━━━ -->
     <div class="hero-wrap">
         <section class="hero">
             <h1 class="hero-title">Shop <span>ADC Gadgets.</span></h1>
@@ -64,7 +60,12 @@
                     data-lucide="chevron-left"></i></button>
             <section class="products-scroll" id="products-scroll">
 
-                <!-- Cards will be populated here dynamically via AppleDB -->
+                <!-- Initial skeleton cards shown while AppleDB loads -->
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
 
             </section>
             <button class="scroll-btn right" id="scroll-right" aria-label="Scroll right"><i
@@ -78,18 +79,17 @@
         <div class="fn-grid">
 
             <!-- NEWS CONTAINER -->
-            <div class="fn-news card">
+            <div class="fn-news card is-loading" id="fn-news-card">
                 <div class="fn-badge">Latest News</div>
                 <h2 class="fn-title" id="news-title">We've just restocked the latest iPhone 16 Pro models!</h2>
                 <p class="fn-desc" id="news-desc">Get your hands on the newest technology. Available now for pre-approval with flexible
                     loan plans and fast processing. Don't miss out on our limited time zero-interest promos.</p>
-                <a href="#" class="btn-buy" style="margin-top:auto; align-self:flex-start; text-decoration:none;">Read
-                    More</a>
+                <a href="devices.html" class="btn-buy" style="margin-top:auto; align-self:flex-start; text-decoration:none; background:var(--white); color:var(--black);">Browse Devices</a>
                 <i data-lucide="newspaper" class="fn-bg-icon"></i>
             </div>
 
             <!-- FEATURED MODEL -->
-            <a href="devices.html" class="fn-featured p-card scroll-reveal" data-soc="A18">
+            <a href="devices.html" class="fn-featured p-card scroll-reveal" data-soc="A18" data-original-price="₱54,990">
                 <span class="p-badge" style="background:var(--black); color:var(--white); border:none;">Best
                     Seller</span>
                 <div class="p-img-wrap" style="height: 180px;">
@@ -103,89 +103,37 @@
                             <p class="p-price-label">From</p>
                             <p class="p-price">₱ 2,292/mo</p>
                         </div>
-                        <button class="btn-buy">View</button>
+                        <span class="btn-buy">View</span>
                     </div>
                 </div>
             </a>
 
         </div>
 
-        <div
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 24px;">
-
-            <!-- FACT 1 -->
-            <div class="scroll-reveal"
-                style="background: var(--pink-soft); border: 1px solid rgba(255,65,145,0.2); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
-                <i data-lucide="shield-check"
-                    style="width: 40px; height: 40px; color: var(--pink); stroke-width: 1.5;"></i>
-                <h3 style="font-size: 24px; font-weight: 700; color: var(--black); margin: 0; letter-spacing: -0.02em;">
-                    100% Authentic</h3>
-                <p style="font-size: 15px; color: rgba(0,0,0,0.7); line-height: 1.6; margin: 0;">Every product we sell
-                    is guaranteed authentic Apple hardware. Enjoy trusted quality and complete peace of mind.</p>
-            </div>
-
-            <!-- FACT 2 -->
-            <div class="scroll-reveal"
-                style="background: var(--white); border: 1px solid var(--g200); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
-                <i data-lucide="badge-percent"
-                    style="width: 40px; height: 40px; color: var(--pink); stroke-width: 1.5;"></i>
-                <h3 style="font-size: 24px; font-weight: 700; color: var(--black); margin: 0; letter-spacing: -0.02em;">
-                    Unbeatable Prices</h3>
-                <p style="font-size: 15px; color: rgba(0,0,0,0.7); line-height: 1.6; margin: 0;">We offer the most
-                    competitive rates and flexible zero-interest installment plans, making upgrades affordable.</p>
-            </div>
-
-            <!-- FACT 3 (Logo & Brand) -->
-            <div class="scroll-reveal"
-                style="background: var(--black); border: 1px solid var(--black); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.15);">
-                <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 4px;">
-                    <img src="../../images/logo.jpg" alt="ADC Gadgets"
-                        style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--pink);">
-                    <div>
-                        <h3 style="font-size: 18px; font-weight: 700; color: var(--white); margin: 0;">ADC Gadgets</h3>
-                        <p style="font-size: 13px; color: rgba(255,255,255,0.6); margin: 0; margin-top: 2px;">Est. 2026
-                        </p>
-                    </div>
+        <div style="margin-top: 24px; background: var(--white); border: 1px solid var(--g200); border-radius: 20px; padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; align-items: start;">
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <i data-lucide="calendar-range" style="width:22px; height:22px; color:#be185d; flex-shrink:0; margin-top:2px;"></i>
+                <div>
+                    <h3 style="font-size:15px; font-weight:700; color:var(--black); margin:0 0 4px;">Flexible 6–24 Month Plans</h3>
+                    <p style="font-size:13.5px; color:var(--g500); line-height:1.5; margin:0;">Preview monthly rates per device before you apply with support.</p>
                 </div>
-                <p style="font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.6; margin: 0;">Experience seamless device ownership with guaranteed authenticity and flexible installment plans.</p>
-                <a href="devices.html" class="btn-buy"
-                    style="align-self: flex-start; text-decoration: none; margin-top: auto; background: var(--pink);">Browse Devices</a>
             </div>
-
-        </div>
-    </section>
-
-    <!-- Reasons to Shop Section -->
-    <section class="reasons-section">
-        <h2 class="reasons-title">The ADC Gadgets difference. <span>Even more reasons to shop with us.</span></h2>
-        <div class="reasons-grid">
-            <div class="reason-card">
-                <i data-lucide="refresh-cw" class="reason-icon" style="color: #0071e3;"></i>
-                <p><strong>Flexible Loan Plans.</strong> Get your dream device easily with affordable monthly payments.
-                </p>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <i data-lucide="shield-check" style="width:22px; height:22px; color:#be185d; flex-shrink:0; margin-top:2px;"></i>
+                <div>
+                    <h3 style="font-size:15px; font-weight:700; color:var(--black); margin:0 0 4px;">Verified Authentic Hardware</h3>
+                    <p style="font-size:13.5px; color:var(--g500); line-height:1.5; margin:0;">Every unit ships sealed with official Apple warranty and nationwide delivery.</p>
+                </div>
             </div>
-            <div class="reason-card">
-                <i data-lucide="globe" class="reason-icon" style="color: #22c55e;"></i>
-                <p>100% online approval and nationwide shipping available.</p>
-            </div>
-            <div class="reason-card">
-                <i data-lucide="smartphone" class="reason-icon" style="color: #0071e3;"></i>
-                <p>Browse our curated selection of premium Apple products with flexible installments.</p>
-            </div>
-            <div class="reason-card">
-                <i data-lucide="check-circle" class="reason-icon" style="color: #f97316;"></i>
-                <p><span
-                        style="background: linear-gradient(90deg, #FF4191, #ff8a00); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">Premium
-                        Quality</span> guaranteed. We provide 100% authentic and high-quality devices.</p>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <i data-lucide="smartphone" style="width:22px; height:22px; color:#be185d; flex-shrink:0; margin-top:2px;"></i>
+                <div>
+                    <h3 style="font-size:15px; font-weight:700; color:var(--black); margin:0 0 4px;">Manage &amp; Pay Online</h3>
+                    <p style="font-size:13.5px; color:var(--g500); line-height:1.5; margin:0;">Track your schedule, remaining balance, and GCash/Maya installments in <a href="loan.html" style="color:#be185d; font-weight:600; text-decoration:underline;">My Loans</a>.</p>
+                </div>
             </div>
         </div>
     </section>
-
-    <!-- ━━━ FOOTER ━━━ -->
-    <footer class="footer">
-        <p>© 2026 ADC Gadgets. All rights reserved.</p>
-        <p>Affordable • Trusted • Quality</p>
-    </footer>
 
     <!-- ━━━ SIDEBAR ━━━ -->
     <div id="sb-overlay"></div>
@@ -204,19 +152,24 @@
         <!-- Nav Links -->
         <nav class="sb-nav" style="padding: 8px 16px; display: flex; flex-direction: column; gap: 4px;">
 
-            <a href="user-home.html" class="sb-link" style="border-radius: 8px;">
+            <a href="user-home.html" class="sb-link active" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="shopping-bag" style="width:18px;height:18px;"></i></span>
                 Shop
             </a>
 
+            <a href="devices.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="smartphone" style="width:18px;height:18px;"></i></span>
+                Devices
+            </a>
+
             <a href="account.html" class="sb-link" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="user-cog" style="width:18px;height:18px;"></i></span>
-                Profile
+                Account
             </a>
 
             <a href="loan.html" class="sb-link" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
-                Loan
+                My Loans
             </a>
 
 
@@ -243,9 +196,9 @@
     </aside>
 
     <!-- ━━━ PRODUCT MODAL ━━━ -->
-    <div id="pm-overlay" class="pm-overlay">
+    <div id="pm-overlay" class="pm-overlay" role="dialog" aria-modal="true" aria-labelledby="m-title">
         <div class="pm-content">
-            <button class="pm-close" id="pm-close">
+            <button class="pm-close" id="pm-close" type="button" aria-label="Close">
                 <i data-lucide="x"></i>
             </button>
             <div class="pm-left">
@@ -301,105 +254,17 @@
                         <p>Get free delivery direct to your door.</p>
                     </div>
                 </div>
+
+                <div class="pm-actions">
+                    <button type="button" id="btn-apply-loan" class="pm-apply-btn">
+                        <i data-lucide="message-square"></i> Apply via Support Chat
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-
-        // Product Modal Logic
-        const pmOverlay = document.getElementById('pm-overlay');
-        const pmClose = document.getElementById('pm-close');
-        const mTitle = document.getElementById('m-title');
-        const mPrice = document.getElementById('m-price');
-        const mImg = document.getElementById('m-img');
-
-        const mSpecDisplay = document.getElementById('m-spec-display');
-        const mSpecCamera = document.getElementById('m-spec-camera');
-        const mSpecChip = document.getElementById('m-spec-chip');
-        const mSpecBattery = document.getElementById('m-spec-battery');
-
-        const specsData = {
-            "iPhone XS": {
-                display: "5.8-inch Super Retina HD display. OLED multi-touch display.",
-                camera: "12MP dual cameras with dual OIS. Incredible detail and color.",
-                chip: "A12 Bionic chip. Next-generation Neural Engine.",
-                battery: "Up to 14 hours of video playback. Fast-charge capable."
-            },
-            "iPhone X": {
-                display: "5.8-inch Super Retina HD display. The first all-screen design.",
-                camera: "12MP dual cameras. Beautiful portrait mode and lighting.",
-                chip: "A11 Bionic chip. Powerful performance.",
-                battery: "Up to 13 hours of video playback. Wireless charging."
-            },
-            "iPhone 7": {
-                display: "4.7-inch Retina HD display. Wide color gamut.",
-                camera: "12MP camera. Optical image stabilization.",
-                chip: "A10 Fusion chip. Fast when you need it.",
-                battery: "Up to 13 hours of video playback."
-            },
-            "iPhone SE": {
-                display: "4.7-inch Retina HD display. Brilliant colors.",
-                camera: "12MP camera. Portrait mode and Depth Control.",
-                chip: "A13 Bionic chip. Fast and efficient.",
-                battery: "Up to 13 hours of video playback."
-            },
-            "iPhone XR": {
-                display: "6.1-inch Liquid Retina HD display. Industry-leading color accuracy.",
-                camera: "12MP camera. Smart HDR for great photos.",
-                chip: "A12 Bionic chip. Smart and powerful.",
-                battery: "Up to 16 hours of video playback."
-            },
-            "iPhone 8": {
-                display: "4.7-inch Retina HD display. True Tone technology.",
-                camera: "12MP camera. Optical image stabilization for great photos.",
-                chip: "A11 Bionic chip. Smart and powerful.",
-                battery: "Up to 13 hours of video playback. Glass design."
-            },
-            "iPhone 11": {
-                display: "6.1-inch Liquid Retina HD display. True Tone and wide color gamut.",
-                camera: "12MP dual camera system (Ultra Wide and Wide) for spectacular photos.",
-                chip: "A13 Bionic chip. Dependable performance for daily tasks.",
-                battery: "Up to 17 hours of video playback. Reliable all-day battery life."
-            },
-            "iPhone 12": {
-                display: "6.1-inch OLED display with 60Hz refresh rate. Crisp, colorful, and stunningly clear.",
-                camera: "12MP + 12MP dual camera setup. Capture beautiful photos anywhere.",
-                chip: "A14 Bionic chip. Incredible performance and fully 5G ready.",
-                battery: "Up to 17 hours of video playback. Features MagSafe wireless charging."
-            },
-            "iPhone 13": {
-                display: "6.1-inch OLED display. Brighter and more beautiful.",
-                camera: "12MP dual camera system with Sensor-shift OIS for incredibly steady shots.",
-                chip: "A15 Bionic chip. Lightning fast and highly power-efficient.",
-                battery: "Up to 19 hours of video playback. Reliable all-day battery life."
-            },
-            "iPhone 14": {
-                display: "6.1-inch OLED display. Stunning visuals in any light.",
-                camera: "12MP dual camera system. Massive leap in low-light performance.",
-                chip: "A15 Bionic chip. Proven power for everything you do.",
-                battery: "Up to 20 hours of video playback. Now features vital Crash Detection."
-            },
-            "iPhone 15": {
-                display: "6.1-inch OLED display. Super Retina XDR brightness.",
-                camera: "48MP dual camera system. Capture super-high-resolution photos effortlessly.",
-                chip: "A16 Bionic chip. Powering advanced computational photography.",
-                battery: "Up to 20 hours of video playback. Finally featuring universal USB-C."
-            },
-            "iPhone 16": {
-                display: "6.1-inch OLED display. A brilliant canvas for your content.",
-                camera: "48MP dual camera system. Take perfect shots easily with the new Camera Control.",
-                chip: "A18 chip. Custom-built for incredible speed and next-level intelligence.",
-                battery: "Up to 22 hours of video playback. A massive leap in battery life."
-            },
-            "iPhone 17": {
-                display: "All-new larger 6.3-inch OLED display. More room to do what you love.",
-                camera: "48MP dual camera system. The ultimate photographic tool.",
-                chip: "A19 chip. Next-generation architecture built for advanced processing.",
-                battery: "Up to 24 hours of video playback. Fully integrated with Apple Intelligence."
-            }
-        };
-
         // Horizontal Scroll Nav
         const productsScroll = document.getElementById('products-scroll');
         const scrollLeft = document.getElementById('scroll-left');
@@ -422,6 +287,7 @@
             if(window.loadAppleDBDevices) window.loadAppleDBDevices("#products-scroll", true);
 
             // Fetch latest announcement
+            const newsCard = document.getElementById('fn-news-card');
             try {
                 const res = await fetch('/api/announcements/latest');
                 if (res.ok) {
@@ -431,16 +297,26 @@
                 }
             } catch (err) {
                 console.error("Failed to load announcements", err);
+            } finally {
+                if (newsCard) {
+                    newsCard.classList.remove('is-loading');
+                    newsCard.classList.add('sk-reveal');
+                }
             }
         });
     </script>
+
+    <!-- ━━━ FOOTER ━━━ -->
+    <footer class="footer">
+        <p>© 2026 ADC Gadgets. All rights reserved.</p>
+        <p>Affordable • Trusted • Quality</p>
+    </footer>
 
     <script src="../../src/shared/js/supabase.js"></script>
     <!-- Shared UI & Auth -->
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/support-chat.js?v=1790425793642"></script>
-    <script src="js/particles.js"></script>
 </body>
 
 </html>

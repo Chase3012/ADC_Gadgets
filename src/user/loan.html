@@ -10,7 +10,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
@@ -41,14 +41,10 @@
         <nav class="hdr-nav">
             <a href="user-home.html">Shop</a>
             <a href="devices.html">Devices</a>
+            <a href="loan.html" class="active">My Loans</a>
+            <a href="account.html">Account</a>
         </nav>
     </header>
-
-    <!-- ━━━ SUB-NAV ━━━ -->
-    <nav class="sub-nav">
-        <a href="user-home.html">Featured</a>
-        <a href="devices.html">Devices</a>
-    </nav>
 
     <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
     <div class="hero-wrap account-hero" style="text-align: center;">
@@ -60,9 +56,35 @@
     <main class="main" style="background:#fff; padding: 40px 24px; min-height: 60vh;">
         <div class="loan-page-layout">
             <div class="loan-container" id="loan-container">
-                <div style="text-align:center; padding: 60px; color:var(--text-muted);">
-                    <i data-lucide="loader-2" class="spin" style="width:32px;height:32px;"></i>
-                    <p style="margin-top:12px;">Loading your loans...</p>
+                <div class="loan-skeleton-wrap" aria-hidden="true">
+                    <div class="loan-skeleton-card">
+                        <div class="loan-sk-header">
+                            <span class="sk loan-sk-thumb"></span>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                                <span class="sk" style="width:220px; height:24px;"></span>
+                                <span class="sk sk-pill" style="width:110px; height:16px;"></span>
+                            </div>
+                        </div>
+                        <div class="loan-sk-tabs">
+                            <span class="sk" style="width:104px; height:18px;"></span>
+                            <span class="sk" style="width:126px; height:18px;"></span>
+                            <span class="sk" style="width:122px; height:18px;"></span>
+                            <span class="sk" style="width:116px; height:18px;"></span>
+                        </div>
+                        <div class="loan-sk-grid">
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <span class="sk" style="width:110px; height:12px;"></span>
+                                <span class="sk" style="width:150px; height:22px;"></span>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <span class="sk" style="width:130px; height:12px;"></span>
+                                <span class="sk" style="width:140px; height:22px;"></span>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:center; margin-top:24px;">
+                            <span class="sk" style="width:300px; height:48px; border-radius:8px;"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -98,14 +120,19 @@
                 Shop
             </a>
 
-            <a href="account.html" class="sb-link" style="border-radius: 8px;">
-                <span class="sb-icon"><i data-lucide="user-cog" style="width:18px;height:18px;"></i></span>
-                Profile
+            <a href="devices.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="smartphone" style="width:18px;height:18px;"></i></span>
+                Devices
             </a>
 
-            <a href="loan.html" class="sb-link" style="border-radius: 8px;">
+            <a href="account.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="user-cog" style="width:18px;height:18px;"></i></span>
+                Account
+            </a>
+
+            <a href="loan.html" class="sb-link active" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
-                Loan
+                My Loans
             </a>
 
 

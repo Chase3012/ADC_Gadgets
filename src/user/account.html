@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Icons -->
@@ -20,7 +20,8 @@
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        <link rel="stylesheet" href="css/user.css">
+    <link rel="stylesheet" href="../../src/shared/css/global.css">
+    <link rel="stylesheet" href="css/user.css">
     <link rel="stylesheet" href="css/account.css">
 </head>
 
@@ -40,24 +41,20 @@
         <nav class="hdr-nav">
             <a href="user-home.html">Shop</a>
             <a href="devices.html">Devices</a>
+            <a href="loan.html">My Loans</a>
+            <a href="account.html" class="active">Account</a>
         </nav>
     </header>
 
-    <!-- ━━━ SUB-NAV ━━━ -->
-    <nav class="sub-nav">
-        <a href="user-home.html">Featured</a>
-        <a href="devices.html">Devices</a>
-    </nav>
-
         <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
-    <div class="hero-wrap account-hero">
+    <div class="hero-wrap account-hero account-loading" id="account-hero-wrap">
         <h1 class="support-title account-title"><span class="glow-pink">My ADC Account</span></h1>
-        <h2 class="support-subtitle account-greeting">Hello, <span id="hero-first-name" style="color: var(--pink);">there</span>.</h2>
+        <h2 class="support-subtitle account-greeting">Hello, <span id="hero-first-name" class="sk-slot-dark" style="color: var(--pink);">there</span>.</h2>
         <p class="support-subtitle account-desc">Manage your profile and personal information.</p>
     </div>
 
     <!-- ━━━ MAIN CONTENT ━━━ -->
-    <div class="account-main">
+    <div class="account-main account-loading" id="account-main-wrap">
 
         <!-- ── LEFT: Profile Card ── -->
         <aside>
@@ -69,9 +66,9 @@
                             ?
                         </div>
                     </div>
-                    <div class="profile-name" id="profile-full-name">—</div>
-                    <div class="profile-email-text" id="profile-email-disp">—</div>
-                    <div class="status-badge active" id="account-status-badge">
+                    <div class="profile-name sk-slot-dark" id="profile-full-name">—</div>
+                    <div class="profile-email-text sk-slot-dark" id="profile-email-disp" style="margin-top:6px;">—</div>
+                    <div class="status-badge active" id="account-status-badge" style="margin-top:10px;">
                         <span class="status-dot"></span>
                         <span id="status-text">Active</span>
                     </div>
@@ -82,12 +79,12 @@
                     <div class="meta-row">
                         <i data-lucide="calendar" style="width:15px;height:15px;"></i>
                         <span class="meta-label">Registered</span>
-                        <span class="meta-val" id="profile-date-registered">—</span>
+                        <span class="meta-val sk-slot" id="profile-date-registered"></span>
                     </div>
                     <div class="meta-row">
                         <i data-lucide="smartphone" style="width:15px;height:15px;"></i>
                         <span class="meta-label">Mobile</span>
-                        <span class="meta-val" id="profile-mobile-short">—</span>
+                        <span class="meta-val sk-slot" id="profile-mobile-short"></span>
                     </div>
                 </div>
 
@@ -128,23 +125,23 @@
                             <label>Full Legal Name</label>
                             <div class="info-value">
                                 <i data-lucide="user" style="width:15px;height:15px;"></i>
-                                <span class="val-text" id="info-full-name">—</span>
+                                <span class="val-text sk-slot" id="info-full-name"></span>
                             </div>
                         </div>
                         <div class="info-field">
                             <label>Account Status</label>
                             <div class="info-value" style="gap:8px;">
                                 <i data-lucide="activity" style="width:15px;height:15px;"></i>
-                                <span class="val-text" id="info-status">—</span>
+                                <span class="val-text sk-slot" id="info-status"></span>
                             </div>
                         </div>
                         <div class="info-field">
                             <label>Email Address</label>
                             <div class="info-value">
                                 <i data-lucide="mail" style="width:15px;height:15px;"></i>
-                                <span class="val-text" id="info-email">—</span>
+                                <span class="val-text sk-slot" id="info-email"></span>
                                 <span class="verified-chip">
-                                    <i data-lucide="check" style="width:9px;height:9px;"></i> Verified
+                                    <i data-lucide="check" style="width:11px;height:11px;"></i> Verified
                                 </span>
                             </div>
                         </div>
@@ -152,21 +149,21 @@
                             <label>Mobile Number</label>
                             <div class="info-value">
                                 <i data-lucide="phone" style="width:15px;height:15px;"></i>
-                                <span class="val-text" id="info-mobile">—</span>
+                                <span class="val-text sk-slot" id="info-mobile"></span>
                             </div>
                         </div>
                         <div class="info-field full">
                             <label>Complete Home Address</label>
                             <div class="info-value">
                                 <i data-lucide="map-pin" style="width:15px;height:15px;"></i>
-                                <span class="val-text" id="info-address">—</span>
+                                <span class="val-text sk-slot" id="info-address"></span>
                             </div>
                         </div>
                         <div class="info-field">
                             <label>Date Registered</label>
                             <div class="info-value">
                                 <i data-lucide="calendar-check" style="width:15px;height:15px;"></i>
-                                <span class="val-text" id="info-date">—</span>
+                                <span class="val-text sk-slot" id="info-date"></span>
                             </div>
                         </div>
                     </div>
@@ -180,9 +177,9 @@
                             </div>
                             <div class="id-info">
                                 <div class="id-type">Government-Issued ID</div>
-                                <div class="id-name" id="info-id-type">Not yet uploaded</div>
+                                <div class="id-name sk-slot" id="info-id-type">Not yet uploaded</div>
                             </div>
-                            <div class="id-badge" id="id-status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;">
+                            <div class="id-badge sk-slot" id="id-status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;">
                                 <i data-lucide="alert-circle" style="width:10px;height:10px;"></i> <span id="id-status-text">Missing</span>
                             </div>
                         </div>
@@ -194,24 +191,24 @@
             <section class="acc-section" id="section-avatar">
                 <div class="acc-section-header">
                     <div class="acc-section-title-wrap">
-                        <div class="acc-section-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">
+                        <div class="acc-section-icon pink">
                             <i data-lucide="palette" style="width:20px;height:20px;"></i>
                         </div>
                         <div>
                             <div class="acc-section-title">Profile Avatar</div>
-                            <div class="acc-section-desc">Choose a premium gradient avatar for your profile.</div>
+                            <div class="acc-section-desc">Choose an accent gradient for your profile badge.</div>
                         </div>
                     </div>
                 </div>
                 <div class="acc-section-body">
-                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;" id="avatar-selector">
-                        <div class="avatar-option" data-color="blue" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #3b82f6, #1d4ed8); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
-                        <div class="avatar-option" data-color="pink" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #FF4191, #d9266e); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
-                        <div class="avatar-option" data-color="emerald" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #10b981, #047857); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
-                        <div class="avatar-option" data-color="amber" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #f59e0b, #b45309); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
-                        <div class="avatar-option" data-color="purple" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #8b5cf6, #5b21b6); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></div>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;" id="avatar-selector" role="group" aria-label="Profile avatar color options">
+                        <button type="button" class="avatar-option" data-color="blue" aria-label="Select blue avatar gradient" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #3b82f6, #1d4ed8); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></button>
+                        <button type="button" class="avatar-option" data-color="pink" aria-label="Select pink avatar gradient" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #FF4191, #be185d); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></button>
+                        <button type="button" class="avatar-option" data-color="emerald" aria-label="Select emerald avatar gradient" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #10b981, #047857); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></button>
+                        <button type="button" class="avatar-option" data-color="amber" aria-label="Select amber avatar gradient" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #f59e0b, #b45309); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></button>
+                        <button type="button" class="avatar-option" data-color="charcoal" aria-label="Select charcoal avatar gradient" style="width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg, #3f3f46, #18181b); cursor:pointer; border:3px solid transparent; transition:transform 0.2s, border 0.2s;"></button>
                     </div>
-                    <button class="primary-btn" id="save-avatar-btn" disabled>Save Selection</button>
+                    <button type="button" class="primary-btn" id="save-avatar-btn" disabled>Save Selection</button>
                 </div>
             </section>
 
@@ -248,14 +245,19 @@
                 Shop
             </a>
 
-            <a href="account.html" class="sb-link" style="border-radius: 8px;">
+            <a href="devices.html" class="sb-link" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="smartphone" style="width:18px;height:18px;"></i></span>
+                Devices
+            </a>
+
+            <a href="account.html" class="sb-link active" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="user-cog" style="width:18px;height:18px;"></i></span>
-                Profile
+                Account
             </a>
 
             <a href="loan.html" class="sb-link" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
-                Loan
+                My Loans
             </a>
         </nav>
 
@@ -271,7 +273,7 @@
                     <div class="sb-email" id="sb-user-email" style="font-size: 13px; color: rgba(255,255,255,0.5);">—</div>
                 </div>
             </div>
-            <button class="sb-signout" id="sb-logout" onclick="window.location.href='/src/user/login.html'" style="border-radius: 8px; justify-content: flex-start;">
+            <button class="sb-signout" id="sb-logout" type="button" style="border-radius: 8px; justify-content: flex-start;">
                 <span class="sb-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
                 Logout
             </button>
@@ -284,39 +286,11 @@
         <span id="toast-msg">Profile updated successfully!</span>
     </div>
 
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
     <script>
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         let userProfile = null;
-
-        /* ── Sidebar toggle ── */
-        const navHamBtn = document.getElementById('nav-ham-btn');
-        const sidebar = document.getElementById('sidebar');
-        const sbOverlay = document.getElementById('sb-overlay');
-        const sbClose = document.getElementById('sb-close');
-
-        function openSidebar() {
-            sidebar.classList.add('open');
-            sbOverlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
-            if (navHamBtn) navHamBtn.setAttribute('aria-expanded', 'true');
-        }
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            sbOverlay.classList.remove('open');
-            document.body.style.overflow = '';
-            if (navHamBtn) navHamBtn.setAttribute('aria-expanded', 'false');
-        }
-        if (navHamBtn) navHamBtn.addEventListener('click', openSidebar);
-        sbClose.addEventListener('click', closeSidebar);
-        sbOverlay.addEventListener('click', closeSidebar);
-
-        /* ── Smooth scroll for sidebar links ── */
-        document.querySelectorAll('.side-nav-link').forEach(link => {
-            link.addEventListener('click', function (e) {
-                document.querySelectorAll('.side-nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
 
         /* ── Auto-activate section from URL hash (e.g. #section-security) ── */
         function activateHashSection() {
@@ -355,7 +329,10 @@
         });
 
         saveAvatarBtn.addEventListener('click', async () => {
-            if (!selectedAvatarColor || !userProfile.id) return;
+            if (!selectedAvatarColor || !userProfile || !userProfile.id) {
+                showToast('Profile is still loading. Please try again.', 'error');
+                return;
+            }
             const btn = saveAvatarBtn;
             const originalText = btn.textContent;
             btn.textContent = 'Saving...';
@@ -372,9 +349,16 @@
                 
                 showToast('Avatar updated successfully!');
                 
-                // Update local storage so auth.js uses it next time
+                // Update local storage so auth.js and all user pages use it immediately
                 userProfile.avatar_color = selectedAvatarColor;
                 localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                try {
+                    const storedCustomer = JSON.parse(localStorage.getItem('customer_user') || 'null');
+                    if (storedCustomer) {
+                        storedCustomer.avatar_color = selectedAvatarColor;
+                        localStorage.setItem('customer_user', JSON.stringify(storedCustomer));
+                    }
+                } catch (_) {}
                 
                 // Update UI right now
                 applyAvatarColor(selectedAvatarColor, userProfile.full_name);
@@ -390,10 +374,11 @@
         function applyAvatarColor(color, name) {
             const gradients = {
                 blue: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                pink: 'linear-gradient(135deg, #FF4191, #d9266e)',
+                pink: 'linear-gradient(135deg, #FF4191, #be185d)',
                 emerald: 'linear-gradient(135deg, #10b981, #047857)',
                 amber: 'linear-gradient(135deg, #f59e0b, #b45309)',
-                purple: 'linear-gradient(135deg, #8b5cf6, #5b21b6)'
+                charcoal: 'linear-gradient(135deg, #3f3f46, #18181b)',
+                purple: 'linear-gradient(135deg, #3f3f46, #18181b)'
             };
             const bg = gradients[color] || gradients.blue;
             const initial = name ? name.charAt(0).toUpperCase() : '?';
@@ -409,21 +394,6 @@
                 phAvatar.style.background = bg;
                 phAvatar.textContent = initial;
             }
-        }
-
-
-
-        /* ── Toast ── */
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-msg');
-            const icon = toast.querySelector('i');
-            toastMsg.textContent = msg;
-            toast.className = type;
-            icon.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'x-circle');
-            lucide.createIcons();
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3800);
         }
 
         /* ── Load Profile Data ── */
@@ -537,6 +507,13 @@
             document.getElementById('info-date').textContent = dateStr;
             document.getElementById('info-id-type').textContent = idType;
 
+            document.getElementById('account-hero-wrap')?.classList.remove('account-loading');
+            const mainWrap = document.getElementById('account-main-wrap');
+            if (mainWrap) {
+                mainWrap.classList.remove('account-loading');
+                mainWrap.classList.add('sk-reveal');
+            }
+
             lucide.createIcons();
         }
 
@@ -559,14 +536,6 @@
         }
 
         loadProfile();
-
-        /* ── Logout ── */
-        document.getElementById('sb-logout').addEventListener('click', async function(e) {
-            e.preventDefault();
-            try { await fetch('/api/logout', { method: 'POST' }); } catch(err) {}
-            localStorage.removeItem('customer_user');
-            window.location.href = '/src/user/login.html';
-        });
     </script>
 
 </body>

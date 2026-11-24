@@ -58,12 +58,12 @@
     border: none;
     padding: 0 0 12px 0;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-muted);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
-    transition: all 0.2s;
+    transition: color 0.16s ease-out, border-color 0.16s ease-out;
 }
 
 .loan-tab:hover {
@@ -77,7 +77,8 @@
 
 .loan-tab-content {
     display: none;
-    animation: fadeIn 0.2s ease;
+    min-height: 168px;
+    animation: fadeIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .loan-tab-content.active {
@@ -106,12 +107,46 @@
 
 .info-value {
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-main);
+    font-variant-numeric: tabular-nums;
 }
 
 .info-value.highlight {
-    color: var(--pink);
+    color: #be185d;
+}
+
+.btn-pay-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 300px;
+    min-height: 46px;
+    padding: 12px 20px;
+    background: #be185d;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+    transition: background-color 0.15s ease-out, transform 0.08s ease-out;
+}
+
+.btn-pay-primary:hover:not(:disabled) {
+    background: #9d174d;
+}
+
+.btn-pay-primary:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-pay-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Progress bar for non-card layout */
@@ -198,4 +233,22 @@
 
 .prev-chevron.open {
     transform: rotate(180deg);
+}
+
+@media (max-width: 640px) {
+    .loan-tabs {
+        gap: 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .loan-tab {
+        white-space: nowrap;
+        font-size: 14px;
+    }
+
+    .loan-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }

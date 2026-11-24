@@ -659,6 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderDevicesTable(devices) {
     tbody.innerHTML = '';
+    tbody.classList.add('sk-reveal');
     if (!devices || devices.length === 0) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No devices found matching your search.</td></tr>';
       return;
@@ -748,11 +749,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── LOAD DEVICES TABLE ───────────────────────────────────────────────────────
+  function renderDeviceTableSkeletons(rows = 5) {
+    return Array.from({ length: rows }, () => `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:12px;"><span class="sk" style="width:40px;height:40px;border-radius:8px;flex-shrink:0;"></span><span class="sk" style="width:128px;height:14px;"></span></div></td>
+        <td><span class="sk" style="width:58px;height:13px;"></span></td>
+        <td><span class="sk" style="width:74px;height:14px;"></span></td>
+        <td><div style="display:flex;gap:6px;"><span class="sk sk-pill" style="width:16px;height:16px;"></span><span class="sk sk-pill" style="width:16px;height:16px;"></span></div></td>
+        <td><span class="sk" style="width:68px;height:13px;"></span></td>
+        <td><span class="sk sk-pill" style="width:68px;height:22px;"></span></td>
+        <td><div style="display:flex;gap:8px;"><span class="sk" style="width:52px;height:28px;border-radius:6px;"></span><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></div></td>
+      </tr>
+    `).join('');
+  }
+
   async function loadDevices() {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">Loading devices...</td></tr>';
+    tbody.innerHTML = renderDeviceTableSkeletons(5);
     try {
       const res = await fetch('/api/devices');
       allLoadedDevices = await res.json();
+
+      const subtitle = document.getElementById('inventory-units-subtitle');
+      if (subtitle) {
+        const totalUnits = (allLoadedDevices || []).reduce((sum, d) => sum + (parseInt(d.stock || 0, 10)), 0);
+        subtitle.textContent = `${totalUnits} UNITS ON SHELF`;
+        subtitle.classList.add('sk-reveal');
+      }
       
       if (!allLoadedDevices || allLoadedDevices.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No devices found in inventory. Click "+ Add New Device" above.</td></tr>';

@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard â€” ADC Admin</title>
+  <title>Customers — ADC Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Admin Supabase Client -->
     <script src="../../src/admin/js/admin-supabase.js"></script>
@@ -16,60 +16,75 @@
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-  <div class="app">
+  <div class="app bento-shell">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-    <div class="logo-area">
-      <img src="/images/logo.jpg" alt="ADC Logo" style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-      <span>ADC Gadgets<br><small style="font-size:10px;color:var(--text-muted);font-weight:500;">Loan Console</small></span>
-    </div>
-    <nav class="nav-list">
-      <a href="dashboard.html" class="nav-item ">
-        <div class="nav-item-left">Overview</div>
+    <!-- FLOATING TOP PILL HEADER -->
+    <header class="top-pill-bar">
+      <a href="dashboard.html" class="top-pill-brand">
+        <img src="/images/logo.jpg" alt="ADC Gadgets Logo">
+        <span>ADC Gadgets</span>
       </a>
-      <a href="loan-ledger.html" class="nav-item ">
-        <div class="nav-item-left">Active Loans</div>
-      </a>
-      <a href="communication.html" class="nav-item " id="nav-communications">
-        <div class="nav-item-left">Communication</div>
-        <div class="nav-badge" id="global-chat-badge" style="display:none;"></div>
-      </a>
-      <a href="inventory.html" class="nav-item ">
-        <div class="nav-item-left">Inventory</div>
-      </a>
-      <a href="manage-users.html" class="nav-item active">
-        <div class="nav-item-left">Customers</div>
-      </a>
-      <a href="reports.html" class="nav-item ">
-        <div class="nav-item-left">Reports</div>
-      </a>
-    </nav>
-    <div style="margin-top:auto; padding:20px 24px;">
-      <button id="logout-btn" style="width:100%; background:var(--surface); border:1px solid var(--border); padding:12px; border-radius:12px; color:var(--danger); font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition: background 0.2s;">
-        <i data-lucide="log-out" style="width:16px; height:16px;"></i> Logout
-      </button>
-    </div>
-  </aside>
 
-    <!-- MAIN -->
-    <main class="main">
-      <header class="header">
-      <div class="header-left">
-        <p class="page-subtitle">9 BORROWERS</p>
-        <h1 class="page-title">Customers</h1>
-      </div>
-      <div class="header-right" style="display:flex; align-items:center; gap:16px;">
-        <div style="position:relative;">
-          <input type="text" id="user-search-input" placeholder="Search customers by name, email..." style="color: var(--text-main); background: var(--surface); padding:10px 16px; border-radius:20px; border:1px solid var(--border); font-size:13px; outline:none; width:250px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+      <nav class="top-pill-nav" aria-label="Admin Navigation">
+        <a href="dashboard.html" class="top-pill-link">Overview</a>
+        <a href="loan-ledger.html" class="top-pill-link">Active Loans</a>
+        <a href="communication.html" class="top-pill-link" id="nav-communications">Communication <span class="nav-badge" id="global-chat-badge" style="display:none;"></span></a>
+        <a href="inventory.html" class="top-pill-link">Inventory</a>
+        <a href="manage-users.html" class="top-pill-link active">Customers</a>
+        <a href="reports.html" class="top-pill-link">Reports</a>
+      </nav>
+
+      <div class="top-pill-utils">
+        <div class="top-search-wrap">
+          <i data-lucide="search"></i>
+          <input type="text" id="user-search-input" class="top-search-input" aria-label="Search customers by name or email" placeholder="Search customers by name, email...">
         </div>
-        
-        
-        <div style="width:36px; height:36px; background:#0F172A; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">AD</div>
+        <div class="admin-avatar-pill" title="Admin">AD</div>
       </div>
     </header>
 
-      <div class="content">
+    <div class="shell-body">
+      <!-- SLIM LEFT ICON RAIL -->
+      <aside class="icon-rail" aria-label="Quick Admin Shortcuts">
+        <div class="rail-group">
+          <a href="dashboard.html" class="rail-btn" aria-label="Overview" title="Overview">
+            <i data-lucide="layout-grid" style="width:18px;height:18px;"></i>
+          </a>
+          <a href="loan-ledger.html" class="rail-btn" aria-label="Active Loans" title="Active Loans">
+            <i data-lucide="credit-card" style="width:18px;height:18px;"></i>
+          </a>
+          <a href="communication.html" class="rail-btn" aria-label="Communication" title="Communication">
+            <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
+            <span class="rail-unread-dot" id="rail-chat-dot"></span>
+          </a>
+          <a href="inventory.html" class="rail-btn" aria-label="Inventory" title="Inventory">
+            <i data-lucide="smartphone" style="width:18px;height:18px;"></i>
+          </a>
+          <a href="manage-users.html" class="rail-btn active" aria-label="Customers" title="Customers">
+            <i data-lucide="users" style="width:18px;height:18px;"></i>
+          </a>
+          <a href="reports.html" class="rail-btn" aria-label="Reports" title="Reports">
+            <i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i>
+          </a>
+        </div>
+
+        <div class="rail-group">
+          <button id="logout-btn" class="rail-btn rail-logout" type="button" aria-label="Logout" title="Logout">
+            <i data-lucide="log-out" style="width:18px;height:18px;"></i>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <div class="bento-page-head">
+          <div>
+            <p class="page-subtitle"><span class="sk sk-subtitle"></span></p>
+            <h1 class="bento-greeting">Customer <span>Directory</span></h1>
+          </div>
+        </div>
+
+        <div class="content">
 
         <!-- MANAGE USERS PANEL -->
         <div id="panel-manage-users" class="dash-panel" style="display: block;">
@@ -91,7 +106,11 @@
                   </tr>
                 </thead>
                 <tbody id="users-tbody">
-                  <!-- JS will populate this -->
+                  <tr><td><div style="display:flex;flex-direction:column;gap:6px;"><span class="sk" style="width:136px;height:14px;"></span><span class="sk" style="width:184px;height:11px;"></span></div></td><td><span class="sk" style="width:94px;height:13px;"></span></td><td><span class="sk" style="width:156px;height:13px;"></span></td><td><span class="sk sk-pill" style="width:64px;height:22px;"></span></td><td><span class="sk" style="width:88px;height:13px;"></span></td><td><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></td></tr>
+                  <tr><td><div style="display:flex;flex-direction:column;gap:6px;"><span class="sk" style="width:152px;height:14px;"></span><span class="sk" style="width:168px;height:11px;"></span></div></td><td><span class="sk" style="width:94px;height:13px;"></span></td><td><span class="sk" style="width:140px;height:13px;"></span></td><td><span class="sk sk-pill" style="width:64px;height:22px;"></span></td><td><span class="sk" style="width:88px;height:13px;"></span></td><td><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></td></tr>
+                  <tr><td><div style="display:flex;flex-direction:column;gap:6px;"><span class="sk" style="width:124px;height:14px;"></span><span class="sk" style="width:192px;height:11px;"></span></div></td><td><span class="sk" style="width:94px;height:13px;"></span></td><td><span class="sk" style="width:164px;height:13px;"></span></td><td><span class="sk sk-pill" style="width:64px;height:22px;"></span></td><td><span class="sk" style="width:88px;height:13px;"></span></td><td><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></td></tr>
+                  <tr><td><div style="display:flex;flex-direction:column;gap:6px;"><span class="sk" style="width:144px;height:14px;"></span><span class="sk" style="width:176px;height:11px;"></span></div></td><td><span class="sk" style="width:94px;height:13px;"></span></td><td><span class="sk" style="width:148px;height:13px;"></span></td><td><span class="sk sk-pill" style="width:64px;height:22px;"></span></td><td><span class="sk" style="width:88px;height:13px;"></span></td><td><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></td></tr>
+                  <tr><td><div style="display:flex;flex-direction:column;gap:6px;"><span class="sk" style="width:130px;height:14px;"></span><span class="sk" style="width:180px;height:11px;"></span></div></td><td><span class="sk" style="width:94px;height:13px;"></span></td><td><span class="sk" style="width:152px;height:13px;"></span></td><td><span class="sk sk-pill" style="width:64px;height:22px;"></span></td><td><span class="sk" style="width:88px;height:13px;"></span></td><td><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></td></tr>
                 </tbody>
               </table>
             </div>
@@ -100,15 +119,22 @@
         
         <!-- DETAILED LEDGER PANEL -->
         <div id="panel-loan-details" class="dash-panel" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap;">
                 <button class="btn-secondary" id="back-to-users-btn" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;"><i data-lucide="arrow-left" style="width: 16px;"></i> Back to Users</button>
-                <button id="issue-new-loan-ledger-btn" style="display: none; align-items: center; gap: 6px; padding: 10px 22px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.25) !important; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(236,72,153,0.45) !important;"><i data-lucide="plus" style="width:16px; height:16px;"></i> Issue New Loan</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <a id="open-full-ledger-link" href="loan-ledger.html" class="btn-secondary" style="display: none; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;"><i data-lucide="external-link" style="width:15px; height:15px;"></i> Open in Loan Ledger</a>
+                    <button id="issue-new-loan-ledger-btn" style="display: none; align-items: center; gap: 6px; padding: 10px 22px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #be185d 0%, #9d174d 100%) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.25) !important; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;"><i data-lucide="plus" style="width:16px; height:16px;"></i> Issue New Loan</button>
+                </div>
             </div>
             
             <div class="card" id="ledger-content" style="min-height: 400px; padding: 32px;">
                 <!-- Dynamically populated -->
             </div>
         </div>
+        </div><!-- end .content -->
+      </main>
+    </div><!-- end .shell-body -->
+  </div><!-- end .app -->
 
         <!-- ADD USER MODAL -->
   <div class="modal-overlay" id="add-user-modal">
@@ -168,12 +194,12 @@
           <div class="form-group full" id="nu-loan-preview" style="display:none; background:#fdf2f8; border:1px solid #fbcfe8; border-radius:8px; padding:12px 16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; flex-wrap:wrap; gap:8px;">
               <div>
-                <span style="font-weight:700; color:#db2777;" id="preview-device-name">iPhone 15</span>
-                <span style="color:var(--text-muted); margin-left:6px;" id="preview-device-srp">SRP: ₱49,990.00</span>
+                <span style="font-weight:700; color:#db2777;" id="preview-device-name"></span>
+                <span style="color:var(--text-muted); margin-left:6px;" id="preview-device-srp"></span>
               </div>
               <div style="text-align:right;">
                 <span style="font-size:12px; color:var(--text-muted);">Calculated Monthly:</span>
-                <span style="font-weight:800; color:#db2777; font-size:15px; margin-left:4px;" id="preview-monthly">₱2,000.00 / mo</span>
+                <span style="font-weight:800; color:#db2777; font-size:15px; margin-left:4px;" id="preview-monthly"></span>
               </div>
             </div>
           </div>
@@ -238,12 +264,12 @@
           <div class="form-group full" id="inl-loan-preview" style="display:none; background: rgba(236, 72, 153, 0.08); border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 10px; padding: 14px 18px;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; flex-wrap:wrap; gap:10px;">
               <div>
-                <div style="font-weight:700; font-size: 15px; color:#f472b6;" id="inl-preview-device-name">iPhone 16</div>
-                <div style="color:var(--text-muted); font-size: 12px; margin-top:2px;" id="inl-preview-device-srp">SRP: ₱54,990.00</div>
+                <div style="font-weight:700; font-size: 15px; color:#f472b6;" id="inl-preview-device-name"></div>
+                <div style="color:var(--text-muted); font-size: 12px; margin-top:2px;" id="inl-preview-device-srp"></div>
               </div>
               <div style="text-align:right;">
                 <div style="font-size:11px; text-transform: uppercase; letter-spacing:0.05em; color:var(--text-muted);">Calculated Monthly:</div>
-                <div style="font-weight:800; color:#f472b6; font-size:17px; margin-top:2px;" id="inl-preview-monthly">₱2,474.55 / mo</div>
+                <div style="font-weight:800; color:#f472b6; font-size:17px; margin-top:2px;" id="inl-preview-monthly"></div>
               </div>
             </div>
           </div>
@@ -263,7 +289,7 @@
       </div>
       <div class="modal-foot">
         <button type="button" class="btn-cancel" id="cancel-issue-loan-btn">Cancel</button>
-        <button type="submit" class="btn-submit" id="submit-issue-loan-btn" form="issue-new-loan-form" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(236,72,153,0.45);"><i data-lucide="check" style="width:16px;"></i> Issue Loan</button>
+        <button type="submit" class="btn-submit" id="submit-issue-loan-btn" form="issue-new-loan-form" style="background: linear-gradient(135deg, #be185d 0%, #9d174d 100%); color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(0, 0, 0, 0.35);"><i data-lucide="check" style="width:16px;"></i> Issue Loan</button>
       </div>
     </div>
   </div>
@@ -341,6 +367,7 @@
     function renderUsersTable(users) {
       const tbody = document.getElementById('users-tbody');
       tbody.innerHTML = '';
+      tbody.classList.add('sk-reveal');
       
       if (!users || users.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No customers found matching your search.</td></tr>';
@@ -364,14 +391,19 @@
         const accountId = user.id ? parseInt(user.id.replace(/-/g, '').substring(0, 8), 16).toString().padStart(10, '0') : '0000000000';
         tr.innerHTML = `
           <td>
-            <div style="font-weight:700;">${name}</div>
-            <div style="font-size:11px; color:var(--text-muted); font-weight:500;">ID: ${accountId} &bull; ${email}</div>
+            <div style="font-weight:700;">${escHtml(name)}</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:500;">ID: ${accountId} &bull; ${escHtml(email)}</div>
           </td>
-          <td>${mobile}</td>
-          <td>${address}</td>
-          <td><span class="status-badge ${statusClass}">${status}</span></td>
-          <td style="color:var(--text-muted)">${date}</td>
-          <td><button class="view-loan-btn" data-userid="${user.id}" style="padding: 6px 14px; font-size: 12px; font-weight: 600; background:var(--surface); color: var(--pink); border: 1px solid var(--pink); border-radius: 6px; cursor: pointer; transition: all 0.2s;">View</button></td>
+          <td class="num-tabular">${escHtml(mobile)}</td>
+          <td>${escHtml(address)}</td>
+          <td><span class="status-badge ${statusClass}">${escHtml(status)}</span></td>
+          <td style="color:var(--text-muted)">${escHtml(date)}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button class="view-loan-btn" data-userid="${user.id}" style="padding: 6px 12px; font-size: 12px; font-weight: 600; background:var(--surface); color: #f472b6; border: 1px solid #f472b6; border-radius: 6px; cursor: pointer;">View</button>
+              <a href="loan-ledger.html?open_user=${encodeURIComponent(user.id)}" style="padding: 6px 12px; font-size: 12px; font-weight: 600; background: #be185d; color: #ffffff; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center;">Ledger</a>
+            </div>
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -404,7 +436,16 @@
 
     async function loadUsers() {
       const tbody = document.getElementById('users-tbody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
+      tbody.innerHTML = Array.from({ length: 5 }, () => `
+        <tr>
+          <td><div style="display:flex;flex-direction:column;gap:6px;"><span class="sk" style="width:136px;height:14px;"></span><span class="sk" style="width:180px;height:11px;"></span></div></td>
+          <td><span class="sk" style="width:94px;height:13px;"></span></td>
+          <td><span class="sk" style="width:152px;height:13px;"></span></td>
+          <td><span class="sk sk-pill" style="width:64px;height:22px;"></span></td>
+          <td><span class="sk" style="width:88px;height:13px;"></span></td>
+          <td><span class="sk" style="width:58px;height:28px;border-radius:6px;"></span></td>
+        </tr>
+      `).join('');
       
       let data;
       try {
@@ -419,7 +460,8 @@
       allLoadedUsers = data || [];
       const subtitle = document.querySelector('.page-subtitle');
       if (subtitle) {
-        subtitle.textContent = `${allLoadedUsers.length} BORROWERS`;
+        subtitle.textContent = `${allLoadedUsers.length} customers`;
+        subtitle.style.textTransform = 'none';
       }
       
       if (userSearchInput && userSearchInput.value.trim()) {
@@ -438,8 +480,28 @@
       const ledgerContent = document.getElementById('ledger-content');
       lastViewedUserId = userId;
       
-      ledgerContent.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 60px 0;"><i data-lucide="loader-2" class="spin" style="width:32px; height:32px; color:var(--pink);"></i><p style="margin-top: 16px; font-size:15px;">Retrieving detailed ledger...</p></div>';
-      lucide.createIcons();
+      ledgerContent.innerHTML = `
+        <div aria-busy="true" style="display:flex;flex-direction:column;gap:24px;">
+          <div style="display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+            <span class="sk sk-pill" style="width:56px;height:56px;flex-shrink:0;"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+              <span class="sk" style="width:200px;height:20px;"></span>
+              <span class="sk" style="width:260px;height:13px;"></span>
+            </div>
+            <span class="sk sk-pill" style="width:92px;height:28px;"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <div style="padding:18px;border:1px solid var(--border);border-radius:12px;"><span class="sk" style="width:84px;height:11px;margin-bottom:10px;"></span><span class="sk" style="width:120px;height:24px;"></span></div>
+            <div style="padding:18px;border:1px solid var(--border);border-radius:12px;"><span class="sk" style="width:92px;height:11px;margin-bottom:10px;"></span><span class="sk" style="width:120px;height:24px;"></span></div>
+            <div style="padding:18px;border:1px solid var(--border);border-radius:12px;"><span class="sk" style="width:88px;height:11px;margin-bottom:10px;"></span><span class="sk" style="width:110px;height:24px;"></span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <span class="sk" style="width:100%;height:44px;"></span>
+            <span class="sk" style="width:100%;height:44px;"></span>
+            <span class="sk" style="width:100%;height:44px;"></span>
+          </div>
+        </div>
+      `;
       
       let data, fetchError;
       try {
@@ -485,6 +547,11 @@
       const payments = ledgerData.payments || [];
       
       const hasActiveLoan = data.some(item => (item.status || '').toLowerCase() === 'active');
+      const fullLedgerLink = document.getElementById('open-full-ledger-link');
+      if (fullLedgerLink) {
+          fullLedgerLink.href = `loan-ledger.html?open_user=${encodeURIComponent(userId)}`;
+          fullLedgerLink.style.display = 'inline-flex';
+      }
       if (hasActiveLoan) {
           issueBtn.style.display = 'none';
       } else {
@@ -499,19 +566,19 @@
         <div style="display: flex; gap: 40px; margin-bottom: 32px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 250px;">
                 <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Customer Information</h3>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Name:</strong> ${l.full_name || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Name:</strong> ${escHtml(l.full_name || 'N/A')}</p>
                 <p style="margin: 4px 0; font-size: 14px;"><strong>Account ID:</strong> ${accountId}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> ${l.email || 'N/A'}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Mobile:</strong> ${l.mobile || 'N/A'}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Address:</strong> ${l.address || 'N/A'}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> ${escHtml(l.email || 'N/A')}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Mobile:</strong> ${escHtml(l.mobile || 'N/A')}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Address:</strong> ${escHtml(l.address || 'N/A')}</p>
             </div>
             <div style="flex: 1; min-width: 250px;">
                 <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Loan Overview</h3>
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <img src="${imgPath}" alt="${l.device_name}" style="height: 48px; width: 48px; object-fit: contain; background:var(--surface); border-radius: 8px; padding: 4px;">
+                    <img src="${escHtml(imgPath)}" alt="${escHtml(l.device_name)}" style="height: 48px; width: 48px; object-fit: contain; background:var(--surface); border-radius: 8px; padding: 4px;">
                     <div>
-                        <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">${l.device_name}${l.device_color ? ` - ${l.device_color}` : ''}</div>
-                        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">${l.status}</div>
+                        <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">${escHtml(l.device_name)}${l.device_color ? ` - ${escHtml(l.device_color)}` : ''}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">${escHtml(l.status)}</div>
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">
@@ -1104,28 +1171,27 @@
     document.getElementById('close-error-btn').addEventListener('click', () => {
       document.getElementById('apple-error-modal').classList.remove('active');
     });
-    
-    
-    // Search functionality
-    const searchInput = document.getElementById('user-search-input');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#users-tbody tr');
-        rows.forEach(row => {
-          if (row.children.length > 1) { // ensure it's not a loading or error row
-            // We search within the first column (Name + ID)
-            const textContent = row.children[0].textContent.toLowerCase();
-            if (textContent.includes(query)) {
-              row.style.display = '';
-            } else {
-              row.style.display = 'none';
-            }
-          }
-        });
-      });
-    }
 
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      ['add-user-modal', 'phone-selector-modal', 'issue-new-loan-modal', 'apple-success-modal', 'apple-error-modal'].forEach(id => {
+        document.getElementById(id)?.classList.remove('active');
+      });
+    });
+
+    ['add-user-modal', 'phone-selector-modal', 'issue-new-loan-modal'].forEach(id => {
+      const overlay = document.getElementById(id);
+      if (overlay) {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) overlay.classList.remove('active');
+        });
+      }
+    });
+
+    function escHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+    
     // Load users on page load
     loadUsers();
 
@@ -1133,7 +1199,7 @@
     });
   </script>
 
-    
+<script src="js/admin-ui.js"></script>
 <script src="js/admin-auth.js"></script>
 </body>
 </html>

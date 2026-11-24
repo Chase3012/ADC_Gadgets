@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if(navHamBtn) navHamBtn.addEventListener('click', openSidebar);
     if(sbClose) sbClose.addEventListener('click', closeSidebar);
     if(overlay) overlay.addEventListener('click', closeSidebar);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+            closeSidebar();
+            if (navHamBtn) navHamBtn.focus();
+        }
+    });
     
     // Sidebar active link highlighting for account.html
     document.querySelectorAll('.side-nav-link').forEach(link => {

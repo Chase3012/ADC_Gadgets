@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — ADC Admin</title>
+  <title>Customer Loan Ledger — ADC Admin</title>
   <meta name="description" content="ADC Gadgets Admin Dashboard — Analytics and Sales overview.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,6 +71,46 @@
     /* Empty / loading */
     .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; height: 20px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* User Loan Ledger Layout */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; min-width: 0; }
+    .top-header { display: flex; align-items: center; padding: 20px 32px; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .content-body { padding: 28px 32px; flex: 1; }
+    .ledger-container { display: flex; flex-direction: column; gap: 24px; }
+    .ledger-header { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .ledger-title h1 { font-size: 22px; font-weight: 800; color: var(--text-main); margin: 0 0 6px 0; }
+    .ledger-title p { font-size: 13px; color: var(--text-muted); margin: 0; }
+    .ledger-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .metric-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+    .metric-box h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 8px 0; }
+    .metric-box p { font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0; }
+    .action-bar { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn-action { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; color: #fff; }
+    .btn-action.pink { background: #be185d; }
+    .btn-action.blue { background: #1d4ed8; }
+    .doc-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .doc-section h2 { font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; }
+    .doc-card { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .doc-card img { width: 160px; height: 105px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); cursor: zoom-in; }
+    .doc-meta .label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 8px; }
+    .doc-meta .value { font-size: 14px; font-weight: 600; color: var(--text-main); }
+    .excel-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; font-size: 13px; }
+    .excel-table th, .excel-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    .excel-table th { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; background: rgba(255,255,255,0.03); }
+    .status-paid { background: #dcfce7; color: #15803d; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .cash-overlay, .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
+    .cash-overlay.active, .lightbox-overlay.active { display: flex; }
+    .cash-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 100%; max-width: 420px; }
+    .cash-title { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 18px; }
+    .cash-fg { margin-bottom: 14px; }
+    .cash-fg label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .cash-fg input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); color: var(--text-main); background: var(--bg); font-size: 14px; }
+    .cash-footer { display: flex; gap: 12px; margin-top: 20px; }
+    .cash-cancel { flex: 1; padding: 11px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-main); font-weight: 600; }
+    .cash-save { flex: 1; padding: 11px; border-radius: 8px; border: none; background: #be185d; color: #fff; font-weight: 600; }
+    .lightbox-overlay img { max-width: 90vw; max-height: 85vh; border-radius: 12px; }
+    @media (max-width: 900px) { .ledger-metrics { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .ledger-metrics { grid-template-columns: 1fr; } .content-body { padding: 16px; } }
   </style>
 </head>
 <body>
@@ -83,7 +123,7 @@
       <span>ADC Gadgets<br><small style="font-size:10px;color:var(--text-muted);font-weight:500;">Loan Console</small></span>
     </div>
     <nav class="nav-list">
-      <a href="dashboard.html" class="nav-item active">
+      <a href="dashboard.html" class="nav-item">
         <div class="nav-item-left">Overview</div>
       </a>
       <a href="loan-ledger.html" class="nav-item ">
@@ -96,7 +136,7 @@
       <a href="inventory.html" class="nav-item ">
         <div class="nav-item-left">Inventory</div>
       </a>
-      <a href="manage-users.html" class="nav-item ">
+      <a href="manage-users.html" class="nav-item active">
         <div class="nav-item-left">Customers</div>
       </a>
       <a href="reports.html" class="nav-item ">
@@ -121,9 +161,25 @@
       </header>
 
       <div class="content-body" id="ledger-wrapper">
-        <div style="text-align: center; color: var(--text-muted); padding: 100px 0;">
-            <i data-lucide="loader-2" class="spin" style="width:40px; height:40px; color:var(--pink);"></i>
-            <p style="margin-top: 16px; font-size:16px;">Retrieving detailed ledger records...</p>
+        <div class="card" aria-busy="true" style="padding:28px;display:flex;flex-direction:column;gap:24px;">
+          <div style="display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+            <span class="sk sk-pill" style="width:56px;height:56px;flex-shrink:0;"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+              <span class="sk" style="width:210px;height:20px;"></span>
+              <span class="sk" style="width:260px;height:13px;"></span>
+            </div>
+            <span class="sk sk-pill" style="width:92px;height:28px;"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <div style="padding:18px;border:1px solid var(--border);border-radius:12px;"><span class="sk" style="width:84px;height:11px;margin-bottom:10px;"></span><span class="sk" style="width:120px;height:24px;"></span></div>
+            <div style="padding:18px;border:1px solid var(--border);border-radius:12px;"><span class="sk" style="width:92px;height:11px;margin-bottom:10px;"></span><span class="sk" style="width:120px;height:24px;"></span></div>
+            <div style="padding:18px;border:1px solid var(--border);border-radius:12px;"><span class="sk" style="width:88px;height:11px;margin-bottom:10px;"></span><span class="sk" style="width:110px;height:24px;"></span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <span class="sk" style="width:100%;height:44px;"></span>
+            <span class="sk" style="width:100%;height:44px;"></span>
+            <span class="sk" style="width:100%;height:44px;"></span>
+          </div>
         </div>
       </div>
     </main>
@@ -146,11 +202,20 @@
 
   <!-- Lightbox -->
   <div class="lightbox-overlay" id="lightbox" onclick="this.classList.remove('active')">
-    <img id="lightbox-img" src="" alt="ID Preview">
+    <img id="lightbox-img" alt="ID Preview">
   </div>
 
   <script>
     lucide.createIcons();
+
+    function escHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    }
+
+    function openLightbox(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').classList.add('active');
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -212,16 +277,16 @@
                 <div class="ledger-container">
                     <div class="ledger-header">
                         <div class="ledger-title">
-                            <h1>${userData.full_name || userData.name || 'Unknown User'}</h1>
+                            <h1>${escHtml(userData.full_name || userData.name || 'Unknown User')}</h1>
                             <p>User ID: <strong>#${userIdFormatted}</strong> &nbsp;|&nbsp; Loan ID: <strong>#${loanIdFormatted}</strong></p>
-                            <p style="margin-top: 4px;">Email: ${userData.email} &nbsp;|&nbsp; Phone: ${userData.mobile || 'N/A'} &nbsp;|&nbsp; Address: ${userData.address || 'N/A'}</p>
+                            <p style="margin-top: 4px;">Email: ${escHtml(userData.email)} &nbsp;|&nbsp; Phone: ${escHtml(userData.mobile || 'N/A')} &nbsp;|&nbsp; Address: ${escHtml(userData.address || 'N/A')}</p>
                         </div>
                         <div style="text-align: right; display:flex; gap:16px; align-items:center;">
-                            <img src="${imgPath}" alt="${loan.device_name}" style="height: 80px; object-fit:contain;">
+                            <img src="${escHtml(imgPath)}" alt="${escHtml(loan.device_name)}" style="height: 80px; object-fit:contain;">
                             <div style="text-align:left;">
-                                <div style="font-size:12px; color:#64748b; text-transform:uppercase; font-weight:700;">Financed Device</div>
-                                <div style="font-size:20px; font-weight:800; color:#0f172a;">${loan.device_name}${loan.device_color ? ` - ${loan.device_color}` : ''}</div>
-                                <div style="font-size:13px; font-weight:700; color:#10b981; margin-top:4px; text-transform:uppercase;">${loan.status === 'active' ? 'Active Status' : loan.status}</div>
+                                <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Financed Device</div>
+                                <div style="font-size:20px; font-weight:800; color:var(--text-main);">${escHtml(loan.device_name)}${loan.device_color ? ` - ${escHtml(loan.device_color)}` : ''}</div>
+                                <div style="font-size:13px; font-weight:700; color:#22c55e; margin-top:4px; text-transform:uppercase;">${loan.status === 'active' ? 'Active Status' : escHtml(loan.status)}</div>
                             </div>
                         </div>
                     </div>
@@ -233,7 +298,7 @@
                         </div>
                         <div class="metric-box">
                             <h3>Remaining Balance</h3>
-                            <p style="color: #ef4444;">₱${parseFloat(loan.remaining_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                            <p style="color: #f87171;">₱${parseFloat(loan.remaining_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                         </div>
                         <div class="metric-box">
                             <h3>Monthly Installment</h3>
@@ -249,8 +314,8 @@
                         <button class="btn-action pink" id="btn-cash-payment">
                             <i data-lucide="banknote" style="width:16px;height:16px;"></i> Add Cash Payment
                         </button>
-                        <a href="tasks.html" class="btn-action blue" style="text-decoration:none;">
-                            <i data-lucide="check-square" style="width:16px;height:16px;"></i> View Tasks
+                        <a href="loan-ledger.html" class="btn-action blue" style="text-decoration:none;">
+                            <i data-lucide="file-text" style="width:16px;height:16px;"></i> View Active Loans
                         </a>
                     </div>
 
@@ -258,23 +323,23 @@
                         <h2><i data-lucide="file-check" style="width:20px;height:20px;color:#3b82f6;"></i> Customer Documents</h2>
                         ${userData.id_url ? `
                         <div class="doc-card">
-                            <img src="${userData.id_url}" alt="Government ID" onclick="openLightbox('${userData.id_url}')" title="Click to zoom">
+                            <img src="${escHtml(userData.id_url)}" alt="Government ID" onclick="openLightbox('${escHtml(userData.id_url)}')" title="Click to zoom">
                             <div class="doc-meta">
-                                <div><div class="label">Document Type</div><div class="value">${userData.id_type || 'Government ID'}</div></div>
+                                <div><div class="label">Document Type</div><div class="value">${escHtml(userData.id_type || 'Government ID')}</div></div>
                                 <div><div class="label">Status</div><div class="value" style="color:#22c55e;">&#10003; Uploaded &amp; On File</div></div>
-                                <div style="margin-top:8px; font-size:12px; color:#64748b;">Click the image to view in full size.</div>
+                                <div style="margin-top:8px; font-size:12px; color:var(--text-muted);">Click the image to view in full size.</div>
                             </div>
                         </div>` : `
                         <div class="doc-card">
                             <div class="doc-no-id" style="flex:1;">
                                 <i data-lucide="alert-circle" style="width:36px;height:36px;color:#ef4444;"></i>
                                 <h3>No ID uploaded yet</h3>
-                                <p style="font-size:13px;margin-top:4px;">This customer has not uploaded their valid government ID. Remind them via the <a href="tasks.html" style="color:#e91e8c;font-weight:600;">Tasks page</a>.</p>
+                                <p style="font-size:13px;margin-top:4px;color:var(--text-muted);">This customer has not uploaded their valid government ID. Remind them from <a href="manage-users.html" style="color:#f472b6;font-weight:600;">Customers</a>.</p>
                             </div>
                         </div>`}
                     </div>
 
-                    <h2 style="font-size:18px; font-weight:700; margin-bottom:16px; color:#0f172a; display:flex; align-items:center; margin-top:32px;"><i data-lucide="list" style="width:20px; height:20px; margin-right:8px; color:var(--pink);"></i> Detailed Payment Ledger</h2>
+                    <h2 style="font-size:18px; font-weight:700; margin-bottom:16px; color:var(--text-main); display:flex; align-items:center; margin-top:32px;"><i data-lucide="list" style="width:20px; height:20px; margin-right:8px; color:var(--pink);"></i> Detailed Payment Ledger</h2>
                     <table class="excel-table">
                         <thead>
                             <tr>
@@ -300,6 +365,7 @@
             const monthlyPay = parseFloat(loan.monthly_payment);
 
             window._currentLoanId = loanIdForModal;
+            window._currentRemainingBal = remainingBal;
             const btnCash = document.getElementById('btn-cash-payment');
             if (btnCash) {
                 btnCash.addEventListener('click', function() {
@@ -327,6 +393,11 @@
         if (!amount || amount <= 0) {
             if (window.showCustomAlert) window.showCustomAlert('Enter a valid amount greater than 0.', 'Invalid Amount');
             else alert('Enter a valid amount.');
+            return;
+        }
+        if (window._currentRemainingBal !== undefined && amount > window._currentRemainingBal + 0.01) {
+            if (window.showCustomAlert) window.showCustomAlert(`Amount exceeds remaining balance (₱${window._currentRemainingBal.toLocaleString('en-US', {minimumFractionDigits:2})}).`, 'Amount Too High');
+            else alert('Amount exceeds remaining balance.');
             return;
         }
         const btn = document.getElementById('cm-submit');

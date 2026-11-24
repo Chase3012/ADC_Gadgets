@@ -47,11 +47,29 @@ window.getAppleDBDeviceImage = function(deviceName, originalImg) {
 // Backwards compatibility alias
 window.getFrontBackDeviceImage = window.getAppleDBDeviceImage;
 
+window.renderDeviceSkeletons = function(count = 6) {
+    return Array.from({ length: count }, () => `
+        <div class="p-card-skeleton" aria-hidden="true">
+            <span class="sk sk-badge"></span>
+            <div class="sk-img-box"><span class="sk sk-phone"></span></div>
+            <span class="sk sk-title"></span>
+            <span class="sk sk-spec"></span>
+            <div class="sk-foot">
+                <div>
+                    <span class="sk sk-price-lbl"></span>
+                    <span class="sk sk-price"></span>
+                </div>
+                <span class="sk sk-btn"></span>
+            </div>
+        </div>
+    `).join('');
+};
+
 window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false, statusFilter = 'available') {
     const grid = document.querySelector(gridSelector);
     if (!grid) return;
 
-    grid.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--g500); width: 100%; grid-column: 1/-1;">Loading devices...</p>';
+    grid.innerHTML = window.renderDeviceSkeletons(hideOutOfStock ? 5 : 8);
     
     try {
         const res = await fetch('/api/devices');
@@ -90,8 +108,8 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
             // Out of stock styles
             let badgeText = isOutOfStock ? 'Out of Stock' : (isNew ? 'New' : 'Available');
             let badgeStyle = isOutOfStock 
-                ? 'background:rgba(239,68,68,0.1);color:#ef4444;border:none;' 
-                : (isNew ? 'background:var(--primary);color:#fff;border:none;' : 'background:rgba(0,0,0,0.06);color:var(--g500);border:none;');
+                ? 'background:rgba(239,68,68,0.1);color:#dc2626;border:none;' 
+                : (isNew ? 'background:#be185d;color:#fff;border:none;' : 'background:rgba(0,0,0,0.06);color:var(--g500);border:none;');
                 
             if (device.status === 'upcoming') {
                 badgeText = 'Coming Soon';
@@ -106,7 +124,7 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
 
             const specsAttr = device.specs ? JSON.stringify(device.specs).replace(/"/g, '&quot;') : '';
             const cardHTML = `
-                <a href="devices.html" class="p-card scroll-reveal" data-device-id="${device.id}" data-appledb-id="${device.appledb_id || ''}" data-soc="${soc}" data-specs="${specsAttr}" data-original-price="₱${formattedSrp}" style="${cardStyle}">
+                <a href="devices.html" class="p-card scroll-reveal sk-reveal" data-device-id="${device.id}" data-appledb-id="${device.appledb_id || ''}" data-soc="${soc}" data-specs="${specsAttr}" data-srp="${parseFloat(device.srp) || 0}" data-original-price="₱${formattedSrp}" style="${cardStyle}">
                     <span class="p-badge" style="z-index: 10; ${badgeStyle}">${badgeText}</span>
                     <div class="p-img-wrap">
                         <img src="${imgPath}" alt="${device.name} Official Studio Render" class="p-img" loading="lazy">
@@ -117,9 +135,9 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
                         <div class="p-foot">
                             <div>
                                 <p class="p-price-label">${device.status === 'upcoming' ? 'Estimated From' : 'From'}</p>
-                                <p class="p-price">₱ ${formattedMonthly}/mo</p>
+                                <p class="p-price num-tabular">₱ ${formattedMonthly}/mo</p>
                             </div>
-                            <button class="btn-buy" aria-label="View Details" ${isOutOfStock ? 'disabled style="background:var(--g300);"' : ''}>${btnText}</button>
+                            <span class="btn-buy" ${isOutOfStock ? 'aria-disabled="true" style="background:#9ca3af; color:#111111;"' : ''}>${btnText}</span>
                         </div>
                     </div>
                 </a>
@@ -138,7 +156,7 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
                                     <i data-lucide="tag" style="width: 24px; height: 24px; color: var(--pink);"></i>
                                 </div>
                             </div>
-                            <h2 style="font-size: 28px; font-weight: 800; font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; margin-bottom: 8px; background: linear-gradient(to right, var(--black), #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">No products found</h2>
+                            <h2 style="font-size: 28px; font-weight: 800; font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; margin-bottom: 8px; color: var(--black);">No products found</h2>
                             <p style="color: var(--g500); font-size: 15px; max-width: 300px; line-height: 1.5;">No products match your search criteria.</p>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
@@ -164,7 +182,12 @@ window.loadAppleDBDevices = async function(gridSelector, hideOutOfStock = false,
         document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
     } catch (err) {
         console.error(err);
-        grid.innerHTML = '<p style="text-align: center; color: red; width: 100%; grid-column: 1/-1;">Failed to load devices.</p>';
+        grid.innerHTML = `
+            <div style="text-align:center; width:100%; grid-column:1/-1; padding:32px 16px;">
+                <p style="color:#dc2626; font-weight:600; margin-bottom:12px;">Failed to load devices.</p>
+                <button type="button" class="btn-buy" onclick="window.loadAppleDBDevices('${gridSelector}', ${hideOutOfStock}, ${statusFilter ? `'${statusFilter}'` : 'null'})">Retry</button>
+            </div>
+        `;
     }
 };
 
@@ -221,19 +244,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 mImg.alt = `${titleText} Official Apple Studio View`;
             }
 
-            // Fetch original price from card data attribute
+            // Fetch original price from card data attribute + build interactive 6/12/18/24 month selector
+            const btnApplyLoan = document.getElementById('btn-apply-loan');
+            const ogPriceRaw = card.getAttribute('data-original-price') || '';
+            const numericSrp = parseFloat(card.getAttribute('data-srp') || ogPriceRaw.replace(/[^\d.]/g, '')) || 0;
+
             if (mPrice) {
                 let mOriginalPrice = document.getElementById('m-original-price');
                 if (!mOriginalPrice) {
                     mOriginalPrice = document.createElement('p');
                     mOriginalPrice.id = 'm-original-price';
+                    mOriginalPrice.className = 'num-tabular';
                     mOriginalPrice.style.fontSize = '14px';
-                    mOriginalPrice.style.color = '#64748b'; // slate-500
+                    mOriginalPrice.style.color = 'var(--g500)';
                     mOriginalPrice.style.marginTop = '4px';
                     mPrice.parentNode.insertBefore(mOriginalPrice, mPrice.nextSibling);
                 }
-                const ogPrice = card.getAttribute('data-original-price');
-                mOriginalPrice.textContent = `SRP: ${ogPrice}`;
+                mOriginalPrice.textContent = ogPriceRaw ? `SRP: ${ogPriceRaw}` : '';
+
+                let termWrap = document.getElementById('pm-term-selector');
+                if (!termWrap) {
+                    termWrap = document.createElement('div');
+                    termWrap.id = 'pm-term-selector';
+                    termWrap.className = 'pm-term-selector';
+                    termWrap.setAttribute('role', 'group');
+                    termWrap.setAttribute('aria-label', 'Installment term preview');
+                    mOriginalPrice.parentNode.insertBefore(termWrap, mOriginalPrice.nextSibling);
+                }
+
+                if (numericSrp > 0) {
+                    const terms = [6, 12, 18, 24];
+                    const defaultTerm = 24;
+                    termWrap.innerHTML = `
+                        <span class="pm-term-label">Installment preview</span>
+                        <div class="pm-term-pills">
+                            ${terms.map(t => `<button type="button" class="pm-term-pill${t === defaultTerm ? ' active' : ''}" data-term="${t}">${t} mo</button>`).join('')}
+                        </div>
+                    `;
+                    termWrap.style.display = 'flex';
+
+                    const updatePreviewTerm = (termMonths) => {
+                        const monthlyEst = Math.ceil(numericSrp / termMonths);
+                        const formattedEst = `₱ ${monthlyEst.toLocaleString('en-PH')}/mo`;
+                        mPrice.textContent = `${formattedEst} (${termMonths} mos)`;
+                        mPrice.classList.add('num-tabular');
+                        if (btnApplyLoan) {
+                            btnApplyLoan.dataset.monthly = formattedEst;
+                            btnApplyLoan.dataset.term = String(termMonths);
+                        }
+                        termWrap.querySelectorAll('.pm-term-pill').forEach(p => {
+                            p.classList.toggle('active', Number(p.dataset.term) === termMonths);
+                        });
+                    };
+
+                    updatePreviewTerm(defaultTerm);
+                    termWrap.querySelectorAll('.pm-term-pill').forEach(pill => {
+                        pill.addEventListener('click', () => updatePreviewTerm(Number(pill.dataset.term)));
+                    });
+                } else {
+                    termWrap.style.display = 'none';
+                }
             }
 
             if(mSpecDisplay) mSpecDisplay.textContent = specs.display;
@@ -241,14 +311,53 @@ document.addEventListener('DOMContentLoaded', () => {
             if(mSpecChip) mSpecChip.textContent = specs.chip;
             if(mSpecBattery) mSpecBattery.textContent = specs.battery;
 
-            // Setup Loan button link with dynamic params
-            const btnApplyLoan = document.getElementById('btn-apply-loan');
+            // Setup Guided Concierge action for Support Chat loan inquiries
             if (btnApplyLoan) {
-                const urlParams = new URLSearchParams();
-                urlParams.set('model', titleText);
-                urlParams.set('price', card.querySelector('.p-price').textContent.replace('₱', '').replace('/mo', '').trim());
-                urlParams.set('img', studioImg);
-                btnApplyLoan.href = `loan.html?${urlParams.toString()}`;
+                const monthlyLabel = card.querySelector('.p-price') ? card.querySelector('.p-price').textContent.trim() : '';
+                const srpLabel = ogPriceRaw;
+                const statusBadge = card.querySelector('.p-badge') ? card.querySelector('.p-badge').textContent.trim().toLowerCase() : '';
+                const isOutOfStock = statusBadge.includes('out of stock');
+
+                btnApplyLoan.dataset.model = titleText;
+                if (!btnApplyLoan.dataset.monthly) btnApplyLoan.dataset.monthly = monthlyLabel;
+                if (!btnApplyLoan.dataset.term) btnApplyLoan.dataset.term = '24';
+                btnApplyLoan.dataset.srp = srpLabel;
+                btnApplyLoan.dataset.outOfStock = isOutOfStock ? '1' : '0';
+
+                if (btnApplyLoan.tagName === 'BUTTON' || btnApplyLoan.tagName === 'A') {
+                    btnApplyLoan.innerHTML = isOutOfStock
+                        ? '<i data-lucide="message-square"></i> Inquire Restock via Chat'
+                        : '<i data-lucide="message-square"></i> Apply via Support Chat';
+                }
+
+                if (!btnApplyLoan.dataset.conciergeBound) {
+                    btnApplyLoan.dataset.conciergeBound = 'true';
+                    btnApplyLoan.addEventListener('click', async (evt) => {
+                        evt.preventDefault();
+                        const model = btnApplyLoan.dataset.model || 'this device';
+                        const monthly = btnApplyLoan.dataset.monthly || '';
+                        const term = btnApplyLoan.dataset.term || '24';
+                        const srp = btnApplyLoan.dataset.srp || '';
+                        const outOfStock = btnApplyLoan.dataset.outOfStock === '1';
+
+                        const pmOverlayEl = document.getElementById('pm-overlay');
+                        if (pmOverlayEl) {
+                            pmOverlayEl.classList.remove('open');
+                            setTimeout(() => { pmOverlayEl.style.display = 'none'; }, 250);
+                        }
+
+                        const promptText = outOfStock
+                            ? `Hi! Is the ${model}${srp ? ` (SRP ${srp})` : ''} scheduled for restock soon? I'd like to inquire about pre-approval.`
+                            : `Hi! I want to apply for a ${term}-month loan on the ${model}${srp ? ` (SRP ${srp})` : ''}${monthly ? ` (~${monthly})` : ''}. Could you guide me through the requirements and exact plan options?`;
+
+                        if (typeof window.openSupportChatWithPrompt === 'function') {
+                            await window.openSupportChatWithPrompt(promptText);
+                        } else {
+                            const fabBtn = document.getElementById('fab-chat-btn');
+                            if (fabBtn) fabBtn.click();
+                        }
+                    });
+                }
             }
 
             // Refresh Lucide icons for modal controls

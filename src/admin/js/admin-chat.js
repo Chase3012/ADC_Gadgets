@@ -16,6 +16,10 @@
     const clearBtn = document.getElementById('admin-chat-clear');
     const headerInitial = document.getElementById('chat-header-initial');
 
+    function escHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    }
+
     async function loadConversations() {
         try {
             const response = await fetch('/chats/conversations');
@@ -70,10 +74,13 @@
                 return;
             }
 
+            const hadSkeleton = listEl.hasAttribute('aria-busy');
+            if (hadSkeleton) listEl.removeAttribute('aria-busy');
+
             listEl.innerHTML = '';
             filteredConvos.forEach(c => {
                 const div = document.createElement('div');
-                div.className = 'chat-contact-item' + (currentUserId === c.user_id ? ' active' : '');
+                div.className = 'chat-contact-item' + (currentUserId === c.user_id ? ' active' : '') + (hadSkeleton ? ' sk-reveal' : '');
                 
                 // Randomish color for avatar based on first letter
                 const gradients = { blue: "linear-gradient(135deg, #3b82f6, #1d4ed8)", pink: "linear-gradient(135deg, #FF4191, #d9266e)", emerald: "linear-gradient(135deg, #10b981, #047857)", amber: "linear-gradient(135deg, #f59e0b, #b45309)", purple: "linear-gradient(135deg, #8b5cf6, #5b21b6)" }; const bg = gradients[c.avatar_color] || gradients.blue;
@@ -84,14 +91,14 @@
                 const timeStr = isToday ? dateObj.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : dateObj.toLocaleDateString([],{month:'short', day:'numeric'});
 
                 div.innerHTML = `
-                    <div class="chat-avatar" style="background:${bg};">${c.full_name.charAt(0).toUpperCase()}</div>
+                    <div class="chat-avatar" style="background:${bg};">${escHtml(c.full_name.charAt(0).toUpperCase())}</div>
                     <div class="chat-contact-info">
                         <div class="chat-contact-top">
-                            <div class="chat-contact-name">${c.full_name}</div>
-                            <div class="chat-contact-time">${timeStr}</div>
+                            <div class="chat-contact-name">${escHtml(c.full_name)}</div>
+                            <div class="chat-contact-time">${escHtml(timeStr)}</div>
                         </div>
                         <div class="chat-contact-bottom">
-                            <div class="chat-contact-preview">${c.last_message}</div>
+                            <div class="chat-contact-preview">${escHtml(c.last_message)}</div>
                             ${c.unread > 0 ? `<div class="chat-badge">${c.unread}</div>` : ''}
                         </div>
                     </div>
@@ -101,7 +108,7 @@
             });
         } catch (err) {
             console.error('loadConversations error:', err);
-            listEl.innerHTML = `<div style="padding:20px;text-align:left;color:red;font-size:12px;word-break:break-all;">Error: ${err.message}<br>${err.stack}</div>`;
+            listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--danger);font-size:13px;">Unable to load conversations. Please refresh.</div>`;
         }
     }
 
@@ -169,6 +176,11 @@
             const response = await fetch('/chats/' + currentUserId);
             if (!response.ok) throw new Error('Failed to fetch messages');
             const data = await response.json();
+
+            if (data && data.length < renderedMessageCount) {
+                messagesEl.innerHTML = '';
+                renderedMessageCount = 0;
+            }
             
             if (data && data.length > renderedMessageCount) {
                 const newMessages = data.slice(renderedMessageCount);
@@ -271,11 +283,23 @@
     if (resolveBtn) {
         resolveBtn.addEventListener('click', () => {
             if (!currentUserId) return;
+            const userIdToResolve = currentUserId;
             const action = async () => {
                 if (pollInterval) clearInterval(pollInterval);
+                try {
+                    await fetch('/chats/' + userIdToResolve + '/end', { method: 'POST' });
+                } catch (err) {
+                    console.error('Failed to end conversation:', err);
+                }
                 currentUserId = null;
+                renderedMessageCount = 0;
                 emptyEl.style.display = 'flex';
                 messagesEl.innerHTML = '';
+                messagesEl.style.display = 'none';
+                const headerContainer = document.getElementById('chat-header-container');
+                if (headerContainer) headerContainer.style.display = 'none';
+                const inputContainer = document.getElementById('chat-input-container');
+                if (inputContainer) inputContainer.style.display = 'none';
                 inputEl.disabled = true;
                 sendBtn.disabled = true;
                 if (clearBtn) clearBtn.disabled = true;
@@ -284,7 +308,7 @@
             };
 
             if (window.showCustomConfirm) {
-                window.showCustomConfirm('Are you sure you want to resolve and clear this conversation view?', action, 'Resolve Chat');
+                window.showCustomConfirm('Are you sure you want to resolve and clear this conversation? This will cut down the thread so the customer starts fresh next time.', action, 'Resolve Chat');
             } else if (confirm('Are you sure you want to resolve and clear this conversation?')) {
                 action();
             }

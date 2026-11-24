@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Icons -->
@@ -37,15 +37,11 @@
         </div>
         <nav class="hdr-nav">
             <a href="user-home.html">Shop</a>
-            <a href="devices.html" style="color:var(--pink);font-weight:600;">Devices</a>
+            <a href="devices.html" class="active">Devices</a>
+            <a href="loan.html">My Loans</a>
+            <a href="account.html">Account</a>
         </nav>
     </header>
-
-    <!-- ━━━ SUB-NAV ━━━ -->
-    <nav class="sub-nav">
-        <a href="user-home.html">Featured</a>
-        <a href="devices.html" class="active">Devices</a>
-    </nav>
 
     <!-- ━━━ HERO WRAPPER (Solid Black) ━━━ -->
     <div class="hero-wrap">
@@ -64,30 +60,45 @@
             <div class="tab-bar" style="margin-bottom: 0;">
             <button class="tab-btn active" id="tab-available">
                 <i data-lucide="smartphone" style="width: 18px; height: 18px;"></i> Available Now <span
-                    class="tab-count">9</span>
+                    class="tab-count"><span class="sk sk-pill" style="width:20px;height:14px;display:inline-block;vertical-align:middle;"></span></span>
             </button>
             <button class="tab-btn" id="tab-upcoming">
-                <i data-lucide="clock" style="width: 18px; height: 18px;"></i> Upcoming <span class="tab-count">1</span>
+                <i data-lucide="clock" style="width: 18px; height: 18px;"></i> Upcoming <span class="tab-count"><span class="sk sk-pill" style="width:20px;height:14px;display:inline-block;vertical-align:middle;"></span></span>
             </button>
         </div>
 
             <!-- Search -->
-            <div style="position: relative; flex: 1; min-width: 200px; max-width: 320px;">
+            <div style="position: relative; flex: 1; min-width: 200px; max-width: 340px;">
                 <i data-lucide="search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--g500); width: 18px; height: 18px; pointer-events: none;"></i>
-                <input type="text" id="device-search" placeholder="Search devices..." style="width: 100%; height: 44px; padding: 0 16px 0 44px; border-radius: 999px; border: 1.5px solid var(--g200); background: var(--white); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--g800); outline: none; transition: border-color 0.2s, box-shadow 0.2s;" onfocus="this.style.borderColor='var(--pink)'; this.style.boxShadow='0 0 0 3px rgba(255, 65, 145, 0.12)';" onblur="this.style.borderColor='var(--g200)'; this.style.boxShadow='none';">
+                <input type="text" id="device-search" aria-label="Search devices" placeholder="Search devices..." style="width: 100%; height: 44px; padding: 0 40px 0 44px; border-radius: 999px; border: 1.5px solid var(--g200); background: var(--white); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--g800); transition: border-color 0.2s, box-shadow 0.2s;" onfocus="this.style.borderColor='#be185d'; this.style.boxShadow='0 0 0 3px rgba(190, 24, 93, 0.14)';" onblur="this.style.borderColor='var(--g200)'; this.style.boxShadow='none';">
+                <button type="button" id="device-search-clear" aria-label="Clear search" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; align-items: center; justify-content: center; color: var(--g500); background: var(--g100); cursor: pointer;">
+                    <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                </button>
             </div>
         </div>
         <div id="panel-available">
             <!-- Products Grid -->
             <section class="products-grid" id="grid-available">
 
-                <!-- Cards will be populated here dynamically via AppleDB -->
+                <!-- Initial skeleton cards shown while AppleDB loads -->
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
 
             </section>
         </div>
 
         <div id="panel-upcoming" style="display: none;">
             <section class="products-grid" id="grid-upcoming">
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
+                <div class="p-card-skeleton" aria-hidden="true"><span class="sk sk-badge"></span><div class="sk-img-box"><span class="sk sk-phone"></span></div><span class="sk sk-title"></span><span class="sk sk-spec"></span><div class="sk-foot"><div><span class="sk sk-price-lbl"></span><span class="sk sk-price"></span></div><span class="sk sk-btn"></span></div></div>
             </section>
         </div>
     </main>
@@ -120,14 +131,19 @@
                 Shop
             </a>
 
+            <a href="devices.html" class="sb-link active" style="border-radius: 8px;">
+                <span class="sb-icon"><i data-lucide="smartphone" style="width:18px;height:18px;"></i></span>
+                Devices
+            </a>
+
             <a href="account.html" class="sb-link" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="user-cog" style="width:18px;height:18px;"></i></span>
-                Profile
+                Account
             </a>
 
             <a href="loan.html" class="sb-link" style="border-radius: 8px;">
                 <span class="sb-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
-                Loan
+                My Loans
             </a>
 
 
@@ -154,7 +170,7 @@
     </aside>
 
     <!-- ━━━ PRODUCT MODAL ━━━ -->
-    <div id="pm-overlay" class="pm-overlay">
+    <div id="pm-overlay" class="pm-overlay" role="dialog" aria-modal="true" aria-labelledby="m-title">
         <div class="pm-content">
             <div class="pm-left">
                 <div class="pm-showcase-badge">
@@ -212,6 +228,12 @@
                         <p>Get free delivery direct to your door.</p>
                     </div>
                 </div>
+
+                <div class="pm-actions">
+                    <button type="button" id="btn-apply-loan" class="pm-apply-btn">
+                        <i data-lucide="message-square"></i> Apply via Support Chat
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -229,18 +251,15 @@
         panelUpcoming.classList.add('fade-panel');
 
         function switchTab(activeBtn, inactiveBtn, showPanel, hidePanel) {
-            if(activeBtn.classList.contains('active')) return;
+            if (activeBtn.classList.contains('active')) return;
             activeBtn.classList.add('active');
             inactiveBtn.classList.remove('active');
-            
+
             hidePanel.classList.remove('active');
-            setTimeout(() => {
-                hidePanel.style.display = 'none';
-                showPanel.style.display = 'block';
-                // Trigger reflow
-                void showPanel.offsetWidth;
-                showPanel.classList.add('active');
-            }, 250);
+            hidePanel.style.display = 'none';
+            showPanel.style.display = 'block';
+            void showPanel.offsetWidth;
+            requestAnimationFrame(() => showPanel.classList.add('active'));
         }
 
         tabAvailable.addEventListener('click', () => {
@@ -250,99 +269,6 @@
         tabUpcoming.addEventListener('click', () => {
             switchTab(tabUpcoming, tabAvailable, panelUpcoming, panelAvailable);
         });
-
-        // Product Modal Logic
-        const pmOverlay = document.getElementById('pm-overlay');
-        const pmClose = document.getElementById('pm-close');
-        const mTitle = document.getElementById('m-title');
-        const mPrice = document.getElementById('m-price');
-        const mImg = document.getElementById('m-img');
-
-        const mSpecDisplay = document.getElementById('m-spec-display');
-        const mSpecCamera = document.getElementById('m-spec-camera');
-        const mSpecChip = document.getElementById('m-spec-chip');
-        const mSpecBattery = document.getElementById('m-spec-battery');
-
-        const specsData = {
-            "iPhone XS": {
-                display: "5.8-inch Super Retina HD display. OLED multi-touch display.",
-                camera: "12MP dual cameras with dual OIS. Incredible detail and color.",
-                chip: "A12 Bionic chip. Next-generation Neural Engine.",
-                battery: "Up to 14 hours of video playback. Fast-charge capable."
-            },
-            "iPhone X": {
-                display: "5.8-inch Super Retina HD display. The first all-screen design.",
-                camera: "12MP dual cameras. Beautiful portrait mode and lighting.",
-                chip: "A11 Bionic chip. Powerful performance.",
-                battery: "Up to 13 hours of video playback. Wireless charging."
-            },
-            "iPhone 7": {
-                display: "4.7-inch Retina HD display. Wide color gamut.",
-                camera: "12MP camera. Optical image stabilization.",
-                chip: "A10 Fusion chip. Fast when you need it.",
-                battery: "Up to 13 hours of video playback."
-            },
-            "iPhone SE": {
-                display: "4.7-inch Retina HD display. Brilliant colors.",
-                camera: "12MP camera. Portrait mode and Depth Control.",
-                chip: "A13 Bionic chip. Fast and efficient.",
-                battery: "Up to 13 hours of video playback."
-            },
-            "iPhone XR": {
-                display: "6.1-inch Liquid Retina HD display. Industry-leading color accuracy.",
-                camera: "12MP camera. Smart HDR for great photos.",
-                chip: "A12 Bionic chip. Smart and powerful.",
-                battery: "Up to 16 hours of video playback."
-            },
-            "iPhone 8": {
-                display: "4.7-inch Retina HD display. True Tone technology.",
-                camera: "12MP camera. Optical image stabilization for great photos.",
-                chip: "A11 Bionic chip. Smart and powerful.",
-                battery: "Up to 13 hours of video playback. Glass design."
-            },
-            "iPhone 11": {
-                display: "6.1-inch Liquid Retina HD display. True Tone and wide color gamut.",
-                camera: "12MP dual camera system (Ultra Wide and Wide) for spectacular photos.",
-                chip: "A13 Bionic chip. Dependable performance for daily tasks.",
-                battery: "Up to 17 hours of video playback. Reliable all-day battery life."
-            },
-            "iPhone 12": {
-                display: "6.1-inch OLED display with 60Hz refresh rate. Crisp, colorful, and stunningly clear.",
-                camera: "12MP + 12MP dual camera setup. Capture beautiful photos anywhere.",
-                chip: "A14 Bionic chip. Incredible performance and fully 5G ready.",
-                battery: "Up to 17 hours of video playback. Features MagSafe wireless charging."
-            },
-            "iPhone 13": {
-                display: "6.1-inch OLED display. Brighter and more beautiful.",
-                camera: "12MP dual camera system with Sensor-shift OIS for incredibly steady shots.",
-                chip: "A15 Bionic chip. Lightning fast and highly power-efficient.",
-                battery: "Up to 19 hours of video playback. Reliable all-day battery life."
-            },
-            "iPhone 14": {
-                display: "6.1-inch OLED display. Stunning visuals in any light.",
-                camera: "12MP dual camera system. Massive leap in low-light performance.",
-                chip: "A15 Bionic chip. Proven power for everything you do.",
-                battery: "Up to 20 hours of video playback. Now features vital Crash Detection."
-            },
-            "iPhone 15": {
-                display: "6.1-inch OLED display. Super Retina XDR brightness.",
-                camera: "48MP dual camera system. Capture super-high-resolution photos effortlessly.",
-                chip: "A16 Bionic chip. Powering advanced computational photography.",
-                battery: "Up to 20 hours of video playback. Finally featuring universal USB-C."
-            },
-            "iPhone 16": {
-                display: "6.1-inch OLED display. A brilliant canvas for your content.",
-                camera: "48MP dual camera system. Take perfect shots easily with the new Camera Control.",
-                chip: "A18 chip. Custom-built for incredible speed and next-level intelligence.",
-                battery: "Up to 22 hours of video playback. A massive leap in battery life."
-            },
-            "iPhone 17": {
-                display: "All-new larger 6.3-inch OLED display. More room to do what you love.",
-                camera: "48MP dual camera system. The ultimate photographic tool.",
-                chip: "A19 chip. Next-generation architecture built for advanced processing.",
-                battery: "Up to 24 hours of video playback. Fully integrated with Apple Intelligence."
-            }
-        };
     </script>
 
     <script src="../../src/shared/js/apple-specs.js?v=1791820800000"></script>
@@ -357,19 +283,50 @@
             }
 
             const searchInput = document.getElementById('device-search');
+            function filterDeviceGrids(term) {
+                ['#grid-available', '#grid-upcoming'].forEach(gridSelector => {
+                    const grid = document.querySelector(gridSelector);
+                    if (!grid) return;
+                    const cards = grid.querySelectorAll('.p-card');
+                    let visibleCount = 0;
+                    cards.forEach(card => {
+                        const titleEl = card.querySelector('.p-title');
+                        const title = titleEl ? titleEl.textContent.toLowerCase() : '';
+                        const matches = !term || title.includes(term);
+                        card.style.display = matches ? 'flex' : 'none';
+                        if (matches) visibleCount++;
+                    });
+
+                    let emptyEl = grid.querySelector('.device-search-empty');
+                    if (term && cards.length > 0 && visibleCount === 0) {
+                        if (!emptyEl) {
+                            emptyEl = document.createElement('div');
+                            emptyEl.className = 'device-search-empty';
+                            emptyEl.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 48px 20px; border: 1.5px dashed var(--g200); border-radius: 16px; color: var(--g600);';
+                            grid.appendChild(emptyEl);
+                        }
+                        emptyEl.innerHTML = `<p style="font-size: 16px; font-weight: 700; color: var(--black); margin-bottom: 6px;">No matching devices</p><p style="font-size: 14px; color: var(--g500);">Try another model name or clear your search filter.</p>`;
+                        emptyEl.style.display = 'block';
+                    } else if (emptyEl) {
+                        emptyEl.style.display = 'none';
+                    }
+                });
+            }
+
+            const clearSearchBtn = document.getElementById('device-search-clear');
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     const term = this.value.toLowerCase().trim();
-                    const cards = document.querySelectorAll('.p-card');
-                    
-                    cards.forEach(card => {
-                        const title = card.querySelector('.p-title').textContent.toLowerCase();
-                        if (title.includes(term)) {
-                            card.style.display = 'flex';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
+                    if (clearSearchBtn) clearSearchBtn.style.display = term ? 'inline-flex' : 'none';
+                    filterDeviceGrids(term);
+                });
+            }
+            if (clearSearchBtn && searchInput) {
+                clearSearchBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    clearSearchBtn.style.display = 'none';
+                    filterDeviceGrids('');
+                    searchInput.focus();
                 });
             }
         });
@@ -380,7 +337,6 @@
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/support-chat.js?v=1790425793642"></script>
-    <script src="js/particles.js"></script>
 </body>
 
 </html>

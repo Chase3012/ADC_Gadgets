@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Portal â€” ADC Gadgets</title>
+  <title>User Portal — ADC Gadgets</title>
   <meta name="description"
     content="Sign in to the ADC Gadgets User Portal.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -215,10 +215,10 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 10px;
+      font-size: 11.5px;
       font-weight: 700;
-      letter-spacing: .14em;
-      color: var(--pink);
+      letter-spacing: .08em;
+      color: #ff80b5;
       margin-bottom: 20px;
       opacity: 0;
       transform: translateY(10px);
@@ -238,16 +238,13 @@
 
     .hero-heading em {
       font-style: normal;
-      background: linear-gradient(135deg, var(--pink), #ff6eaa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #ff80b5;
     }
 
     .hero-body {
       font-size: 15px;
       line-height: 1.65;
-      color: rgba(255, 255, 255, .45);
+      color: rgba(255, 255, 255, .74);
       margin-bottom: 28px;
       max-width: 380px;
       opacity: 0;
@@ -272,29 +269,29 @@
       gap: 6px;
       padding: 7px 14px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, .06);
-      border: 1px solid rgba(255, 255, 255, .08);
-      font-size: 11.5px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      font-size: 12px;
       font-weight: 600;
-      color: rgba(255, 255, 255, .55);
+      color: rgba(255, 255, 255, .82);
       backdrop-filter: blur(8px);
       transition: border-color .25s ease, background .25s ease;
     }
 
     .pill:hover {
-      border-color: rgba(255, 65, 145, .2);
-      background: rgba(255, 255, 255, .09)
+      border-color: rgba(255, 65, 145, .3);
+      background: rgba(255, 255, 255, .11)
     }
 
     .pill svg {
-      color: var(--pink);
+      color: #ff80b5;
       flex-shrink: 0
     }
 
     .trust-note {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 500;
-      color: rgba(255, 255, 255, .25);
+      color: rgba(255, 255, 255, .64);
       margin-bottom: 0;
       opacity: 0;
       transform: translateY(8px);
@@ -535,7 +532,7 @@
       transform: translateY(-50%);
       font-size: 14px;
       font-weight: 500;
-      color: var(--g400);
+      color: #52525b;
       pointer-events: none;
       transition: all .22s cubic-bezier(.4, 0, .2, 1);
       transform-origin: left center;
@@ -545,7 +542,7 @@
     .iw input:not(:placeholder-shown)+.il {
       top: 11px;
       transform: translateY(0) scale(.75);
-      color: var(--pink);
+      color: #be185d;
       font-weight: 600;
     }
 
@@ -619,18 +616,18 @@
     .forgot {
       font-size: 14.5px;
       font-weight: 600;
-      color: var(--pink);
+      color: #be185d;
       text-decoration: none;
       transition: color .2s ease
     }
 
     .forgot:hover {
-      color: var(--pink-hover);
+      color: #9d174d;
       text-decoration: underline
     }
 
     .forgot:focus-visible {
-      outline: 2px solid var(--pink);
+      outline: 2px solid #be185d;
       outline-offset: 3px;
       border-radius: 4px
     }
@@ -641,7 +638,7 @@
       height: 56px;
       border: none;
       border-radius: var(--r);
-      background: linear-gradient(135deg, #FF4191, #FF7EB3);
+      background: linear-gradient(135deg, #be185d, #d81b60);
       color: var(--white);
       font-family: inherit;
       font-size: 16px;
@@ -816,10 +813,10 @@
       z-index: 10;
       text-align: center;
       padding: 14px 20px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
-      color: rgba(255, 255, 255, .25);
-      border-top: 1px solid rgba(255, 255, 255, .06);
+      color: #9ca3af;
+      border-top: 1px solid rgba(255, 255, 255, .08);
       background: var(--black);
     }
 
@@ -898,7 +895,7 @@
       }
 
       .pill {
-        font-size: 10.5px;
+        font-size: 11px;
         padding: 6px 10px
       }
 
@@ -983,7 +980,7 @@
 
     <!-- â”â”â” HEADER â”â”â” -->
     <header class="hdr">
-      <a href="#" class="logo" aria-label="ADC Gadgets home">
+      <a href="/src/user/user-home.html" class="logo" aria-label="ADC Gadgets home">
         <img src="../../images/logo.jpg" alt="" class="logo-img">
         <span class="logo-name">ADC Gadgets</span>
       </a>
@@ -1005,14 +1002,6 @@
 
         <!-- Hero copy -->
         <div class="hero-content">
-          <div class="hero-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-              stroke-linecap="round">
-              <path d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4Z" />
-            </svg>
-            ADC GADGETS
-          </div>
-
           <h1 class="hero-heading">Your next<br>Apple device<br>is <em>closer than<br>you think.</em></h1>
 
           <p class="hero-body">Secure, simple, and flexible financing made for Apple lovers.</p>
@@ -1043,7 +1032,7 @@
             </span>
           </div>
 
-          <p class="trust-note">Trusted by 12,000+ customers</p>
+          <p class="trust-note">Flexible 3 to 24-month Apple device financing</p>
         </div>
 
         <!-- Product composition -->
@@ -1196,13 +1185,13 @@
                 <polyline points="16,19 19,22 24,17"/>
               </svg>
             </div>
-            <h3 style="font-size: 19px; font-weight: 700; color: var(--white); margin-bottom: 10px; letter-spacing: -0.3px;">Reset Link Dispatched</h3>
-            <p style="font-size: 13.5px; color: var(--g400); line-height: 1.6; margin-bottom: 22px;">
-              A password reset link with security instructions has been sent to: <br><strong id="sentToEmail" style="color: var(--white); word-break: break-all;"></strong>
+            <h2 style="font-size: 19px; font-weight: 700; color: var(--black); margin-bottom: 10px; letter-spacing: -0.3px;">Reset Link Dispatched</h2>
+            <p style="font-size: 13.5px; color: #4b5563; line-height: 1.6; margin-bottom: 22px;">
+              A password reset link with security instructions has been sent to: <br><strong id="sentToEmail" style="color: var(--black); word-break: break-all;"></strong>
             </p>
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 14px; text-align: left; margin-bottom: 24px;">
-              <p style="font-size: 12px; color: var(--g400); margin: 0; line-height: 1.5;">
-                <span style="color: var(--pink); font-weight: 600;">Important:</span> Click the button inside the email to choose a new password. The link expires in 15 minutes. Check your Spam folder if you don't see it shortly.
+            <div style="background: rgba(255,65,145,0.06); border: 1px solid rgba(255,65,145,0.2); border-radius: 10px; padding: 12px 14px; text-align: left; margin-bottom: 24px;">
+              <p style="font-size: 12px; color: #4b5563; margin: 0; line-height: 1.5;">
+                <span style="color: #be185d; font-weight: 600;">Important:</span> Click the button inside the email to choose a new password. The link expires in 15 minutes. Check your Spam folder if you don't see it shortly.
               </p>
             </div>
             <button type="button" class="btn-go" id="backToLoginFromSuccess" style="margin-bottom: 12px;">
@@ -1220,7 +1209,7 @@
 
     </main>
 
-    <footer class="pg-foot">Â© 2026 ADC Gadgets â€” Affordable Â· Trusted Â· Quality</footer>
+    <footer class="pg-foot">© 2026 ADC Gadgets — Affordable · Trusted · Quality</footer>
   </div>
 
   <script>
@@ -1436,7 +1425,14 @@
           body: JSON.stringify({ userId: currentUserId })
         });
         if (response.ok) {
-          alert('A new OTP has been sent to your email.');
+          var otpInfo = document.getElementById('otpResendStatus');
+          if (!otpInfo) {
+            otpInfo = document.createElement('p');
+            otpInfo.id = 'otpResendStatus';
+            otpInfo.style.cssText = 'font-size:12.5px; color:#15803d; font-weight:600; margin-top:10px; text-align:center;';
+            document.getElementById('resendOtpBtn').parentElement.appendChild(otpInfo);
+          }
+          otpInfo.textContent = 'A new OTP has been sent to your email.';
         } else {
           showErr('Failed to resend OTP.');
         }

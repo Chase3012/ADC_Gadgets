@@ -61,6 +61,16 @@ function initUserPortalAuth() {
                 window.location.replace('/src/user/login.html');
             };
         }
+
+        // Verify server-side HttpOnly JWT session so forged localStorage cannot stay logged in
+        fetch('/api/auth/session?scope=user', { credentials: 'same-origin' })
+            .then(r => {
+                if (r.status === 401 || r.status === 403) {
+                    localStorage.removeItem('customer_user');
+                    window.location.replace('/src/user/login.html');
+                }
+            })
+            .catch(() => {});
     }
 }
 

@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!loans || loans.length === 0) {
                 loanContainer.innerHTML = `
-                    <div style="text-align:center; padding: 60px; color:var(--text-muted);">
+                    <div class="sk-reveal" style="text-align:center; padding: 60px; color:var(--text-muted);">
                         <i data-lucide="package" style="width:48px;height:48px; margin-bottom:16px;"></i>
                         <p style="font-size:16px; font-weight:500;">You have no active loans.</p>
                         <a href="devices.html" style="display:inline-flex; align-items:center; gap:8px; margin-top:16px; padding:10px 20px; background:var(--pink); color:#fff; border-radius:8px; font-weight:600; font-size:14px; text-decoration:none; box-shadow:0 4px 12px rgba(255,65,145,0.3);">
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Case 1: No active loans, but has completed loans
             if (activeLoans.length === 0 && completedLoans.length > 0) {
                 const completeContainer = document.createElement('div');
-                completeContainer.className = 'loan-item';
+                completeContainer.className = 'loan-item sk-reveal';
                 completeContainer.style.borderBottom = 'none';
                 completeContainer.innerHTML = `
                     <div style="text-align:center; padding:36px 20px; background:#f8fafc; border-radius:16px; border:1px solid #e2e8f0; margin-bottom:32px;">
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const imgPath = loan.device_image && loan.device_image.includes('/') ? loan.device_image : `/images/phones/${loan.device_image || 'default.png'}`;
 
                 const item = document.createElement('div');
-                item.className = 'loan-item';
+                item.className = 'loan-item sk-reveal';
                 item.innerHTML = `
                     <div class="loan-header">
                         <img src="${imgPath}" alt="${loan.device_name}" class="loan-img">
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
 
                     <div class="loan-tabs">
-                        <button class="loan-tab active" data-tab="details-${loan.id}">Device Details</button>
+                        <button class="loan-tab active" data-tab="details-${loan.id}">Payment Summary</button>
                         <button class="loan-tab" data-tab="balance-${loan.id}">Remaining Balance</button>
                         <button class="loan-tab" data-tab="schedule-${loan.id}">Payment Schedule</button>
                         <button class="loan-tab" data-tab="history-${loan.id}">Payment History</button>
@@ -170,20 +170,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="loan-info-grid">
                             <div class="info-group">
                                 <span class="info-label">Next Payment Due</span>
-                                <span class="info-value" style="color:#ef4444;">${nextDate}</span>
+                                <span class="info-value" style="color:#dc2626;">${nextDate}</span>
                             </div>
                             <div class="info-group">
                                 <span class="info-label">Monthly Installment</span>
-                                <span class="info-value highlight">₱${Number(loan.monthly_payment).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                <span class="info-value highlight num-tabular">₱${Number(loan.monthly_payment).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                             </div>
                         </div>
                         <div style="margin-top:24px; text-align:center;">
-                            <button class="btn-primary pay-btn" data-loan="${loan.id}"
-                                style="display:inline-block; width:100%; max-width:300px; padding:14px;
-                                background:linear-gradient(135deg, var(--pink), #ff6eaa); color:white;
-                                border:none; cursor:pointer; font-family:inherit; font-weight:600;
-                                border-radius:8px; font-size:15px; box-shadow:0 4px 12px rgba(255,65,145,0.3);
-                                transition:transform 0.2s ease;">
+                            <button type="button" class="btn-pay-primary pay-btn" data-loan="${loan.id}">
                                 Pay Now
                             </button>
                         </div>
@@ -193,11 +188,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="loan-info-grid">
                             <div class="info-group">
                                 <span class="info-label">Total Amount</span>
-                                <span class="info-value">₱${Number(loan.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                <span class="info-value num-tabular">₱${Number(loan.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                             </div>
                             <div class="info-group">
                                 <span class="info-label">Remaining Balance</span>
-                                <span class="info-value">₱${Number(loan.remaining_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                <span class="info-value num-tabular">₱${Number(loan.remaining_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                             </div>
                         </div>
                         <div class="progress-wrap">
@@ -237,8 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <p style="font-size:14px; margin-top:12px;">Loading history...</p>
                             </div>
                         </div>
-
-                        ${completedLoans.length > 0 ? buildPreviousLoansMarkup(completedLoans) : ''}
                     </div>
                 `;
                 loanContainer.appendChild(item);
@@ -294,62 +287,83 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 });
 
-                // Pay Now
+                // Pay Now (with pre-redirect payment summary confirmation modal)
                 const payBtnEl = item.querySelector('.pay-btn');
-                if (payBtnEl) payBtnEl.addEventListener('click', async (e) => {
+                if (payBtnEl) payBtnEl.addEventListener('click', (e) => {
                     const payBtn = e.currentTarget;
                     const loanId = payBtn.dataset.loan;
-                    const originalText = payBtn.textContent;
+                    const amountText = payBtn.dataset.amount || ('₱ ' + Number(loan.monthly_payment || 0).toLocaleString());
+                    const deviceLabel = loan.device_name || 'Device Loan';
 
-                    payBtn.textContent = 'Processing...';
-                    payBtn.disabled = true;
-                    payBtn.style.opacity = '0.7';
+                    confirmPaymentRedirect({
+                        deviceName: deviceLabel,
+                        amountLabel: amountText,
+                        dueDateLabel: nextDate
+                    }, async () => {
+                        const originalText = payBtn.textContent;
+                        payBtn.textContent = 'Processing...';
+                        payBtn.disabled = true;
+                        payBtn.style.opacity = '0.7';
 
-                    try {
-                        const res = await fetch('/pay', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                loan_id: loanId,
-                                user_id: user.id
-                            })
-                        });
-                        const data = await res.json();
+                        try {
+                            const res = await fetch('/pay', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    loan_id: loanId,
+                                    user_id: user.id
+                                })
+                            });
+                            const data = await res.json();
 
-                        if (res.ok && data.checkout_url) {
-                            if (data.session_id) {
-                                sessionStorage.setItem('pending_paymongo_payment', JSON.stringify({
-                                    session_id: data.session_id,
-                                    loan_id: loanId
-                                }));
+                            if (res.ok && data.checkout_url) {
+                                if (data.session_id) {
+                                    sessionStorage.setItem('pending_paymongo_payment', JSON.stringify({
+                                        session_id: data.session_id,
+                                        loan_id: loanId
+                                    }));
+                                }
+                                window.location.href = data.checkout_url;
+                            } else {
+                                const errText = data.error || 'Failed to start payment.';
+                                if (window.showToast) window.showToast(errText, 'error');
+                                else console.error(errText);
+                                payBtn.textContent = originalText;
+                                payBtn.disabled = false;
+                                payBtn.style.opacity = '1';
                             }
-                            window.location.href = data.checkout_url;
-                        } else {
-                            const errText = data.error || 'Failed to start payment.';
-                            if (window.showToast) window.showToast(errText, 'error');
-                            else console.error(errText);
+                        } catch (err) {
+                            console.error(err);
+                            if (window.showToast) window.showToast('Network error. Please try again.', 'error');
                             payBtn.textContent = originalText;
                             payBtn.disabled = false;
                             payBtn.style.opacity = '1';
                         }
-                    } catch (err) {
-                        console.error(err);
-                        if (window.showToast) window.showToast('Network error. Please try again.', 'error');
-                        payBtn.textContent = originalText;
-                        payBtn.disabled = false;
-                        payBtn.style.opacity = '1';
-                    }
+                    });
                 });
 
-                // Bind previous loans toggles inside this item if any
-                bindPreviousLoanToggles(item);
             });
+
+            if (completedLoans.length > 0) {
+                const prevSection = document.createElement('div');
+                prevSection.className = 'sk-reveal';
+                prevSection.innerHTML = buildPreviousLoansMarkup(completedLoans);
+                loanContainer.appendChild(prevSection);
+                bindPreviousLoanToggles(prevSection);
+            }
 
             lucide.createIcons();
 
         } catch (err) {
             console.error('Error fetching loans:', err);
-            loanContainer.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:40px;">Failed to load loans.</p>';
+            loanContainer.innerHTML = `
+                <div style="text-align:center; padding:40px 20px;">
+                    <p style="color:#dc2626; font-weight:600; margin-bottom:12px;">Failed to load loans.</p>
+                    <button type="button" id="retry-load-loans" class="btn-pay-primary" style="max-width:160px;">Retry</button>
+                </div>
+            `;
+            const retryBtn = document.getElementById('retry-load-loans');
+            if (retryBtn) retryBtn.addEventListener('click', loadLoans);
         }
     }
 
@@ -513,6 +527,71 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+    }
+
+    function confirmPaymentRedirect({ deviceName, amountLabel, dueDateLabel }, onConfirm) {
+        let modal = document.getElementById('loan-pay-confirm-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'loan-pay-confirm-modal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'loan-pay-confirm-title');
+            modal.style.cssText = 'display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:16px;';
+            modal.innerHTML = `
+                <div style="background:#fff; border-radius:20px; width:100%; max-width:420px; padding:28px; box-shadow:0 20px 50px rgba(0,0,0,0.22); color:#111;">
+                    <h2 id="loan-pay-confirm-title" style="margin:0 0 8px 0; font-size:20px; font-weight:700; color:#111;">Confirm Installment Payment</h2>
+                    <p style="margin:0 0 20px 0; font-size:14px; color:#52525b; line-height:1.5;">You will be redirected to our secure PayMongo checkout page to complete this installment.</p>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; font-size:14px;">
+                        <div style="display:flex; justify-content:space-between; gap:12px;">
+                            <span style="color:#64748b;">Device</span>
+                            <strong id="lpc-device" style="color:#111; text-align:right;">—</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; gap:12px;">
+                            <span style="color:#64748b;">Due Date</span>
+                            <strong id="lpc-due" style="color:#111;">—</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; gap:12px; border-top:1px solid #e2e8f0; padding-top:10px;">
+                            <span style="color:#111; font-weight:600;">Amount Due</span>
+                            <strong id="lpc-amount" style="color:#be185d; font-size:16px;">—</strong>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                        <button type="button" id="lpc-cancel" style="flex:1; height:44px; border-radius:12px; border:1px solid #d1d5db; background:#fff; color:#111; font-weight:600; cursor:pointer;">Cancel</button>
+                        <button type="button" id="lpc-proceed" style="flex:1.3; height:44px; border-radius:12px; border:none; background:#be185d; color:#fff; font-weight:600; cursor:pointer;">Proceed to PayMongo</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', (evt) => {
+                if (evt.target === modal) modal.style.display = 'none';
+            });
+            document.addEventListener('keydown', (evt) => {
+                if (evt.key === 'Escape' && modal.style.display === 'flex') {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('lpc-device').textContent = deviceName;
+        document.getElementById('lpc-due').textContent = dueDateLabel || 'Scheduled';
+        document.getElementById('lpc-amount').textContent = amountLabel;
+
+        const cancelBtn = document.getElementById('lpc-cancel');
+        const proceedBtn = document.getElementById('lpc-proceed');
+        const freshCancel = cancelBtn.cloneNode(true);
+        const freshProceed = proceedBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(freshCancel, cancelBtn);
+        proceedBtn.parentNode.replaceChild(freshProceed, proceedBtn);
+
+        freshCancel.addEventListener('click', () => { modal.style.display = 'none'; });
+        freshProceed.addEventListener('click', () => {
+            modal.style.display = 'none';
+            onConfirm();
+        });
+
+        modal.style.display = 'flex';
+        freshProceed.focus();
     }
 
     // Init

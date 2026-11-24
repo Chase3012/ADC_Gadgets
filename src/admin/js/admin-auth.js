@@ -5,7 +5,7 @@ function checkAdminAuth() {
         window.location.replace('/src/admin/login.html');
         return;
     }
-    
+
     var user;
     try {
         user = JSON.parse(storedUser);
@@ -14,26 +14,35 @@ function checkAdminAuth() {
         window.location.replace('/src/admin/login.html');
         return;
     }
-    
+
     if (user.role !== 'admin') {
         localStorage.removeItem('admin_user');
-        alert('Access Denied: Administrator privileges required.');
         window.location.replace('/src/admin/login.html');
         return;
     }
-    
+
+    // Verify server-side HttpOnly admin JWT cookie so forged localStorage cannot bypass auth
+    fetch('/api/auth/session?scope=admin', { credentials: 'same-origin' })
+        .then(function (r) {
+            if (r.status === 401 || r.status === 403) {
+                localStorage.removeItem('admin_user');
+                window.location.replace('/src/admin/login.html');
+            }
+        })
+        .catch(function () {});
+
     var fullName = user.email ? user.email.split('@')[0] : 'Admin';
-    
+
     var nameEl = document.querySelector('.user-profile .name');
-    if(nameEl) nameEl.textContent = fullName;
-    
+    if (nameEl) nameEl.textContent = fullName;
+
     var imgEl = document.querySelector('.user-profile img');
-    if(imgEl) imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0D8ABC&color=fff`;
+    if (imgEl) imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0D8ABC&color=fff`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAdminAuth();
-    
+
     var logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async function(e) {

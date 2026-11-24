@@ -19,10 +19,10 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #FF4191, #e90074);
+            background: linear-gradient(135deg, #d81b60, #be185d);
             color: #fff;
             border: none;
-            box-shadow: 0 4px 16px rgba(255, 65, 145, 0.4);
+            box-shadow: 0 4px 16px rgba(190, 24, 93, 0.4);
             cursor: pointer;
             z-index: 9999;
             display: flex;
@@ -32,7 +32,7 @@
         }
         #fab-chat-btn:hover {
             transform: scale(1.08) translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 65, 145, 0.5);
+            box-shadow: 0 8px 24px rgba(190, 24, 93, 0.5);
         }
         #fab-chat-btn svg {
             width: 28px;
@@ -95,12 +95,12 @@
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #FF4191, #e90074);
+            background: linear-gradient(135deg, #d81b60, #be185d);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            box-shadow: 0 4px 12px rgba(255, 65, 145, 0.2);
+            box-shadow: 0 4px 12px rgba(190, 24, 93, 0.25);
         }
         .fab-chat-info {
             flex: 1;
@@ -145,6 +145,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 0 12px;
         }
         .fab-chat-placeholder p {
             margin-top: 8px;
@@ -177,7 +178,7 @@
             box-shadow: 0 0 0 4px rgba(255, 65, 145, 0.1);
         }
         #fab-chat-send {
-            background: linear-gradient(135deg, #FF4191, #e90074);
+            background: linear-gradient(135deg, #d81b60, #be185d);
             color: #fff;
             border: none;
             border-radius: 14px;
@@ -189,7 +190,7 @@
             cursor: pointer;
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(255, 65, 145, 0.25);
+            box-shadow: 0 4px 12px rgba(190, 24, 93, 0.28);
         }
         #fab-chat-send:hover:not(:disabled) {
             transform: scale(1.05) translateY(-2px);
@@ -235,7 +236,7 @@
         }
         .msg-bubble-wrap.user .msg-bubble {
             border-radius: 20px 20px 6px 20px;
-            background: linear-gradient(135deg, #FF4191, #e90074);
+            background: linear-gradient(135deg, #d81b60, #be185d);
             color: #fff;
         }
         .msg-bubble-wrap.admin .msg-bubble {
@@ -253,6 +254,42 @@
         @keyframes slideInLeft {
             from { opacity: 0; transform: translateX(-12px); }
             to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Start Chat Button */
+        #fab-start-chat-btn {
+            margin-top: 16px;
+            padding: 10px 22px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #d81b60, #be185d);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(190, 24, 93, 0.3);
+            transition: transform 0.2s ease, filter 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #fab-start-chat-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+        }
+        #fab-start-chat-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #fab-chat-ended-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 6px 12px;
+            border-radius: 999px;
+            display: none;
         }
 
         /* Scrollbar */
@@ -273,7 +310,8 @@
                 width: calc(100vw - 32px);
                 right: 16px;
                 bottom: 84px;
-                height: calc(100vh - 120px);
+                height: calc(100dvh - 120px);
+                max-height: calc(100dvh - 110px);
             }
             #fab-chat-btn {
                 right: 16px;
@@ -309,8 +347,11 @@
             
             <div id="fab-chat-messages">
                 <div id="fab-chat-placeholder" class="fab-chat-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-dashed"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
-                    <p>No messages yet.<br>Send a message to start!</p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-dashed"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+                    <p style="color:#4b5563; font-weight:600;">Start a new conversation</p>
+                    <p style="font-size:12.5px; color:#9ca3af; margin-top:4px;">Ask about loans, payments, or devices.</p>
+                    <div id="fab-chat-ended-note"></div>
+                    <button id="fab-start-chat-btn" type="button">Start Chat</button>
                 </div>
             </div>
 
@@ -329,36 +370,84 @@
     const win = document.getElementById('fab-chat-window');
     const messagesEl = document.getElementById('fab-chat-messages');
     const placeholderEl = document.getElementById('fab-chat-placeholder');
+    const endedNoteEl = document.getElementById('fab-chat-ended-note');
     const inputEl = document.getElementById('fab-chat-input');
     const sendBtn = document.getElementById('fab-chat-send');
     const loginNotice = document.getElementById('fab-chat-login-notice');
+    const startChatBtn = document.getElementById('fab-start-chat-btn');
 
     let isOpen = false;
     let pollInterval = null;
+    let autoEndTimer = null;
+    let isSending = false;
+
+    function openChatPanel() {
+        if (!isOpen) {
+            isOpen = true;
+            btn.classList.add('open');
+            win.classList.add('open');
+        }
+        if (user) {
+            setTimeout(() => inputEl.focus(), 300);
+            loadMessages();
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(async () => {
+                await checkIdleStatus();
+                await loadMessages();
+            }, 3000);
+        }
+    }
+
+    function closeChatPanel() {
+        isOpen = false;
+        btn.classList.remove('open');
+        win.classList.remove('open');
+        if (pollInterval) clearInterval(pollInterval);
+    }
 
     // Toggle Chat
     btn.addEventListener('click', () => {
-        isOpen = !isOpen;
-        if (isOpen) {
-            btn.classList.add('open');
-            win.classList.add('open');
-            if (user) setTimeout(() => inputEl.focus(), 300);
-            
-            if (user) {
-                loadMessages();
-                if (pollInterval) clearInterval(pollInterval);
-                pollInterval = setInterval(loadMessages, 3000);
-            }
-        } else {
-            btn.classList.remove('open');
-            win.classList.remove('open');
-            if (pollInterval) clearInterval(pollInterval);
-        }
+        if (!isOpen) openChatPanel();
+        else closeChatPanel();
     });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) closeChatPanel();
+    });
+
+    window.openSupportChatWithPrompt = async function(promptText) {
+        openChatPanel();
+        if (!user) {
+            if (loginNotice) loginNotice.textContent = 'Sign in to apply';
+            inputEl.placeholder = 'Log in to message support';
+            return;
+        }
+        try {
+            if (renderedMessageCount === 0) {
+                await fetch('/chats/' + user.id + '/start', { method: 'POST' });
+                await loadMessages();
+            }
+        } catch (err) {
+            console.error('Failed to initialize concierge chat:', err);
+        }
+        if (promptText) {
+            inputEl.disabled = false;
+            sendBtn.disabled = false;
+            inputEl.value = promptText;
+        }
+        setTimeout(() => {
+            inputEl.focus();
+            if (inputEl.setSelectionRange && inputEl.value) {
+                const len = inputEl.value.length;
+                inputEl.setSelectionRange(len, len);
+            }
+        }, 120);
+    };
 
     if (!user) {
         loginNotice.textContent = 'Please log in';
         inputEl.placeholder = 'Log in to chat';
+        if (startChatBtn) startChatBtn.style.display = 'none';
         return;
     }
 
@@ -367,7 +456,6 @@
     sendBtn.disabled = false;
     inputEl.placeholder = 'Type a message...';
 
-    
     function parseMarkdown(text) {
         let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
@@ -380,6 +468,7 @@
     let renderedMessageCount = 0;
     function renderMessage(msg) {
         if (placeholderEl) placeholderEl.style.display = 'none';
+        if (endedNoteEl) endedNoteEl.style.display = 'none';
         const isUser = msg.sender === 'user';
         const wrap = document.createElement('div');
         wrap.className = `msg-bubble-wrap ${isUser ? 'user' : 'admin'}`;
@@ -399,6 +488,23 @@
         messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
     }
 
+    function showEmptyPlaceholder(noteText = '') {
+        messagesEl.innerHTML = '';
+        if (placeholderEl) {
+            messagesEl.appendChild(placeholderEl);
+            placeholderEl.style.display = 'flex';
+        }
+        if (endedNoteEl) {
+            if (noteText) {
+                endedNoteEl.textContent = noteText;
+                endedNoteEl.style.display = 'inline-block';
+            } else {
+                endedNoteEl.style.display = 'none';
+            }
+        }
+        renderedMessageCount = 0;
+    }
+
     async function loadMessages() {
         try {
             const res = await fetch('/chats/' + userId);
@@ -406,11 +512,16 @@
             const data = await res.json();
             
             if (data.length === 0) {
-                if (placeholderEl) {
-                    messagesEl.appendChild(placeholderEl);
-                    placeholderEl.style.display = 'flex';
+                if (renderedMessageCount > 0) {
+                    showEmptyPlaceholder('Previous chat ended.');
+                } else {
+                    showEmptyPlaceholder(endedNoteEl ? endedNoteEl.textContent : '');
                 }
                 return;
+            }
+            if (data.length < renderedMessageCount) {
+                messagesEl.innerHTML = '';
+                renderedMessageCount = 0;
             }
             if (data.length > renderedMessageCount) {
                 const newMsgs = data.slice(renderedMessageCount);
@@ -425,6 +536,40 @@
         } catch(e) {
             console.error(e);
         }
+    }
+
+    async function checkIdleStatus() {
+        if (!isOpen || isSending || renderedMessageCount === 0 || autoEndTimer) return;
+        try {
+            const res = await fetch('/chats/' + userId + '/idle-check', { method: 'POST' });
+            if (!res.ok) return;
+            const result = await res.json();
+            if (result.action === 'ended') {
+                showEmptyPlaceholder('Chat ended automatically due to no response.');
+            } else if (result.action === 'prompted') {
+                await loadMessages();
+            }
+        } catch (e) {
+            // fail silently
+        }
+    }
+
+    if (startChatBtn) {
+        startChatBtn.addEventListener('click', async () => {
+            startChatBtn.disabled = true;
+            startChatBtn.textContent = 'Starting...';
+            if (endedNoteEl) endedNoteEl.style.display = 'none';
+            try {
+                await fetch('/chats/' + userId + '/start', { method: 'POST' });
+                await loadMessages();
+                inputEl.focus();
+            } catch (e) {
+                console.error('Start chat error:', e);
+            } finally {
+                startChatBtn.disabled = false;
+                startChatBtn.textContent = 'Start Chat';
+            }
+        });
     }
 
     // Typing Indicator Logic
@@ -465,8 +610,15 @@
     async function sendMessage() {
         const text = inputEl.value.trim();
         if (!text) return;
+
+        if (autoEndTimer) {
+            clearTimeout(autoEndTimer);
+            autoEndTimer = null;
+        }
+
         inputEl.value = '';
         sendBtn.disabled = true;
+        isSending = true;
 
         // Render user message optimistically
         renderMessage({
@@ -490,12 +642,27 @@
                 })
             });
             if (!res.ok) throw new Error('Failed to send');
+            const postData = await res.json();
             removeTypingIndicator();
             await loadMessages();
+
+            if (postData && postData.autoEnd) {
+                autoEndTimer = setTimeout(async () => {
+                    autoEndTimer = null;
+                    try {
+                        await fetch('/chats/' + userId + '/end', { method: 'POST' });
+                        showEmptyPlaceholder('Conversation ended — click Start Chat anytime!');
+                    } catch (err) {
+                        console.error('Auto-end error:', err);
+                    }
+                }, 4500);
+            }
         } catch (error) {
             console.error('Send error:', error);
             removeTypingIndicator();
             inputEl.value = text;
+        } finally {
+            isSending = false;
         }
         sendBtn.disabled = false;
         inputEl.focus();

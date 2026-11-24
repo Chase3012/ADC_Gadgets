@@ -117,6 +117,7 @@ async function updateGlobalChatBadge() {
         if (!res.ok) return;
         const data = await res.json();
         const badge = document.getElementById('global-chat-badge');
+        const railDot = document.getElementById('rail-chat-dot');
         if (badge) {
             if (data.unreadMessages && data.unreadMessages > 0) {
                 badge.textContent = data.unreadMessages;
@@ -124,6 +125,9 @@ async function updateGlobalChatBadge() {
             } else {
                 badge.style.display = 'none';
             }
+        }
+        if (railDot) {
+            railDot.style.display = (data.unreadMessages && data.unreadMessages > 0) ? 'block' : 'none';
         }
     } catch (e) {
         // fail silently
@@ -137,38 +141,61 @@ function ensureCustomModals() {
     if (!document.getElementById('custom-confirm-modal')) {
         const confirmDiv = document.createElement('div');
         confirmDiv.id = 'custom-confirm-modal';
-        confirmDiv.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:99999; justify-content:center; align-items:center;';
+        confirmDiv.setAttribute('role', 'dialog');
+        confirmDiv.setAttribute('aria-modal', 'true');
+        confirmDiv.setAttribute('aria-labelledby', 'custom-confirm-title');
+        confirmDiv.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:99999; justify-content:center; align-items:center; padding:16px;';
         confirmDiv.innerHTML = `
-            <div style="background:var(--surface, #18181b); border:1px solid var(--border, rgba(255,255,255,0.1)); border-radius:16px; padding:32px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
-                <div style="background:rgba(255, 65, 145, 0.1); width:56px; height:56px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 16px auto;">
-                    <i data-lucide="help-circle" style="color:#FF4191; width:28px; height:28px;"></i>
+            <div style="background:var(--surface, #18181b); border:1px solid var(--border, rgba(255,255,255,0.1)); border-radius:16px; padding:32px; width:100%; max-width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+                <div style="background:rgba(244, 114, 182, 0.12); width:56px; height:56px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 16px auto;">
+                    <i data-lucide="help-circle" style="color:#f472b6; width:28px; height:28px;"></i>
                 </div>
-                <h3 id="custom-confirm-title" style="margin:0 0 8px 0; font-size:18px; color:var(--text-main, #fff); font-weight:700;">Please Confirm</h3>
+                <h2 id="custom-confirm-title" style="margin:0 0 8px 0; font-size:18px; color:var(--text-main, #fff); font-weight:700;">Please Confirm</h2>
                 <p id="custom-confirm-message" style="color:var(--text-muted, #94a3b8); font-size:14px; line-height:1.5; margin:0 0 24px 0;"></p>
                 <div style="display:flex; justify-content:center; gap:12px;">
-                    <button id="custom-cancel-btn" style="flex:1; padding:11px; border-radius:8px; border:1px solid var(--border, rgba(255,255,255,0.1)); background:transparent; color:var(--text-main, #fff); font-weight:600; cursor:pointer;">Cancel</button>
-                    <button id="custom-confirm-btn" style="flex:1; padding:11px; border-radius:8px; border:none; background:#FF4191; color:white; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(255, 65, 145, 0.3);">Confirm</button>
+                    <button id="custom-cancel-btn" type="button" style="flex:1; padding:11px; border-radius:8px; border:1px solid var(--border, rgba(255,255,255,0.1)); background:transparent; color:var(--text-main, #fff); font-weight:600; cursor:pointer;">Cancel</button>
+                    <button id="custom-confirm-btn" type="button" style="flex:1; padding:11px; border-radius:8px; border:none; background:#be185d; color:white; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(190, 24, 93, 0.3);">Confirm</button>
                 </div>
             </div>
         `;
+        confirmDiv.addEventListener('click', (e) => {
+            if (e.target === confirmDiv) confirmDiv.style.display = 'none';
+        });
         document.body.appendChild(confirmDiv);
     }
 
     if (!document.getElementById('custom-alert-modal')) {
         const alertDiv = document.createElement('div');
         alertDiv.id = 'custom-alert-modal';
-        alertDiv.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:99999; justify-content:center; align-items:center;';
+        alertDiv.setAttribute('role', 'dialog');
+        alertDiv.setAttribute('aria-modal', 'true');
+        alertDiv.setAttribute('aria-labelledby', 'custom-alert-title');
+        alertDiv.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:99999; justify-content:center; align-items:center; padding:16px;';
         alertDiv.innerHTML = `
-            <div style="background:var(--surface, #18181b); border:1px solid var(--border, rgba(255,255,255,0.1)); border-radius:16px; padding:32px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
-                <div style="background:rgba(244, 114, 182, 0.1); width:56px; height:56px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 16px auto;">
-                    <i data-lucide="info" style="color:#FF4191; width:28px; height:28px;"></i>
+            <div style="background:var(--surface, #18181b); border:1px solid var(--border, rgba(255,255,255,0.1)); border-radius:16px; padding:32px; width:100%; max-width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+                <div style="background:rgba(244, 114, 182, 0.12); width:56px; height:56px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 16px auto;">
+                    <i data-lucide="info" style="color:#f472b6; width:28px; height:28px;"></i>
                 </div>
-                <h3 id="custom-alert-title" style="margin:0 0 8px 0; font-size:18px; color:var(--text-main, #fff); font-weight:700;">Notification</h3>
+                <h2 id="custom-alert-title" style="margin:0 0 8px 0; font-size:18px; color:var(--text-main, #fff); font-weight:700;">Notification</h2>
                 <p id="custom-alert-message" style="color:var(--text-muted, #94a3b8); font-size:14px; line-height:1.5; margin:0 0 24px 0;"></p>
-                <button id="custom-alert-close-btn" style="width:100%; padding:11px; border-radius:8px; border:none; background:#FF4191; color:white; font-weight:600; cursor:pointer;">Dismiss</button>
+                <button id="custom-alert-close-btn" type="button" style="width:100%; padding:11px; border-radius:8px; border:none; background:#be185d; color:white; font-weight:600; cursor:pointer;">Dismiss</button>
             </div>
         `;
+        alertDiv.addEventListener('click', (e) => {
+            if (e.target === alertDiv) alertDiv.style.display = 'none';
+        });
         document.body.appendChild(alertDiv);
+    }
+
+    if (!window._adcAdminModalEscBound) {
+        window._adcAdminModalEscBound = true;
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            const confirmModal = document.getElementById('custom-confirm-modal');
+            const alertModal = document.getElementById('custom-alert-modal');
+            if (confirmModal && confirmModal.style.display === 'flex') confirmModal.style.display = 'none';
+            if (alertModal && alertModal.style.display === 'flex') alertModal.style.display = 'none';
+        });
     }
     if (window.lucide) lucide.createIcons();
 }

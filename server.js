@@ -117,6 +117,21 @@ function verifyAdmin(req, res, next) {
     }
 }
 
+app.get('/api/auth/session', (req, res) => {
+    const scope = req.query.scope === 'admin' ? 'admin' : 'user';
+    const token = scope === 'admin' ? req.cookies.admin_auth_token : (req.cookies.auth_token || req.cookies.admin_auth_token);
+    if (!token) return res.status(401).json({ authenticated: false });
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (scope === 'admin' && decoded.role !== 'admin') {
+            return res.status(403).json({ authenticated: false });
+        }
+        return res.json({ authenticated: true, user: decoded });
+    } catch (err) {
+        return res.status(401).json({ authenticated: false });
+    }
+});
+
 // ─── AUTH: Login, OTP, Reset Password ──────────────────────────────────────────
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -1332,6 +1347,7 @@ app.get('/dashboard/stats', async (req, res) => {
         COUNT(CASE WHEN status = 'active' AND next_payment_date > NOW() + INTERVAL '3 days' THEN 1 END) AS on_time,
         COUNT(CASE WHEN status = 'active' AND next_payment_date BETWEEN NOW() AND NOW() + INTERVAL '3 days' THEN 1 END) AS due_soon,
         COUNT(CASE WHEN status = 'active' AND next_payment_date < NOW() THEN 1 END) AS late,
+        COUNT(CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN 1 END) AS loans_last_7d,
         COUNT(*) AS total_loans
       FROM loans
     `);
@@ -1339,12 +1355,22 @@ app.get('/dashboard/stats', async (req, res) => {
     const userCount = await pool.query("SELECT COUNT(*) FROM profiles WHERE role = 'user'");
 
     const recentLoans = await pool.query(`
-      SELECT l.id, l.user_id, l.device_name, l.device_color, l.total_amount, l.monthly_payment, l.remaining_balance, l.status, l.created_at,
+      SELECT l.id, l.user_id, l.device_name, l.device_color, l.total_amount, l.monthly_payment, l.remaining_balance, l.status, l.next_payment_date, l.created_at,
              p.full_name, p.email
       FROM loans l
       LEFT JOIN profiles p ON l.user_id = p.id
       ORDER BY l.created_at DESC
       LIMIT 10
+    `);
+
+    const upcomingPayments = await pool.query(`
+      SELECT l.id, l.user_id, l.device_name, l.device_color, l.monthly_payment, l.remaining_balance, l.status, l.next_payment_date,
+             p.full_name, p.email
+      FROM loans l
+      LEFT JOIN profiles p ON l.user_id = p.id
+      WHERE l.status = 'active'
+      ORDER BY l.next_payment_date ASC NULLS LAST
+      LIMIT 6
     `);
 
     // Recent payments (for Sales tab transactions table)
@@ -1368,6 +1394,25 @@ app.get('/dashboard/stats', async (req, res) => {
       LIMIT 50
     `);
 
+    // Full SQL 6-month confirmed collections series & current month actuals
+    const monthlySeriesRes = await pool.query(`
+      SELECT
+        TO_CHAR(DATE_TRUNC('month', payment_date), 'YYYY-MM') AS ym,
+        COALESCE(SUM(amount_paid), 0) AS total
+      FROM payments
+      WHERE payment_method != 'pending'
+        AND payment_date >= DATE_TRUNC('month', NOW()) - INTERVAL '5 months'
+      GROUP BY ym
+      ORDER BY ym ASC
+    `);
+
+    const collectedMonthRes = await pool.query(`
+      SELECT COALESCE(SUM(amount_paid), 0) AS total
+      FROM payments
+      WHERE payment_method != 'pending'
+        AND DATE_TRUNC('month', payment_date) = DATE_TRUNC('month', NOW())
+    `);
+
     // Total cash actually collected from payments
     const totalCollected = await pool.query(`
       SELECT COALESCE(SUM(amount_paid), 0) AS total
@@ -1389,14 +1434,18 @@ app.get('/dashboard/stats', async (req, res) => {
       activeLoans: parseInt(stats.active_loans),
       completedLoans: parseInt(stats.completed_loans),
       totalLoans: parseInt(stats.total_loans),
+      loansLast7d: parseInt(stats.loans_last_7d || 0),
       monthlyCollections: parseFloat(stats.monthly_collections),
+      collectedThisMonth: parseFloat(collectedMonthRes.rows[0].total),
       onTime: parseInt(stats.on_time || 0),
       dueSoon: parseInt(stats.due_soon || 0),
       late: parseInt(stats.late || 0),
       totalUsers: parseInt(userCount.rows[0].count),
       unreadMessages: parseInt(unreadMsgs.rows[0].count),
       totalPaymentsCollected: parseFloat(totalCollected.rows[0].total),
+      monthlyPaymentSeries: monthlySeriesRes.rows.map(r => ({ ym: r.ym, total: parseFloat(r.total) })),
       recentLoans: recentLoans.rows,
+      upcomingPayments: upcomingPayments.rows,
       recentPayments: recentPayments.rows
     });
   } catch (err) {
@@ -1438,6 +1487,318 @@ app.get('/chats/:userId', async (req, res) => {
   }
 });
 
+const MAX_CHAT_HISTORY_MESSAGES = 30;
+
+async function trimUserChatHistory(userId, keepLimit = MAX_CHAT_HISTORY_MESSAGES) {
+  try {
+    await pool.query(
+      `DELETE FROM chats
+       WHERE user_id = $1
+         AND id NOT IN (
+           SELECT id FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2
+         )`,
+      [userId, keepLimit]
+    );
+  } catch (err) {
+    console.warn('Chat trim warning:', err.message);
+  }
+}
+
+async function fetchUserChatContext(userId) {
+  const [userRes, loanRes, completedLoanRes, deviceRes] = await Promise.all([
+    pool.query('SELECT * FROM profiles WHERE id = $1', [userId]),
+    pool.query("SELECT * FROM loans WHERE user_id = $1 AND status IN ('active', 'pending') ORDER BY created_at DESC LIMIT 1", [userId]),
+    pool.query("SELECT * FROM loans WHERE user_id = $1 AND status = 'completed' ORDER BY created_at DESC LIMIT 1", [userId]),
+    pool.query("SELECT name, storage, srp FROM devices WHERE status = 'available' AND stock > 0 ORDER BY srp DESC")
+  ]);
+
+  return {
+    profile: userRes.rows[0] || null,
+    activeLoan: loanRes.rows[0] || null,
+    completedLoan: completedLoanRes.rows[0] || null,
+    devices: deviceRes.rows || []
+  };
+}
+
+function calcAmortizationMonthly(srp, months) {
+  const rates = { 3: 0, 6: 0.03, 12: 0.05, 24: 0.08 };
+  const rate = rates[months] ?? 0.05;
+  return (parseFloat(srp) * (1 + rate)) / months;
+}
+
+function formatPeso(val) {
+  return '₱' + parseFloat(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function findMentionedDevice(text, devices) {
+  if (!text || !devices || devices.length === 0) return null;
+  const lower = text.toLowerCase();
+  const sorted = [...devices].sort((a, b) => (b.name || '').length - (a.name || '').length);
+  return sorted.find(d => d.name && lower.includes(d.name.toLowerCase())) || null;
+}
+
+function buildDevicePlanSummary(device, requestedMonths = null) {
+  const srp = parseFloat(device.srp || 0);
+  if (requestedMonths && [3, 6, 12, 24].includes(requestedMonths)) {
+    const monthly = calcAmortizationMonthly(srp, requestedMonths);
+    return `For **${device.name} (${device.storage})** (Cash SRP: **${formatPeso(srp)}**), the **${requestedMonths}-month** installment plan is **${formatPeso(monthly)}/mo**. Do you have any other questions or concerns?`;
+  }
+  const m3 = formatPeso(calcAmortizationMonthly(srp, 3));
+  const m6 = formatPeso(calcAmortizationMonthly(srp, 6));
+  const m12 = formatPeso(calcAmortizationMonthly(srp, 12));
+  const m24 = formatPeso(calcAmortizationMonthly(srp, 24));
+  return `**${device.name} (${device.storage})** — Cash Price: **${formatPeso(srp)}**\n- **3 mos (0%):** ${m3}/mo\n- **6 mos (3%):** ${m6}/mo\n- **12 mos (5%):** ${m12}/mo\n- **24 mos (8%):** ${m24}/mo\n\nYou can view this unit on the **Devices** page or tell me which term you prefer. Any other questions?`;
+}
+
+const CHAT_IDLE_PROMPT_SECONDS = 45;
+const CHAT_IDLE_CLOSE_SECONDS = 60;
+const IDLE_CHECKIN_TEXT = "Just checking in — do you have any other questions or concerns? If there's no reply within 1 minute, I'll wrap up this chat automatically.";
+
+function isConversationDoneIntent(userMessage, lastBotMsg) {
+  const lowerMsg = (userMessage || '').trim().toLowerCase();
+  const explicitGoodbye = /^(bye|goodbye|see ya|cya|that'?s all|nothing else|i'?m good|im good|all good|all set|no more questions?|done|wala na)[!.\s]*$/i.test(lowerMsg)
+    || /^(thanks|thank you|ty|salamat)[,!.\s]*(that'?s all|nothing else|i'?m good|im good|all good|bye)?[!.\s]*$/i.test(lowerMsg);
+  if (explicitGoodbye) return true;
+
+  const isNegative = /^(no|nope|nah|no thanks|no thank you|not right now|none|nothing|hindi na)[!.\s]*$/i.test(lowerMsg);
+  const botAskedIfAnythingElse = lastBotMsg.includes('any other questions')
+    || lastBotMsg.includes('other concerns')
+    || lastBotMsg.includes('anything else')
+    || lastBotMsg.includes('all set');
+  return isNegative && botAskedIfAnythingElse;
+}
+
+function buildSmartFallbackReply({ userMessage, recentMessages, profile, activeLoan, completedLoan, devices }) {
+  const lowerMsg = userMessage.trim().toLowerCase();
+  const firstName = profile?.full_name ? profile.full_name.trim().split(/\s+/)[0] : (profile?.email ? profile.email.split('@')[0] : 'there');
+
+  const lastBotEntry = [...(recentMessages || [])].reverse().find(m => m.sender !== 'user');
+  const lastBotMsg = (lastBotEntry?.message || '').toLowerCase();
+
+  const termMatch = lowerMsg.match(/\b(3|6|12|24)\s*(mo|mos|month|months)?\b/);
+  const requestedMonths = termMatch ? parseInt(termMatch[1], 10) : null;
+  const mentionedDevice = findMentionedDevice(userMessage, devices) || findMentionedDevice(lastBotEntry?.message || '', devices);
+
+  const isAffirmative = /^(yes|yeah|yep|yup|sure|ok|okay|oo|sige|pls|please|go ahead|i do|i would|yes please|of course|let's go|sounds good)[!.\s]*$/i.test(lowerMsg);
+  const isNegative = /^(no|nope|nah|not now|maybe later|never mind|nevermind|no thanks|no thank you|hindi|wala na)[!.\s]*$/i.test(lowerMsg);
+  const isGreeting = /^(hi|hello|hey|yo|good morning|good afternoon|good evening|kumusta|kamusta|start)[!.\s]*$/i.test(lowerMsg);
+
+  if (lowerMsg.includes('transaction history') || lowerMsg.includes('manual payment') || lowerMsg.includes('payment log') || lowerMsg.includes('email receipt')) {
+    return {
+      text: "I cannot perform that action directly. I am transferring this conversation to a human administrator — please wait for an Admin to assist you.",
+      autoEnd: false
+    };
+  }
+
+  if (isConversationDoneIntent(userMessage, lastBotMsg)) {
+    return {
+      text: `You're welcome, **${firstName}**! Since there are no other concerns, I'll wrap up this chat now. Click **Start Chat** anytime if you need help again!`,
+      autoEnd: true
+    };
+  }
+
+  if (isAffirmative) {
+    if (lastBotMsg.includes('any other questions') || lastBotMsg.includes('other concerns') || lastBotMsg.includes('anything else')) {
+      return {
+        text: "Sure! Go ahead and tell me your question — I can help with your **balance**, **due date**, **available devices**, or **monthly installment plans**.",
+        autoEnd: false
+      };
+    }
+    if (lastBotMsg.includes('apply for a new') || lastBotMsg.includes('getting a new device') || lastBotMsg.includes('available devices') || lastBotMsg.includes('new unit')) {
+      if (devices.length > 0) {
+        const preview = devices.slice(0, 4).map(d => `- **${d.name}** (${d.storage}) — from **${formatPeso(calcAmortizationMonthly(d.srp, 24))}/mo**`).join('\n');
+        return {
+          text: `Great! Here are some devices currently in stock:\n${preview}\n\nVisit the **Devices** page to browse all units, or reply with a **model name** (e.g. _iPhone 16_) to see 3, 6, 12, and 24-month plans. Any other questions?`,
+          autoEnd: false
+        };
+      }
+      return {
+        text: "Great! You can browse our catalog on the **Devices** page, or type **Talk to human** so an Admin can help process your new application. Any other concerns?",
+        autoEnd: false
+      };
+    }
+    if (mentionedDevice) {
+      return { text: buildDevicePlanSummary(mentionedDevice, requestedMonths), autoEnd: false };
+    }
+    if (lastBotMsg.includes('pay') || lastBotMsg.includes('balance') || lastBotMsg.includes('due')) {
+      return {
+        text: "You can complete your payment via **GCash** or **Maya** directly from the **Loan** page using the **Pay Now** button. Is there anything else I can help you with?",
+        autoEnd: false
+      };
+    }
+    return {
+      text: "Awesome! Tell me what you'd like to check — **available devices**, a **monthly plan**, or your **loan balance**.",
+      autoEnd: false
+    };
+  }
+
+  if (isNegative) {
+    return {
+      text: "No problem at all! Do you have any other questions or concerns I can help with?",
+      autoEnd: false
+    };
+  }
+
+  if (isGreeting) {
+    if (activeLoan) {
+      return { text: `Hi **${firstName}**! You have an active loan for **${activeLoan.device_name}** (remaining balance: **${formatPeso(activeLoan.remaining_balance)}**). How can I help you today?`, autoEnd: false };
+    }
+    if (completedLoan) {
+      return { text: `Hi **${firstName}**! Your previous loan for **${completedLoan.device_name}** is settled. Would you like to check our available devices or monthly installment plans?`, autoEnd: false };
+    }
+    return { text: `Hi **${firstName}**! Welcome to ADC Gadgets. You can ask me about available iPhones, 3–24 month installment rates, or how to apply for a loan.`, autoEnd: false };
+  }
+
+  if (lowerMsg.includes('name') || lowerMsg.includes('who am i')) {
+    const fullName = profile?.full_name || profile?.email?.split('@')[0] || 'there';
+    return { text: `You're signed in as **${fullName}**. Do you have any other questions or concerns?`, autoEnd: false };
+  }
+
+  if (lowerMsg.includes('active loan') || lowerMsg.includes('do i have loan') || lowerMsg.includes('do i have active') || lowerMsg.includes('my loan') || lowerMsg.includes('loan status')) {
+    if (activeLoan) {
+      const nextDate = activeLoan.next_payment_date ? new Date(activeLoan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'soon';
+      return { text: `Yes! You have an active loan for a **${activeLoan.device_name}** with a remaining balance of **${formatPeso(activeLoan.remaining_balance)}** (next payment **${formatPeso(activeLoan.monthly_payment)}** due **${nextDate}**). Do you have any other questions or concerns?`, autoEnd: false };
+    }
+    if (completedLoan) {
+      return { text: `You do not have any active loans right now. Your previous loan for the **${completedLoan.device_name}** has been fully settled and completed! Would you like to apply for a new device, or do you have any other concerns?`, autoEnd: false };
+    }
+    return { text: "You do not have an active loan right now. Would you like to check our available devices and monthly plans?", autoEnd: false };
+  }
+
+  if (lowerMsg.includes('gcash') || lowerMsg.includes('maya') || lowerMsg.includes('paymongo') || lowerMsg.includes('how to pay') || lowerMsg.includes('payment method')) {
+    return { text: "We accept **GCash** and **Maya** online via PayMongo on your **Loan** page (**Pay Now** button), as well as in-person cash payments recorded by an Admin. Any other questions or concerns?", autoEnd: false };
+  }
+
+  if (lowerMsg.includes('apply') || lowerMsg.includes('requirement') || lowerMsg.includes('how to get') || lowerMsg.includes('new device') || lowerMsg.includes('new loan')) {
+    return { text: "To apply for a device loan:\n1. Pick your model on the **Devices** page.\n2. Ensure your Government ID is verified on your **Account** page.\n3. Choose a **3, 6, 12, or 24-month** term — or type **Talk to human** so an Admin can finalize your contract!\n\nDo you have any other questions or concerns?", autoEnd: false };
+  }
+
+  if (mentionedDevice && (requestedMonths || lowerMsg.includes('price') || lowerMsg.includes('how much') || lowerMsg.includes('monthly') || lowerMsg.includes('installment') || lowerMsg.includes('plan') || lowerMsg.includes(mentionedDevice.name.toLowerCase()))) {
+    return { text: buildDevicePlanSummary(mentionedDevice, requestedMonths), autoEnd: false };
+  }
+
+  if (lowerMsg.includes('balance') || lowerMsg.includes('due') || lowerMsg.includes('next payment') || lowerMsg.includes('pay')) {
+    if (activeLoan) {
+      const nextDate = activeLoan.next_payment_date ? new Date(activeLoan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'soon';
+      return { text: `Your remaining balance for **${activeLoan.device_name}** is **${formatPeso(activeLoan.remaining_balance)}**. Your next monthly installment of **${formatPeso(activeLoan.monthly_payment)}** is due on **${nextDate}**. Do you have any other questions or concerns?`, autoEnd: false };
+    }
+    if (completedLoan) {
+      return { text: `Your balance is **₱0.00**! Your previous loan for **${completedLoan.device_name}** is fully settled. Would you like to check available devices for a new loan?`, autoEnd: false };
+    }
+    return { text: "You currently have **₱0.00** balance and no active loan. Ask me about **available devices** if you'd like to start a plan, or let me know if you have any other concerns!", autoEnd: false };
+  }
+
+  if (lowerMsg.includes('device') || lowerMsg.includes('phone') || lowerMsg.includes('iphone') || lowerMsg.includes('stock') || lowerMsg.includes('available') || lowerMsg.includes('catalog') || lowerMsg.includes('price') || lowerMsg.includes('how much') || lowerMsg.includes('installment') || lowerMsg.includes('monthly')) {
+    if (devices.length === 0) {
+      return { text: "We don't have available units in stock right at this moment. Check the **Devices** page for upcoming releases or type **Talk to human** for ETA! Any other concerns?", autoEnd: false };
+    }
+    const listText = devices.slice(0, 6).map(d => `- **${d.name}** (${d.storage}) — Cash **${formatPeso(d.srp)}** · From **${formatPeso(calcAmortizationMonthly(d.srp, 24))}/mo**`).join('\n');
+    return { text: `Here are our devices currently in stock:\n${listText}\n\nReply with a **model name** (and optional term: 3, 6, 12, or 24 months) for the exact breakdown. Do you have any other questions?`, autoEnd: false };
+  }
+
+  return {
+    text: `I didn't quite catch that, **${firstName}** — try asking something like:\n- **"What devices are available?"**\n- **"12-month plan for iPhone 16"**\n- **"What is my remaining balance?"**\n\nOr type **Talk to human** to connect directly with our Admin team. Any other questions or concerns?`,
+    autoEnd: false
+  };
+}
+
+app.post('/chats/:userId/start', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const existing = await pool.query('SELECT COUNT(*)::int AS cnt FROM chats WHERE user_id = $1', [userId]);
+    if (existing.rows[0].cnt > 0) {
+      return res.json({ started: false });
+    }
+
+    const { profile, activeLoan, completedLoan } = await fetchUserChatContext(userId);
+    const firstName = profile?.full_name ? profile.full_name.trim().split(/\s+/)[0] : (profile?.email ? profile.email.split('@')[0] : 'there');
+
+    let welcomeMsg;
+    if (activeLoan) {
+      welcomeMsg = `Hi **${firstName}**! Welcome to ADC Support. You have an active loan for **${activeLoan.device_name}**. Ask me about your balance, next due date, GCash/Maya payments, or available devices.`;
+    } else if (completedLoan) {
+      welcomeMsg = `Hi **${firstName}**! Welcome back to ADC Support. Your previous loan for **${completedLoan.device_name}** is fully settled. Would you like to check available devices or calculate a monthly plan?`;
+    } else {
+      welcomeMsg = `Hi **${firstName}**! Welcome to ADC Support. I can help you check available iPhones, compute 3–24 month installment plans, or answer loan questions. How can I help today?`;
+    }
+
+    const result = await pool.query(
+      `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, 'ai', true) RETURNING *`,
+      [userId, welcomeMsg]
+    );
+    res.status(201).json({ started: true, message: result.rows[0] });
+  } catch (err) {
+    console.error('Error starting chat:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/chats/:userId/end', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM chats WHERE user_id = $1', [userId]);
+    res.json({ success: true, cleared: result.rowCount });
+  } catch (err) {
+    console.error('Error ending chat:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.delete('/chats/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM chats WHERE user_id = $1', [userId]);
+    res.json({ success: true, cleared: result.rowCount });
+  } catch (err) {
+    console.error('Error clearing chat:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/chats/:userId/idle-check', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, sender, message, created_at FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [userId]
+    );
+    if (rows.length === 0) return res.json({ action: 'none' });
+
+    const latest = rows[0];
+    if (latest.sender !== 'ai') return res.json({ action: 'none' });
+
+    const msgText = latest.message || '';
+    if (msgText.includes('Admin team') || msgText.includes('human administrator')) {
+      return res.json({ action: 'none' });
+    }
+
+    const elapsedSec = (Date.now() - new Date(latest.created_at).getTime()) / 1000;
+    if (msgText === IDLE_CHECKIN_TEXT) {
+      if (elapsedSec >= CHAT_IDLE_CLOSE_SECONDS) {
+        await pool.query('DELETE FROM chats WHERE user_id = $1', [userId]);
+        return res.json({ action: 'ended', reason: 'timeout' });
+      }
+      return res.json({
+        action: 'waiting',
+        remainingSeconds: Math.max(0, Math.ceil(CHAT_IDLE_CLOSE_SECONDS - elapsedSec))
+      });
+    }
+
+    if (elapsedSec >= CHAT_IDLE_PROMPT_SECONDS) {
+      await pool.query(
+        `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, 'ai', false)`,
+        [userId, IDLE_CHECKIN_TEXT]
+      );
+      return res.json({ action: 'prompted' });
+    }
+
+    return res.json({ action: 'none' });
+  } catch (err) {
+    console.error('Error in idle-check:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.post('/chats', async (req, res) => {
   const { user_id, message, sender } = req.body;
   try {
@@ -1447,19 +1808,30 @@ app.post('/chats', async (req, res) => {
       [user_id, message, finalSender]
     );
     const insertedMsg = result.rows[0];
+    let autoEnd = false;
 
     // Trigger AI Assistant
     if (finalSender === 'user') {
-      const lower = message.toLowerCase();
-      const wantsHuman = lower.includes('human') || lower.includes('admin') || lower.includes('agent') || lower.includes('support') || lower.includes('talk to');
-      
-      if (!wantsHuman) {
+      const wantsHuman = /\b(talk to (a )?(human|admin|agent|person|staff|representative)|speak to (a )?(human|admin|agent|person|staff|representative)|human support|live agent|real person|customer service agent|transfer (me )?to (an )?(admin|human|agent))\b/i.test(message);
+
+      if (wantsHuman) {
+        await pool.query(
+          `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, 'ai', false)`,
+          [user_id, "I've forwarded your message to our Admin team. A human agent will reply here shortly!"]
+        );
+      } else {
         // We MUST await this so Vercel Serverless doesn't kill the background process!
-        await handleAIAssistant(user_id, message).catch(err => console.error("AI Error:", err));
+        const aiResult = await handleAIAssistant(user_id, message).catch(err => {
+          console.error("AI Error:", err);
+          return { autoEnd: false };
+        });
+        autoEnd = Boolean(aiResult && aiResult.autoEnd);
       }
     }
 
-    res.status(201).json(insertedMsg);
+    await trimUserChatHistory(user_id);
+
+    res.status(201).json({ ...insertedMsg, autoEnd });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -1468,21 +1840,21 @@ app.post('/chats', async (req, res) => {
 
 async function handleAIAssistant(userId, userMessage) {
     let aiResponse = "";
+    let autoEnd = false;
     let contextInfo = "";
     let profile = null;
     let activeLoan = null;
     let completedLoan = null;
-    
-    try {
-        const userRes = await pool.query('SELECT * FROM profiles WHERE id = $1', [userId]);
-        profile = userRes.rows[0];
-        
-        const loanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status IN ('active', 'pending') ORDER BY created_at DESC LIMIT 1", [userId]);
-        activeLoan = loanRes.rows[0];
+    let devices = [];
+    let recentMessages = [];
 
-        const completedLoanRes = await pool.query("SELECT * FROM loans WHERE user_id = $1 AND status = 'completed' ORDER BY created_at DESC LIMIT 1", [userId]);
-        completedLoan = completedLoanRes.rows[0];
-        
+    try {
+        const ctx = await fetchUserChatContext(userId);
+        profile = ctx.profile;
+        activeLoan = ctx.activeLoan;
+        completedLoan = ctx.completedLoan;
+        devices = ctx.devices;
+
         if (profile) {
             contextInfo += `You are talking to ${profile.full_name || 'a customer'}. `;
             if (activeLoan) {
@@ -1493,96 +1865,67 @@ async function handleAIAssistant(userId, userMessage) {
                 contextInfo += `They do not have an active loan right now. `;
             }
         }
-        
-                // Fetch Live Inventory
-        const deviceRes = await pool.query("SELECT name, storage, srp FROM devices WHERE status = 'available' AND stock > 0");
-        if (deviceRes.rows.length > 0) {
+
+        if (devices.length > 0) {
             contextInfo += "CURRENTLY IN STOCK DEVICES: ";
-            deviceRes.rows.forEach(d => {
+            devices.forEach(d => {
                 contextInfo += `${d.name} (${d.storage}) Base Cash Price: ₱${d.srp}. `;
             });
         } else {
             contextInfo += "Currently, we have no devices in stock. ";
         }
-        
+
         contextInfo += "AMORTIZATION RULES (CRITICAL): If a user asks for the monthly payment of a device, explain that we offer flexible terms. Calculate the exact monthly payment using these rules: 3 months (0% interest), 6 months (3% total interest), 12 months (5% total interest), 24 months (8% total interest). Formula: (Cash Price * (1 + Interest)) / Months. Example for ₱10000 device at 12 months: (10000 * 1.05) / 12 = ₱875/mo.";
-        
         contextInfo += "CRITICAL LIMITATIONS: You CANNOT email transaction histories, you CANNOT process manual payments, and you CANNOT add payment logs. If the user asks for ANY of these, or anything beyond simple account questions, you MUST explicitly say: 'I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.'";
+
+        // Fetch recent chat history for conversational memory (exclude the message just sent)
+        const historyRes = await pool.query(
+            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10",
+            [userId]
+        );
+        const allRecent = historyRes.rows.reverse();
+        recentMessages = allRecent.slice(0, Math.max(0, allRecent.length - 1));
+        const lastBotEntry = [...recentMessages].reverse().find(m => m.sender !== 'user');
+        const lastBotMsg = (lastBotEntry?.message || '').toLowerCase();
+        autoEnd = isConversationDoneIntent(userMessage, lastBotMsg);
 
         if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.length < 10) {
             throw new Error("No valid Gemini API key found");
         }
 
-        const { GoogleGenerativeAI } = require("@google/generative-ai");
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-3.5-flash",
-            systemInstruction: `You are ADC Assistant, the official AI chatbot for ADC Gadgets. You help customers with their device loans and inquiries. Keep your answers brief, friendly, and professional (1-3 sentences). Use Markdown for formatting (like **bold** or bullet points) if helpful.\n\n[SYSTEM CONTEXT: ${contextInfo}]`
-        });
-
-                // Fetch Chat History for Conversational Memory (ROBUST METHOD)
-        const historyRes = await pool.query(
-            "SELECT sender, message FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10",
-            [userId]
-        );
-        
         let memoryText = "--- PAST CONVERSATION HISTORY ---\n";
-        
-        // Reverse rows to put them in chronological order
-        const recentMessages = historyRes.rows.reverse();
-
-        // We do length - 1 to exclude the message the user JUST sent (since it's already in the DB)
-        for (let i = 0; i < recentMessages.length - 1; i++) {
-            const row = recentMessages[i];
+        for (const row of recentMessages) {
             const roleName = row.sender === 'user' ? 'Customer' : 'ADC Assistant';
             memoryText += `${roleName}: ${row.message}\n`;
         }
         memoryText += "--- END HISTORY ---\n\n";
 
-        const prompt = `[SYSTEM CONTEXT: ${contextInfo}]\n\n${memoryText}Customer: ${userMessage}\nADC Assistant:`;
+        const prompt = `${memoryText}Customer: ${userMessage}\nADC Assistant:`;
 
-        const result = await model.generateContent(prompt);
-        aiResponse = result.response.text();
+        const { GoogleGenAI } = require("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const response = await ai.models.generateContent({
+            model: process.env.GEMINI_MODEL || "gemini-4-hydrogen",
+            contents: prompt,
+            config: {
+                systemInstruction: `You are ADC Assistant, the official AI support chatbot for ADC Gadgets (Apple device installment store in the Philippines). Keep answers concise, natural, and helpful (1-4 sentences). Use Markdown (**bold** or bullet points) when listing prices or plans. Always read the conversation history and respond directly to short follow-ups like "yes", "no", or term selections. After answering a question, ask if they have any other questions or concerns. If the customer says they have no other concerns or says goodbye, give a warm closing message and tell them the chat is wrapping up.\n\n[SYSTEM CONTEXT: ${contextInfo}]`
+            }
+        });
+        aiResponse = (response.text || "").trim();
+        if (!aiResponse) throw new Error("Empty response from Gemini API");
 
-    } catch(err) {
-        console.error("AI API failed (using Mock AI fallback):", err.message);
-        
-        // MOCK AI FALLBACK FOR SCHOOL PRESENTATION
-        const lowerMsg = userMessage.toLowerCase();
-        
-        if (lowerMsg.includes("balance") || lowerMsg.includes("how much") || lowerMsg.includes("pay")) {
-            if (activeLoan) {
-                const bal = parseFloat(activeLoan.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
-                const nextDate = activeLoan.next_payment_date ? new Date(activeLoan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'soon';
-                const mpay = parseFloat(activeLoan.monthly_payment).toLocaleString('en-US', { minimumFractionDigits: 2 });
-                aiResponse = `Your remaining balance for the ${activeLoan.device_name} is **₱${bal}**. Your next monthly installment of **₱${mpay}** is due on **${nextDate}**.`;
-            } else if (completedLoan) {
-                aiResponse = `You currently have **₱0.00** remaining balance! Your previous loan for the ${completedLoan.device_name} has been fully settled and completed.`;
-            } else {
-                aiResponse = `You do not currently have an active balance on your account. Let me know if you want to apply for a new device!`;
-            }
-        } else if (lowerMsg.includes("name") || lowerMsg.includes("who am i")) {
-            const userName = profile ? (profile.full_name || profile.email.split('@')[0]) : "there";
-            aiResponse = `Yes! I know you are **${userName}**. How can I assist you with your ADC Gadgets account today?`;
-        } else if (lowerMsg.includes("active loan") || lowerMsg.includes("do i have loans") || lowerMsg.includes("do i have active") || lowerMsg.includes("my loans")) {
-            if (activeLoan) {
-                const bal = parseFloat(activeLoan.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
-                aiResponse = `Yes! Based on our records, you have an active loan for a **${activeLoan.device_name}** with a remaining balance of **₱${bal}**. Let me know if you need specific details about your payments!`;
-            } else if (completedLoan) {
-                aiResponse = `Based on our records, you do not have any active loans right now. Your previous loan for the **${completedLoan.device_name}** has been fully settled and completed! Would you like to apply for a new device?`;
-            } else {
-                aiResponse = "Based on our records, you do not have an active loan right now. Are you interested in getting a new device?";
-            }
-        } else if (lowerMsg.includes("transaction history") || lowerMsg.includes("manual payment") || lowerMsg.includes("payment log")) {
-            aiResponse = "I cannot perform that action. I am transferring this conversation to a human administrator. Please wait for an Admin to assist you.";
-        } else {
-            if (activeLoan) {
-                const bal = parseFloat(activeLoan.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
-                aiResponse = `I am the ADC Assistant! You currently have an active loan for a **${activeLoan.device_name}** with a remaining balance of **₱${bal}**. You can ask me about your balance, next due date, or available devices!`;
-            } else {
-                aiResponse = "I am the ADC Assistant! I can help answer questions about our devices, monthly installment plans, and account status. If you have a complex request, simply type 'Talk to human' to reach our Admin team.";
-            }
-        }
+    } catch (err) {
+        console.warn("AI API fallback active:", err.message);
+        const fallback = buildSmartFallbackReply({
+            userMessage,
+            recentMessages,
+            profile,
+            activeLoan,
+            completedLoan,
+            devices
+        });
+        aiResponse = fallback.text;
+        autoEnd = fallback.autoEnd;
     }
 
     try {
@@ -1590,9 +1933,11 @@ async function handleAIAssistant(userId, userMessage) {
             `INSERT INTO chats (user_id, message, sender, is_read) VALUES ($1, $2, $3, false)`,
             [userId, aiResponse, 'ai']
         );
-    } catch(dbErr) {
+    } catch (dbErr) {
         console.error("Failed to insert AI message:", dbErr);
     }
+
+    return { autoEnd };
 }
 
 
