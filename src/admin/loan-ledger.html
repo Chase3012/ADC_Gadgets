@@ -502,7 +502,7 @@ async function loadUserLoanDetails(userId) {
                 </div>
                 <div>
                     <p style="font-size: 11px; color: var(--text-muted); margin: 0; text-transform:uppercase;">Term</p>
-                    <p style="font-size: 15px; font-weight: 700; margin: 0;">${l.term_months || Math.ceil(l.total_amount / l.monthly_payment)} Mos</p>
+                    <p style="font-size: 15px; font-weight: 700; margin: 0;">${l.term_months || Math.round(l.total_amount / l.monthly_payment)} Mos</p>
                 </div>
             </div>
         </div>

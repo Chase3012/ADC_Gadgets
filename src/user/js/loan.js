@@ -141,10 +141,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Case 2: User has active loans
             activeLoans.forEach(loan => {
-                const progress = ((loan.total_amount - loan.remaining_balance) / loan.total_amount) * 100;
+                const totalAmount = parseFloat(loan.total_amount) || 0;
+                const remaining   = Math.max(0, parseFloat(loan.remaining_balance) || 0);
+                const monthly     = parseFloat(loan.monthly_payment) || 1;
+                const progress = totalAmount > 0 ? ((totalAmount - remaining) / totalAmount) * 100 : 0;
                 const nextDate = new Date(loan.next_payment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const totalMonths     = loan.term_months ? parseInt(loan.term_months) : Math.ceil(loan.total_amount / loan.monthly_payment);
-                const monthsRemaining = Math.ceil(loan.remaining_balance / loan.monthly_payment);
+                const totalMonths     = loan.term_months ? parseInt(loan.term_months, 10) : Math.max(1, Math.round(totalAmount / monthly));
+                const monthsRemaining = remaining <= 0 ? 0 : Math.min(totalMonths, Math.max(1, Math.ceil((remaining / monthly) - 0.001)));
                 const monthsPaid      = Math.max(0, totalMonths - monthsRemaining);
                 const imgPath = loan.device_image && loan.device_image.includes('/') ? loan.device_image : `/images/phones/${loan.device_image || 'default.png'}`;
 
@@ -391,7 +394,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : `/images/phones/${cLoan.device_image || 'default.png'}`;
             const cTotal = Number(cLoan.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 });
             const cMonthly = Number(cLoan.monthly_payment).toLocaleString(undefined, { minimumFractionDigits: 2 });
-            const cTerm = cLoan.term_months || Math.ceil(cLoan.total_amount / cLoan.monthly_payment) || 24;
+            const cTerm = cLoan.term_months || Math.round(cLoan.total_amount / cLoan.monthly_payment) || 24;
 
             html += `
                 <div class="prev-loan-card" id="prev-loan-card-${cLoan.id}">

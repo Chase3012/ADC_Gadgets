@@ -928,6 +928,19 @@ app.get('/loans', async (req, res) => {
 app.post('/loans', async (req, res) => {
   const { user_id, device_name, device_color, device_image, total_amount, monthly_payment, term_months, next_payment_date, status } = req.body;
   try {
+    const targetStatus = status || 'active';
+    if (targetStatus === 'active' && user_id) {
+      const existingActive = await pool.query(
+        "SELECT id, device_name FROM loans WHERE user_id = $1 AND status = 'active' LIMIT 1",
+        [user_id]
+      );
+      if (existingActive.rows.length > 0) {
+        return res.status(409).json({
+          error: `Customer already has an active loan (${existingActive.rows[0].device_name}). Settle it before issuing another.`
+        });
+      }
+    }
+
     const term = parseInt(term_months) || 24;
     let srp = total_amount ? parseFloat(total_amount) : null;
     let monthly = monthly_payment ? parseFloat(monthly_payment) : null;
@@ -952,8 +965,11 @@ app.post('/loans', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO loans (user_id, device_name, device_color, device_image, total_amount, remaining_balance, monthly_payment, term_months, next_payment_date, status)
        VALUES ($1, $2, $3, $4, $5, $5, $6, $7, $8, $9) RETURNING *`,
-      [user_id, device_name, device_color || null, img, srp, monthly, term, nextDate, status || 'active']
+      [user_id, device_name, device_color || null, img, srp, monthly, term, nextDate, targetStatus]
     );
+    if (targetStatus === 'active' && user_id) {
+      await pool.query('UPDATE profiles SET active_loan_model = $1 WHERE id = $2', [device_name, user_id]);
+    }
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -995,6 +1011,15 @@ async function paymongoRequest(method, path, body) {
   return response.json();
 }
 
+function normalizePayMongoMethod(rawMethod, fallback = 'GCash') {
+  if (!rawMethod) return fallback;
+  const m = String(rawMethod).toLowerCase();
+  if (m.includes('maya') || m === 'paymaya') return 'Maya';
+  if (m.includes('gcash')) return 'GCash';
+  if (m.includes('qrph')) return 'QR Ph';
+  return rawMethod.charAt(0).toUpperCase() + rawMethod.slice(1);
+}
+
 app.post('/pay', async (req, res) => {
   const { loan_id, user_id } = req.body;
   try {
@@ -1010,8 +1035,11 @@ app.post('/pay', async (req, res) => {
     const amount = Math.min(parseFloat(loan.monthly_payment), parseFloat(loan.remaining_balance));
     if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid payment amount' });
 
-    // Only GCash and Maya accepted
-    const allowedMethods = ['gcash', 'paymaya'];
+    // PayMongo Protect caps single direct GCash/Maya test attempts below PHP 20,000;
+    // prioritize QR Ph for high installments so they succeed cleanly alongside GCash & Maya.
+    const allowedMethods = amount >= 20000
+      ? ['qrph', 'gcash', 'paymaya']
+      : ['gcash', 'paymaya', 'qrph'];
 
     const frontendBase = req.headers.origin || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
 
@@ -1162,16 +1190,7 @@ app.post('/pay/confirm', async (req, res) => {
             || attrs.payments?.[0]?.attributes?.payment_method_type
             || null;
 
-          if (rawMethod) {
-            const m = rawMethod.toLowerCase();
-            if (m.includes('maya') || m === 'paymaya') {
-              methodLabel = 'Maya';
-            } else if (m.includes('gcash')) {
-              methodLabel = 'GCash';
-            } else {
-              methodLabel = rawMethod.charAt(0).toUpperCase() + rawMethod.slice(1);
-            }
-          }
+          methodLabel = normalizePayMongoMethod(rawMethod, 'GCash');
 
           intentId = attrs.payment_intent?.id || attrs.payments?.[0]?.attributes?.payment_intent_id || null;
         }
@@ -1244,7 +1263,7 @@ app.post('/pay/webhook', express.raw({ type: 'application/json' }), async (req, 
     const loan_id     = metadata.loan_id;
     const amount_paid = payment?.attributes?.amount / 100; // centavos → pesos
     const rawMethod   = payment?.attributes?.source?.type || 'online';
-    const method      = (rawMethod === 'paymaya' || rawMethod === 'maya') ? 'Maya' : (rawMethod === 'gcash' ? 'GCash' : rawMethod);
+    const method      = normalizePayMongoMethod(rawMethod, 'Online');
     const intent_id   = payment?.id;
 
     if (!loan_id || !amount_paid) return res.sendStatus(200);
@@ -1415,7 +1434,8 @@ app.get('/dashboard/stats', async (req, res) => {
 
     // Total cash actually collected from payments
     const totalCollected = await pool.query(`
-      SELECT COALESCE(SUM(amount_paid), 0) AS total
+      SELECT COALESCE(SUM(amount_paid), 0) AS total,
+             COUNT(*)::int AS count
       FROM payments
       WHERE payment_method != 'pending'
     `);
@@ -1443,6 +1463,7 @@ app.get('/dashboard/stats', async (req, res) => {
       totalUsers: parseInt(userCount.rows[0].count),
       unreadMessages: parseInt(unreadMsgs.rows[0].count),
       totalPaymentsCollected: parseFloat(totalCollected.rows[0].total),
+      confirmedPaymentCount: parseInt(totalCollected.rows[0].count || 0),
       monthlyPaymentSeries: monthlySeriesRes.rows.map(r => ({ ym: r.ym, total: parseFloat(r.total) })),
       recentLoans: recentLoans.rows,
       upcomingPayments: upcomingPayments.rows,

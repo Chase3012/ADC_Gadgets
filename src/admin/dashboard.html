@@ -92,20 +92,20 @@
             <div class="bento-card" style="gap:16px;">
               <div class="bento-card-head" style="margin-bottom:0;">
                 <div>
-                  <h2 class="bento-card-title">Active Portfolio</h2>
-                  <p class="bento-card-sub">Outstanding balance &amp; active units</p>
+                  <h2 class="bento-card-title">Total Cash Collected</h2>
+                  <p class="bento-card-sub">Confirmed payments received to date</p>
                 </div>
-                <a href="loan-ledger.html" class="bento-arrow-link" aria-label="Open Active Loans">
+                <a href="reports.html" class="bento-arrow-link" aria-label="Open Reports">
                   <i data-lucide="arrow-up-right" style="width:16px;height:16px;"></i>
                 </a>
               </div>
 
               <div class="bento-spotlight-card">
                 <div class="spotlight-top">
-                  <span>ADC Loan Book</span>
-                  <i data-lucide="smartphone" style="width:18px;height:18px;"></i>
+                  <span>ADC Collections</span>
+                  <i data-lucide="wallet" style="width:18px;height:18px;"></i>
                 </div>
-                <div class="spotlight-val" id="kpi-balance"><span class="sk sk-kpi-val"></span></div>
+                <div class="spotlight-val" id="kpi-collected"><span class="sk sk-kpi-val"></span></div>
                 <div class="spotlight-foot">
                   <span id="stat-active"><span class="sk" style="width:70px;height:14px;"></span></span>
                   <span class="spotlight-pill" id="stat-active-badge"><span class="sk sk-pill" style="width:62px;height:16px;display:inline-block;vertical-align:middle;"></span></span>
@@ -116,8 +116,8 @@
             <div class="bento-card">
               <div class="bento-mini-row">
                 <div>
-                  <p class="bento-card-sub" style="margin-top:0;margin-bottom:6px;">Collected in <span id="kpi-monthly-period">this month</span></p>
-                  <div class="bento-mini-val" id="kpi-monthly"><span class="sk sk-kpi-val"></span></div>
+                  <p class="bento-card-sub" style="margin-top:0;margin-bottom:6px;">Remaining Balance</p>
+                  <div class="bento-mini-val" id="kpi-balance"><span class="sk sk-kpi-val"></span></div>
                 </div>
                 <span class="bento-chip-pink" id="kpi-monthly-badge"><span class="sk sk-pill" style="width:58px;height:16px;display:inline-block;vertical-align:middle;"></span></span>
               </div>
@@ -481,18 +481,17 @@ async function loadStats() {
     setTxt('prog-late-label', d.late ?? 0);
     setWidth('prog-late-bar', (((d.late || 0) / totalActive) * 100) + '%');
 
-    const dueOrLate = (d.dueSoon || 0) + (d.late || 0);
-    setTxt('stat-active-badge', dueOrLate > 0 ? `${dueOrLate} due` : 'All current');
+    const payCount = d.confirmedPaymentCount ?? (d.recentPayments ? d.recentPayments.length : 0);
+    setTxt('kpi-collected', pesoFull(d.totalPaymentsCollected || 0));
+    setTxt('stat-active-badge', payCount === 1 ? '1 payment' : `${payCount} payments`);
     setTxt('kpi-unread-badge', (d.unreadMessages || 0) > 0 ? 'Needs reply' : 'All clear');
 
-    setTxt('kpi-balance', peso(d.totalRemainingBalance || 0));
+    setTxt('kpi-balance', pesoFull(d.totalRemainingBalance || 0));
     setTxt('kpi-unread', d.unreadMessages ?? 0);
-    const nowLabel = new Date().toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
-    setTxt('kpi-monthly-period', nowLabel);
-    setTxt('kpi-monthly', peso(d.collectedThisMonth || 0));
     setTxt('kpi-monthly-badge', 'Due ' + peso(d.monthlyCollections || 0) + '/mo');
 
-    setTxt('stat-active', (d.activeLoans || 0) + ' loans');
+    const activeCount = d.activeLoans || 0;
+    setTxt('stat-active', activeCount === 1 ? '1 active loan' : `${activeCount} active loans`);
     setTxt('stat-completed', (d.completedLoans || 0) + ' loans');
 
     const totalLoans = (d.activeLoans || 0) + (d.completedLoans || 0);
@@ -520,7 +519,7 @@ async function loadStats() {
 
   } catch (err) {
     console.error('Dashboard load error:', err);
-    ['kpi-balance', 'kpi-monthly', 'stat-active', 'kpi-unread', 'sales-kpi-srp', 'sales-kpi-units', 'sales-kpi-avg', 'sales-kpi-monthly'].forEach(id => {
+    ['kpi-collected', 'kpi-balance', 'stat-active', 'kpi-unread', 'sales-kpi-srp', 'sales-kpi-units', 'sales-kpi-avg', 'sales-kpi-monthly'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.textContent = 'Unavailable';
     });
